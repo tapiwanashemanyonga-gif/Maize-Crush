@@ -115,7 +115,7 @@
   function readProgress() {
     try {
       const raw = JSON.parse(localStorage.getItem("maize-crush-progress") || "{}");
-      return { level: Math.max(1, Math.min(100, Number(raw.level) || 1), best: Number(raw.best) || 0 };
+      return { level: Math.max(1, Math.min(100, Number(raw.level) || 1)), best: Number(raw.best) || 0 };
     } catch (_) { return { level: 1, best: 0 }; }
   }
   function saveProgress() {
