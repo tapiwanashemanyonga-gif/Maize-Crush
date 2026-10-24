@@ -1,0 +1,12 @@
+{
+  "name": "maize-crush-zimbabwe-harvest",
+  "version": "0.1.0",
+  "private": true,
+  "description": "An original connect-the-crops puzzle game themed around Zimbabwean harvests.",
+  "scripts": {
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
