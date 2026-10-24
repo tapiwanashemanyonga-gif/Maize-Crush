@@ -36,3 +36,11 @@ The repository is structured as a static site and includes a root `index.html`. 
 First playable prototype: responsive 8×8 board, pointer/touch drag selection, diagonal connections, scoring, moves, level goals, restart, fresh-field shuffle, saved unlocked level, and automated rules tests.
 
 This is an early prototype. Sound, special boosters, richer animations, accessibility polish, and a complete level map are future improvements.
+
+## Android APK
+
+The Android app wraps the same game in a local WebView and bundles the HTML, CSS, and JavaScript in the APK. Gameplay therefore works offline and does not require the GitHub Pages website or a network connection. The Android package ID is `com.maizecrush.zimbabweharvest` (minimum Android version: Android 7.0 / API 24).
+
+Every push to `main` runs the Android APK workflow. When the run succeeds, open **Actions → Maize Crush Android APK → Artifacts** and download `maize-crush-android-debug-apk`. The ZIP contains an installable debug APK for testing; it is not a signed Play Store release. A release-signed APK/AAB can be configured separately when preparing for distribution.
+
+The Android wrapper uses the bundled local assets and system fonts so the game does not depend on external fonts or web hosting.
