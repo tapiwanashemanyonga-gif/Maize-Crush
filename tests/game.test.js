@@ -18,3 +18,7 @@ test("five-crop golden harvest clears every crop of the selected type",()=>{cons
 test("seven-crop Harvest Storm clears one full row and column without duplicates",()=>{const b=Array.from({length:8},(_,r)=>Array.from({length:8},(_,c)=>(r+c)%6));const chain=[{r:2,c:0},{r:2,c:1},{r:2,c:2},{r:3,c:2},{r:4,c:2},{r:5,c:2},{r:6,c:2}];const cleared=game.specialClearCells(b,chain);assert.equal(cleared.length,15);assert.equal(new Set(cleared.map(x=>x.r+","+x.c)).size,15);assert.ok(cleared.every(x=>x.r===3||x.c===2))});
 
 test("daily challenge is deterministic for a date and has bounded goals and moves",()=>{const a=game.dailyChallengeForDate("2026-10-25"),b=game.dailyChallengeForDate("2026-10-25"),c=game.dailyChallengeForDate("2026-10-26");assert.deepEqual(a,b);assert.notDeepEqual(a,c);assert.ok(a.goal>=700&&a.goal<=1100);assert.ok(a.moves>=18&&a.moves<=22);assert.equal(a.date,"2026-10-25")});
+
+test("fertilizer boost targets every crop of the most common type",()=>{const board=[[0,1,0],[1,0,2],[3,0,4]];assert.deepEqual(game.fertilizerCells(board),[{r:0,c:0},{r:0,c:2},{r:1,c:1},{r:2,c:1}])});
+test("fertilizer boost breaks ties consistently by first crop encountered",()=>{const board=[[2,1],[1,2]];assert.deepEqual(game.fertilizerCells(board),[{r:0,c:0},{r:1,c:1}])});
+test("fertilizer boost safely handles empty boards",()=>{assert.deepEqual(game.fertilizerCells([]),[])});
