@@ -22,3 +22,8 @@ test("daily challenge is deterministic for a date and has bounded goals and move
 test("fertilizer boost targets every crop of the most common type",()=>{const board=[[0,1,0],[1,0,2],[3,0,4]];assert.deepEqual(game.fertilizerCells(board),[{r:0,c:0},{r:0,c:2},{r:1,c:1},{r:2,c:1}])});
 test("fertilizer boost breaks ties consistently by first crop encountered",()=>{const board=[[2,1],[1,2]];assert.deepEqual(game.fertilizerCells(board),[{r:0,c:0},{r:1,c:1}])});
 test("fertilizer boost safely handles empty boards",()=>{assert.deepEqual(game.fertilizerCells([]),[])});
+
+test("Rain Shower returns a bounded 3 by 3 area around the most common crop",()=>{const board=Array.from({length:8},(_,r)=>Array.from({length:8},(_,c)=>(r*3+c*2)%6));for(let r=0;r<8;r++)for(let c=0;c<8;c++)board[r][c]=5;board[0][0]=0;const cells=game.rainShowerCells(board);assert.equal(cells.length,9);assert.equal(new Set(cells.map(x=>x.r+","+x.c)).size,9);assert.ok(cells.every(x=>x.r>=0&&x.r<8&&x.c>=0&&x.c<8))});
+test("Rain Shower safely handles an empty board",()=>{assert.deepEqual(game.rainShowerCells([]),[])});
+test("hint finder returns a connected matching group of at least three",()=>{const board=Array.from({length:8},(_,r)=>Array.from({length:8},(_,c)=>(r+c)%6));board[0][0]=board[0][1]=board[1][1]=0;const hint=game.findHintChain(board);assert.ok(hint.length>=3);assert.ok(hint.every(x=>board[x.r][x.c]===board[hint[0].r][hint[0].c]));assert.equal(game.hasAvailableChain(board),true)});
+test("hint finder detects boards without a matching connected group",()=>{const board=Array.from({length:3},(_,r)=>Array.from({length:3},(_,c)=>(r*3+c)%6));assert.deepEqual(game.findHintChain(board),[]);assert.equal(game.hasAvailableChain(board),false)});
