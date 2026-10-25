@@ -9,7 +9,7 @@ An original, mobile-friendly HTML5 puzzle game inspired by Zimbabwean crops and 
 - Horizontal, vertical, and diagonal connections are allowed.
 - Release to harvest the chain, earn points, and refill the field.
 - Reach the level goal before your moves run out.
-- Progress is saved in your browser using local storage.
+- Progress, best score, achievements, and daily challenge completion are saved locally on the device. Daily challenge goals change by date and work offline.
 
 Crops: maize, tomatoes, groundnuts, bananas, oranges, and sweet potatoes.
 
@@ -33,9 +33,7 @@ The repository is structured as a static site and includes a root `index.html`. 
 
 ## Current milestone
 
-First playable prototype: responsive 8×8 board, pointer/touch drag selection, diagonal connections, scoring, moves, level goals, restart, fresh-field shuffle, saved unlocked level, and automated rules tests.
-
-This is an early prototype. Sound, special boosters, richer animations, accessibility polish, and a complete level map are future improvements.
+Current features: responsive 8×8 board, touch drag selection, diagonal connections, cascades, Golden Harvest and Harvest Storm specials, offline sound effects, vibration feedback where supported, persistent best score, level map, daily challenges, and local achievements.
 
 ## Android APK
 
