@@ -33,7 +33,7 @@ The repository is structured as a static site and includes a root `index.html`. 
 
 ## Current milestone
 
-Current features: responsive 8×8 board, touch drag selection, diagonal connections, cascades, Golden Harvest and Harvest Storm specials, offline sound effects, vibration feedback where supported, persistent best score, level map, daily challenges, and local achievements.
+Current features: responsive 8×8 board, touch drag selection, diagonal connections, cascades, Golden Harvest and Harvest Storm specials, offline sound effects, vibration feedback where supported, persistent best score, level map, daily challenges, and local achievements, and a one-use-per-round Fertilizer Boost that clears the most common crop type for bonus points.
 
 ## Android APK
 
