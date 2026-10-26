@@ -1,0 +1,22 @@
+{
+  "name": "Maize Crush — Zimbabwe Harvest",
+  "short_name": "Maize Crush",
+  "description": "Connect matching crops in a Zimbabwe-inspired harvest puzzle.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0b2118",
+  "theme_color": "#123c2b",
+  "categories": [
+    "games"
+  ],
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
