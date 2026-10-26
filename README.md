@@ -5,7 +5,7 @@ An original, mobile-friendly HTML5 puzzle game inspired by Zimbabwean crops and 
 ## Gameplay
 
 - **Connect, don't swap.** Touch a crop and drag through matching neighbours.
-- Connect at least three of the same crop in one continuous chain.
+- Connect at least three of the same crop in one continuous chain. A four-crop chain triggers a Seed Burst in a nearby 3×3 area; five or six trigger Golden Harvest; seven or more trigger Harvest Storm.
 - Horizontal, vertical, and diagonal connections are allowed.
 - Release to harvest the chain, earn points, and refill the field.
 - Reach the level goal before your moves run out.
