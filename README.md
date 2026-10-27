@@ -63,3 +63,10 @@ Browser installation: GitHub Pages serves the web app over HTTPS, where the serv
 - The level map exposes all 100 levels, with future levels locked until progression unlocks them.
 - The eight themed worlds cover levels 1–32; level 33 onward uses Endless Harvest.
 - Levels 1–20 keep their existing goals and move counts. Later goals increase by 350 points per level, while move counts increase gradually and cap at 38 to keep long-term progression playable.
+
+
+## Save backup and restore
+
+- Open **Settings** and export a JSON backup of your progress, level bests and stars, achievements, daily challenge history, round checkpoint, and preferences.
+- Import a previously exported backup to restore it on this device. The file is validated before saved data is replaced, and the game reloads after a successful import.
+- Backups are user-controlled files; they are not uploaded to a server. Keep a copy somewhere safe if you clear browser storage or move to another device.
