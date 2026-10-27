@@ -9,7 +9,7 @@ An original, mobile-friendly HTML5 puzzle game inspired by Zimbabwean crops and 
 - Horizontal, vertical, and diagonal connections are allowed.
 - Release to harvest the chain, earn points, and refill the field.
 - Reach the level goal before your moves run out.
-- Progress, best score, achievements, and daily challenge completion are saved locally on the device. Stable round checkpoints also let you resume your current board, score, moves, and once-per-round boosters after closing or refreshing the game. Invalid or out-of-date checkpoints are safely discarded. Daily challenge goals change by date and work offline.
+- Progress, best score, achievements, daily challenge completion, and each level’s best star rating are saved locally on the device. Earn one, two, or three stars by reaching the goal, 125% of the goal, or 175% of the goal. Replay a level to improve its saved rating. Stable round checkpoints also let you resume your current board, score, moves, and once-per-round boosters after closing or refreshing the game. Invalid or out-of-date checkpoints are safely discarded. Daily challenge goals change by date and work offline.
 
 Crops: maize, tomatoes, groundnuts, bananas, oranges, and sweet potatoes.
 
