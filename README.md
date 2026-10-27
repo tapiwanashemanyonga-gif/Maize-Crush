@@ -56,3 +56,10 @@ Browser installation: GitHub Pages serves the web app over HTTPS, where the serv
 ## Market Cart and animation upgrades
 
 1. Add a Market Cart row-and-column power-up. 2. Target the most common crop for the power-up anchor. 3. Clear one full row. 4. Clear one full column. 5. Avoid duplicate center-cell scoring. 6. Charge one move per use. 7. Award points per cleared tile. 8. Count Market Cart uses in booster statistics. 9. Respect the saved vibration preference. 10. Add a dedicated Market Mover achievement. 11. Reset the power-up every round. 12. Restore its used state when undoing a move. 13. Disable the button after use. 14. Add button styling. 15. Update the tutorial. 16. Expand the achievement counter. 17. Animate newly rendered crops into the field. 18. Stagger crop animations for a falling-field feel. 19. Respect reduced-motion settings. 20. Test cross selection, tie-breaking and empty boards. Browser and Android assets remain synchronized.
+
+
+### Endless Harvest progression
+
+- The level map exposes all 100 levels, with future levels locked until progression unlocks them.
+- The eight themed worlds cover levels 1–32; level 33 onward uses Endless Harvest.
+- Levels 1–20 keep their existing goals and move counts. Later goals increase by 350 points per level, while move counts increase gradually and cap at 38 to keep long-term progression playable.
