@@ -29,3 +29,6 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
 .settings-options{display:grid;gap:10px;margin:14px 0}.settings-options label{display:flex;align-items:center;gap:10px;padding:10px;border:1px solid var(--line);border-radius:12px;font-size:13px}.settings-options input{width:18px;height:18px;accent-color:var(--green)}
 
 #market-cart-button{border-color:#d6a65b66;background:linear-gradient(135deg,#4b3820,#30291c);color:#ffe2a0}#market-cart-button:disabled{opacity:.45;cursor:not-allowed}.action-row{flex-wrap:wrap}.crop-tile.tile-arrive{animation:crop-arrive .2s ease-out both}@keyframes crop-arrive{from{opacity:.3;transform:translateY(-5px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}@media(max-width:480px){.action-row{flex-wrap:wrap}.action-row button{flex:1 1 42%}}@media(prefers-reduced-motion:reduce){.crop-tile.tile-arrive{animation:none}}
+
+
+.backup-actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.backup-actions button{flex:1 1 145px;min-height:42px}.backup-actions button:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
