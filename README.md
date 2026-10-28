@@ -80,3 +80,8 @@ Each non-daily level includes an optional bonus mission that rotates across four
 ## Farm Journal
 
 Open **Farm Journal** to track lifetime crops cleared by type. Counts include ordinary harvests, special clears and cascade clears. Each crop has milestones at 100, 500 and 1,000 cleared. The journal stays on the device, is included in exported save backups, and is restored by undoing the last move.
+
+
+## Board generation reliability
+
+New rounds retry random board generation to avoid pre-existing line matches and ensure at least one valid crop chain. If repeated random attempts fail, the game now falls back to a deterministic 8×8 pattern with a guaranteed matching diagonal instead of modifying a random board in a way that could accidentally create starting line matches. Automated tests check 100 seeded boards for both conditions.
