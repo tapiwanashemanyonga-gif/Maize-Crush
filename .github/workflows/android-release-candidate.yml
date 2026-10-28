@@ -45,10 +45,20 @@ jobs:
       - name: Verify Android SDK
         run: test -d "$ANDROID_HOME/platforms" && echo "Android SDK found"
 
+      - name: Install Android 16 SDK platform and build tools
+        shell: bash
+        run: |
+          SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -name sdkmanager | sort -V | tail -n 1)"
+          test -n "$SDKMANAGER"
+          set +o pipefail
+          yes | "$SDKMANAGER" --licenses >/dev/null
+          set -o pipefail
+          "$SDKMANAGER" "platforms;android-36" "build-tools;36.0.0"
+
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: "8.9"
+          gradle-version: "8.11.1"
 
       - name: Build Android release variants
         run: gradle -p android --no-daemon assembleRelease bundleRelease

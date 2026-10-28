@@ -12,12 +12,12 @@ def hasReleaseSigning = releaseStorePath && releaseStorePassword && releaseKeyAl
 
 android {
     namespace 'com.maizecrush.zimbabweharvest'
-    compileSdk 35
+    compileSdk 36
 
     defaultConfig {
         applicationId 'com.maizecrush.zimbabweharvest'
         minSdk 24
-        targetSdk 35
+        targetSdk 36
         versionCode 1
         versionName '1.0.0'
     }
