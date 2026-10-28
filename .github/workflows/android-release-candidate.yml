@@ -33,6 +33,7 @@ jobs:
           cmp index.html android/app/src/main/assets/index.html
           cmp manifest.webmanifest android/app/src/main/assets/manifest.webmanifest
           cmp icon.svg android/app/src/main/assets/icon.svg
+          cmp privacy-policy.html android/app/src/main/assets/privacy-policy.html
 
       - name: Set up Java
         uses: actions/setup-java@v4
