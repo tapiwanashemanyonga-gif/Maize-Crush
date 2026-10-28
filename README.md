@@ -75,4 +75,8 @@ Browser installation: GitHub Pages serves the web app over HTTPS, where the serv
 ## Varied level missions
 
 Each non-daily level includes an optional bonus mission that rotates across four objectives: make a chain of five crops, trigger a cascade, perform a special harvest, or complete four harvests. Mission progress is shown separately from the main score goal, so players can still complete a level without being blocked by a difficult bonus objective. Completing a mission awards 100 bonus points once per round. Mission state is included in the validated round checkpoint and undo snapshot; starting or replaying a level resets the mission. Daily Challenge keeps its existing rules and does not use level missions.
-\n\n## Farm Journal\n\nOpen **Farm Journal** to track lifetime crops cleared by type. Counts include ordinary harvests, special clears and cascade clears. Each crop has milestones at 100, 500 and 1,000 cleared. The journal stays on the device, is included in exported save backups, and is restored by undoing the last move.\n
+
+
+## Farm Journal
+
+Open **Farm Journal** to track lifetime crops cleared by type. Counts include ordinary harvests, special clears and cascade clears. Each crop has milestones at 100, 500 and 1,000 cleared. The journal stays on the device, is included in exported save backups, and is restored by undoing the last move.
