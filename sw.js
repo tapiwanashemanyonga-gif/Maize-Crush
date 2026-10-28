@@ -42,9 +42,11 @@ self.addEventListener("fetch", event => {
     try {
       const response = await fetch(request);
       if (response && response.ok) {
-        caches.open(CACHE_NAME)
-          .then(cache => cache.put(request, response.clone()))
-          .catch(() => {});
+        event.waitUntil(
+          caches.open(CACHE_NAME)
+            .then(cache => cache.put(request, response.clone()))
+            .catch(() => {})
+        );
       }
       return response;
     } catch (_) {
