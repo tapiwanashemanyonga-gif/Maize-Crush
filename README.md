@@ -8,7 +8,7 @@ An original, mobile-friendly HTML5 puzzle game inspired by Zimbabwean crops and 
 - Connect at least three of the same crop in one continuous chain. A four-crop chain triggers a Seed Burst in a nearby 3×3 area; five or six trigger Golden Harvest; seven or more trigger Harvest Storm.
 - Horizontal, vertical, and diagonal connections are allowed.
 - Release to harvest the chain, earn points, and refill the field.
-- Reach the level goal before your moves run out.
+- Complete the level’s primary objective before your moves run out. Objectives rotate through score targets, collecting a named crop, long chains, cascades, special harvests, and successful connections; target counts scale as endless levels progress. Score-based star ratings remain as optional mastery rewards.
 - Progress, best score, achievements, daily challenge completion, and each level’s best star rating are saved locally on the device. Earn one, two, or three stars by reaching the goal, 125% of the goal, or 175% of the goal. Replay a level to improve its saved rating. Stable round checkpoints also let you resume your current board, score, moves, and once-per-round boosters after closing or refreshing the game. Invalid or out-of-date checkpoints are safely discarded. Daily challenge goals change by date and work offline.
 
 Crops: maize, tomatoes, groundnuts, bananas, oranges, and sweet potatoes.
@@ -33,7 +33,7 @@ The repository is structured as a static site and includes a root `index.html`. 
 
 ## Current milestone
 
-The game includes a responsive 8×8 crop board, pointer-safe drag selection, diagonal chains, cascades, Seed Burst / Golden Harvest / Harvest Storm specials, three one-use-per-round boosters, free hints, undo, daily challenges and streaks, optional level missions, a 100-level map with stars, 13 achievements, lifetime statistics, Farm Journal milestones, persistent sound/accessibility preferences, validated save backup/restore, and safe board/cascade recovery. Reduced-motion settings are respected. Browser and Android WebView assets are checked for byte-for-byte parity in CI.
+The game includes a responsive 8×8 crop board, pointer-safe drag selection, diagonal chains, cascades, Seed Burst / Golden Harvest / Harvest Storm specials, three one-use-per-round boosters, free hints, undo, daily challenges and streaks, optional bonus missions, primary objectives that rotate through six goal types, an endless paginated level map with stars, 13 achievements, lifetime statistics, Farm Journal milestones, persistent sound/accessibility preferences, validated save backup/restore, and safe board/cascade recovery. Reduced-motion settings are respected. Browser and Android WebView assets are checked for byte-for-byte parity in CI.
 
 ## Android APK
 
