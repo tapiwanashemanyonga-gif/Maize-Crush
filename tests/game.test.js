@@ -94,3 +94,6 @@ test("world chapters keep named Zimbabwe-themed regions and endless chapters dis
 
 
 test("next level is available only after a completed non-daily primary objective",()=>{assert.equal(game.canAdvanceLevel(false,false,true),false);assert.equal(game.canAdvanceLevel(true,false,false),false);assert.equal(game.canAdvanceLevel(true,true,true),false);assert.equal(game.canAdvanceLevel(true,false,true),true);});
+
+
+test("endless objective targets keep scaling well beyond the early levels",()=>{assert.ok(game.objectiveForLevel(602).target>game.objectiveForLevel(2).target);assert.ok(game.objectiveForLevel(603).target>game.objectiveForLevel(3).target);assert.ok(game.objectiveForLevel(604).target>game.objectiveForLevel(4).target);assert.ok(game.objectiveForLevel(605).target>game.objectiveForLevel(5).target);assert.ok(game.objectiveForLevel(606).target>game.objectiveForLevel(6).target);for(const level of [100,1000,100000,1000000])assert.ok(game.objectiveForLevel(level).target>0);});
