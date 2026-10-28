@@ -22,3 +22,5 @@ jobs:
           node-version: 20
       - name: Run gameplay tests
         run: npm test
+      - name: Validate service worker syntax
+        run: node --check sw.js
