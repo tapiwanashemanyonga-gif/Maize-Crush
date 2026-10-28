@@ -34,7 +34,7 @@ function seededRandom(seed){let s=(Number(seed)>>>0)||1;return()=>{s=(s*1664525+
 function countCrops(b){const out=Array(CROPS.length).fill(0);if(Array.isArray(b))b.forEach(row=>Array.isArray(row)&&row.forEach(x=>{if(Number.isInteger(x)&&x>=0&&x<CROPS.length)out[x]++}));return out}
 function boardSummary(b){const counts=countCrops(b);return{total:counts.reduce((a,x)=>a+x,0),counts,distinct:counts.filter(Boolean).length,mostCommon:counts.indexOf(Math.max(0,...counts)),mostCommonCount:Math.max(0,...counts)}}
 function hasLineMatches(b){return findMatches(b).length>0}
-function makePlayableBoard(random){for(let i=0;i<40;i++){const b=makeBoard(random);if(!hasLineMatches(b)&&hasAvailableChain(b))return b}const b=makeBoard(random);b[0][0]=b[0][1]=b[1][1]=0;return b}
+function makePlayableBoard(random){for(let i=0;i<40;i++){const b=makeBoard(random);if(!hasLineMatches(b)&&hasAvailableChain(b))return b}const b=Array.from({length:SIZE},(_,r)=>Array.from({length:SIZE},(_,c)=>(r+c)%CROPS.length));for(let i=0;i<3;i++)b[i][i]=0;return b}
 function makeSeededBoard(seed){return makePlayableBoard(seededRandom(seed))}
 function comboBonus(n,cascade){return Math.max(0,Math.floor(n)||0)*Math.max(0,Math.floor(cascade)||0)*5}
 function cascadePointsForMatches(matches,depth){return Math.max(0,Math.floor(Number(matches)||0))*15*Math.min(4,Math.max(0,Math.floor(Number(depth)||0)))}
