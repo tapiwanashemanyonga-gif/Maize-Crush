@@ -88,3 +88,6 @@ test("round checkpoints preserve primary objective progress and safely normalize
 
 
 test("level completion rating always awards a first star for an objective win",()=>{assert.equal(Math.max(1,game.starsForScore(0,game.goalForLevel(2))),1);assert.equal(game.starsForScore(game.goalForLevel(1),game.goalForLevel(1)),1);assert.equal(game.starsForScore(game.goalForLevel(1)*2,game.goalForLevel(1)),3);});
+
+
+test("world chapters keep named Zimbabwe-themed regions and endless chapters distinct",()=>{assert.equal(game.worldChapterForLevel(1),"Maize Fields");assert.equal(game.worldChapterForLevel(32),"Limpopo Valley");assert.equal(game.worldChapterForLevel(33),"Endless Harvest 1");assert.equal(game.worldChapterForLevel(36),"Endless Harvest 1");assert.equal(game.worldChapterForLevel(37),"Endless Harvest 2");assert.equal(game.worldChapterForLevel(1000000),"Endless Harvest "+(Math.floor((1000000-33)/4)+1));});
