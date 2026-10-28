@@ -16,7 +16,7 @@ Use this as the starting point for Google Play and Uptodown. Review every field 
 
 ## Short description
 
-Connect crops, trigger harvests and explore Zimbabwe-themed levels.
+Connect crops, master changing goals and explore endless harvest levels.
 
 This is 67 characters, within Uptodown's 70-character short-description limit.
 
@@ -24,7 +24,7 @@ This is 67 characters, within Uptodown's 70-character short-description limit.
 
 Harvest your way through a crop-connection puzzle inspired by Zimbabwe. Drag through matching maize, tomatoes, groundnuts, bananas, oranges and sweet potatoes to create chains—diagonal connections count, so plan your path carefully.
 
-Build longer chains to trigger Seed Burst, Golden Harvest and Harvest Storm effects. Manage your moves and one-use boosters as you progress through 100 levels. Take on daily challenges and optional bonus missions, earn level stars and achievements, track your crops in the Farm Journal, and review your lifetime statistics.
+Build longer chains to trigger Seed Burst, Golden Harvest and Harvest Storm effects. Manage your moves and one-use boosters as you progress through endless levels grouped into Zimbabwe-inspired worlds. Each level brings a changing primary goal: reach a score target, harvest a named crop, make a long chain, trigger cascades, activate special harvests, or complete successful connections. Take on daily challenges and optional bonus missions, earn level stars and achievements, track your crops in the Farm Journal, and review your lifetime statistics.
 
 Maize Crush is designed for offline play. Your progress and preferences are stored locally on your device, and you can export a save backup to keep or transfer your progress. No account is required. The current version includes no ads or analytics.
 
@@ -32,8 +32,8 @@ Maize Crush is designed for offline play. Your progress and preferences are stor
 
 - Connect three or more matching crops by dragging; diagonal links count.
 - Create special harvest effects with longer chains.
-- Explore 100 levels with goals, moves and star ratings.
-- Complete daily challenges and optional bonus missions.
+- Explore endless levels with changing objectives, moves, world chapters and star ratings.
+- Complete daily challenges and optional bonus missions alongside the primary level objective.
 - Use Fertilizer Boost, Rain Shower, Market Cart, free hints and undo.
 - Earn achievements and follow crop milestones in the Farm Journal.
 - Keep progress locally and export/import a validated save backup.
@@ -44,9 +44,9 @@ Maize Crush is designed for offline play. Your progress and preferences are stor
 
 Capture real screenshots from the final release build on an Android device. Do not use mockups that misrepresent the app.
 
-1. Main crop board showing score, goal, moves and the drag-to-connect instruction.
+1. Main crop board showing the active level objective, score, moves and the drag-to-connect instruction.
 2. A real Seed Burst, Golden Harvest or Harvest Storm state.
-3. The level map with unlocked levels and star ratings.
+3. The themed world journey map with unlocked levels, current level and star ratings.
 4. Daily challenge or a bonus mission in progress.
 5. Farm Journal crop milestones or lifetime statistics.
 6. Settings showing accessibility options and save backup controls.
