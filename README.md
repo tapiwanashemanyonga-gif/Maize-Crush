@@ -33,30 +33,19 @@ The repository is structured as a static site and includes a root `index.html`. 
 
 ## Current milestone
 
-Current features: responsive 8×8 board, touch drag selection, diagonal connections, cascades, Golden Harvest and Harvest Storm specials, offline sound effects, vibration feedback where supported, persistent best score, level map, daily challenges, and local achievements, and a one-use-per-round Fertilizer Boost, a one-use Rain Shower that clears a 3×3 patch, free hints, automatic recovery when a board has no legal chain, lifetime statistics, per-level best scores, persistent sound settings, and ten achievements.
+The game includes a responsive 8×8 crop board, pointer-safe drag selection, diagonal chains, cascades, Seed Burst / Golden Harvest / Harvest Storm specials, three one-use-per-round boosters, free hints, undo, daily challenges and streaks, optional level missions, a 100-level map with stars, 13 achievements, lifetime statistics, Farm Journal milestones, persistent sound/accessibility preferences, validated save backup/restore, and safe board/cascade recovery. Reduced-motion settings are respected. Browser and Android WebView assets are checked for byte-for-byte parity in CI.
 
 ## Android APK
 
-The Android app wraps the same game in a local WebView and bundles the HTML, CSS, and JavaScript in the APK. Gameplay therefore works offline and does not require the GitHub Pages website or a network connection. The Android package ID is `com.maizecrush.zimbabweharvest` (minimum Android version: Android 7.0 / API 24).
+The Android app wraps the game in a local WebView and bundles its HTML, CSS, JavaScript, privacy policy, and supporting assets in the APK. Gameplay works offline and does not require the GitHub Pages website or network access. The Android package ID is `com.maizecrush.zimbabweharvest` (minimum Android version: Android 7.0 / API 24). A custom launcher icon is included.
 
-Every push to `main` runs the Android APK workflow. When the run succeeds, open **Actions → Maize Crush Android APK → Artifacts** and download `maize-crush-android-debug-apk`. The ZIP contains an installable debug APK for testing; it is not a signed Play Store release. A release-signed APK/AAB can be configured separately when preparing for distribution.
+Every push to `main` runs the debug APK build. The release-candidate workflow also builds an unsigned APK and AAB for validation; those unsigned files are **not distributable releases**. The protected signed-release workflow requires a private keystore supplied through GitHub Actions secrets and verifies APK/AAB signatures. See [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md) before publishing.
 
-The Android wrapper uses the bundled local assets and system fonts so the game does not depend on external fonts or web hosting.
+The current [privacy policy](privacy-policy.html) describes local save storage and the current lack of ads, analytics, accounts, and game telemetry. Update the policy and store disclosures before adding any future online or monetized features.
 
-## Next 50-step harvest upgrade batch
+## Browser offline play
 
-1. Add a browser-app manifest. 2. Define standalone display mode. 3. Define portrait orientation. 4. Add app theme metadata. 5. Add an installable app icon. 6. Explain offline play. 7. Add a connection-status label. 8. Add a first-run tutorial. 9. Explain connect-not-swap controls. 10. Explain diagonal matching. 11. Explain Golden Harvest. 12. Explain Harvest Storm. 13. Explain booster costs. 14. Add move undo. 15. Restore the previous board. 16. Restore the previous score. 17. Restore the previous move count. 18. Disable undo during animations. 19. Add native score sharing. 20. Add clipboard fallback. 21. Add a settings dialog. 22. Add a local privacy note. 23. Add high-contrast preference styling. 24. Add larger text styling. 25. Add light-theme styling. 26. Preserve dark theme as default. 27. Add keyboard-friendly buttons. 28. Add deterministic random generator. 29. Add reproducible seeded boards. 30. Add playable board generation. 31. Avoid initial horizontal matches. 32. Avoid initial vertical matches. 33. Guarantee a legal connected chain. 34. Add board validation. 35. Add board cloning. 36. Add crop-count statistics helper. 37. Add board summary helper. 38. Add combo scoring helper. 39. Add level-star helper. 40. Add safe save normalization. 41. Bound imported level data. 42. Sanitize numeric stats. 43. Filter malformed records. 44. Add seeded-board tests. 45. Add dead-board recovery tests. 46. Add validation tests. 47. Add scoring tests. 48. Keep browser and Android assets synchronized. 49. Keep Android gameplay offline. 50. Document local-only progress and privacy.
-
-Browser installation: GitHub Pages serves the web app over HTTPS, where the service worker can cache the local game shell for offline browser play.
-
-## Reliability and daily-streak upgrade batch
-
-1. Undo restores lifetime round statistics. 2. Undo restores per-level best records. 3. Undo restores earned achievements. 4. Undo refreshes the achievement counter. 5. Undo restores daily completion history. 6. Undo clears stale completion state. 7. Restart clears an old undo snapshot. 8. Fresh field clears an old undo snapshot. 9. Persisted sound preference updates the visible button. 10. Sound button restores its accessible pressed state. 11. Vibration preference controls fertilizer feedback. 12. Vibration preference controls rain feedback. 13. Add daily challenge completion history. 14. Keep daily completion dates unique. 15. Sort daily completion history consistently. 16. Calculate consecutive daily challenge streaks. 17. Handle a streak completed through yesterday. 18. Detect broken streaks. 19. Award a seven-day daily-harvest achievement. 20. Display daily streak in lifetime statistics. Automated tests cover the new date-history helpers.
-
-## Market Cart and animation upgrades
-
-1. Add a Market Cart row-and-column power-up. 2. Target the most common crop for the power-up anchor. 3. Clear one full row. 4. Clear one full column. 5. Avoid duplicate center-cell scoring. 6. Charge one move per use. 7. Award points per cleared tile. 8. Count Market Cart uses in booster statistics. 9. Respect the saved vibration preference. 10. Add a dedicated Market Mover achievement. 11. Reset the power-up every round. 12. Restore its used state when undoing a move. 13. Disable the button after use. 14. Add button styling. 15. Update the tutorial. 16. Expand the achievement counter. 17. Animate newly rendered crops into the field. 18. Stagger crop animations for a falling-field feel. 19. Respect reduced-motion settings. 20. Test cross selection, tie-breaking and empty boards. Browser and Android assets remain synchronized.
-
+The browser version registers a service worker on HTTPS hosts such as GitHub Pages. After the game has loaded successfully online once, the service worker caches the game shell and core assets so the game can reopen offline. The service worker checks the network first when available and uses the cached version when offline. A first visit still requires an internet connection.
 
 ### Endless Harvest progression
 

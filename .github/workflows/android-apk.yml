@@ -24,6 +24,8 @@ jobs:
 
       - name: Run gameplay tests
         run: npm test
+      - name: Validate service worker syntax
+        run: node --check sw.js
 
       - name: Set up Java
         uses: actions/setup-java@v4
