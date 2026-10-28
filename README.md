@@ -85,3 +85,8 @@ Open **Farm Journal** to track lifetime crops cleared by type. Counts include or
 ## Board generation reliability
 
 New rounds retry random board generation to avoid pre-existing line matches and ensure at least one valid crop chain. If repeated random attempts fail, the game now falls back to a deterministic 8×8 pattern with a guaranteed matching diagonal instead of modifying a random board in a way that could accidentally create starting line matches. Automated tests check 100 seeded boards for both conditions.
+
+
+## Cascade safety
+
+Cascade chains are capped at ten consecutive cascade resolutions. If another automatic match would exceed the cap, the board is refreshed to a valid playable layout rather than leaving unresolved automatic matches on the board. This prevents an unstable board state while preserving normal scoring and move rules for ordinary play.
