@@ -73,3 +73,35 @@ test("mission state rejects stale levels and clamps imported progress",()=>{asse
 
 test("farm journal normalizes crop counts and rejects malformed values",()=>{assert.deepEqual(game.normalizeCropJournal({maize:12,tomato:-2,groundnut:1.9,banana:"bad",unknown:99}),{maize:12,tomato:0,groundnut:1,banana:0,orange:0,sweetpotato:0});assert.equal(game.totalJournalCrops({maize:3,tomato:4}),7);});
 test("farm journal counts the crop at each cleared board cell",()=>{const board=Array.from({length:8},()=>Array(8).fill(0));board[0][0]=1;board[0][1]=2;const next=game.recordCropJournal({maize:4},board,[{r:0,c:0},{r:0,c:1},{r:0,c:0},{r:-1,c:0},{r:99,c:0}]);assert.equal(next.maize,4);assert.equal(next.tomato,1);assert.equal(next.groundnut,1);assert.equal(game.totalJournalCrops(next),6);});
+
+
+test("match-three swaps are orthogonal only and never mutate invalid moves", () => {
+  const board = Array.from({ length: 8 }, (_, r) => Array.from({ length: 8 }, (_, c) => (r * 2 + c) % game.CROPS.length));
+  const before = game.cloneBoard(board);
+  assert.equal(game.isSwappableAdjacent({ r: 0, c: 0 }, { r: 0, c: 1 }), true);
+  assert.equal(game.isSwappableAdjacent({ r: 0, c: 0 }, { r: 1, c: 0 }), true);
+  assert.equal(game.isSwappableAdjacent({ r: 0, c: 0 }, { r: 1, c: 1 }), false);
+  assert.equal(game.swapCells(board, { r: 0, c: 0 }, { r: 1, c: 1 }), false);
+  assert.deepEqual(board, before);
+});
+
+test("match-three board generation has no starting matches and always has a legal swap", () => {
+  for (let seed = 1; seed <= 250; seed++) {
+    const board = game.makeMatchThreeBoard(game.seededRandom(seed));
+    assert.equal(game.validateBoard(board), true, "seed " + seed + " must create a valid board");
+    assert.equal(game.hasLineMatches(board), false, "seed " + seed + " must not start with matches");
+    assert.equal(game.hasAvailableSwap(board), true, "seed " + seed + " must have a legal match-making swap");
+  }
+});
+
+test("a legal swap creates a match and can be reversed without changing the board", () => {
+  const board = Array.from({ length: 8 }, (_, r) => Array.from({ length: 8 }, (_, c) => (r * 2 + c) % game.CROPS.length));
+  board[0][2] = 0;
+  board[1][1] = 0;
+  assert.equal(game.hasLineMatches(board), false);
+  const before = game.cloneBoard(board);
+  assert.equal(game.swapCells(board, { r: 0, c: 1 }, { r: 1, c: 1 }), true);
+  assert.ok(game.findMatches(board).length >= 3);
+  assert.equal(game.swapCells(board, { r: 0, c: 1 }, { r: 1, c: 1 }), true);
+  assert.deepEqual(board, before);
+});
