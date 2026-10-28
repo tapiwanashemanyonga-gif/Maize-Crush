@@ -91,3 +91,6 @@ test("level completion rating always awards a first star for an objective win",(
 
 
 test("world chapters keep named Zimbabwe-themed regions and endless chapters distinct",()=>{assert.equal(game.worldChapterForLevel(1),"Maize Fields");assert.equal(game.worldChapterForLevel(32),"Limpopo Valley");assert.equal(game.worldChapterForLevel(33),"Endless Harvest 1");assert.equal(game.worldChapterForLevel(36),"Endless Harvest 1");assert.equal(game.worldChapterForLevel(37),"Endless Harvest 2");assert.equal(game.worldChapterForLevel(1000000),"Endless Harvest "+(Math.floor((1000000-33)/4)+1));});
+
+
+test("next level is available only after a completed non-daily primary objective",()=>{assert.equal(game.canAdvanceLevel(false,false,true),false);assert.equal(game.canAdvanceLevel(true,false,false),false);assert.equal(game.canAdvanceLevel(true,true,true),false);assert.equal(game.canAdvanceLevel(true,false,true),true);});
