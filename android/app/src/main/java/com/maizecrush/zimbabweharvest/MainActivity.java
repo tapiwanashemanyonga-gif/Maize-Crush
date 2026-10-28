@@ -19,6 +19,7 @@ import android.webkit.WebViewClient;
 public class MainActivity extends Activity {
     private WebView webView;
     private Object backCallback;
+    private boolean handlingBack;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,11 +95,28 @@ public class MainActivity extends Activity {
     }
 
     private void handleBackNavigation() {
-        if (webView != null && webView.canGoBack()) {
-            webView.goBack();
-        } else {
+        if (handlingBack) return;
+        if (webView == null) {
             finish();
+            return;
         }
+        handlingBack = true;
+        // Close the active in-game dialog before leaving the app. This keeps the
+        // settings, tutorial, level map, and completion panel behaving like native
+        // Android screens when the system Back gesture/button is used.
+        webView.evaluateJavascript(
+            "(function(){var d=document.querySelector('dialog[open]');if(d){if(typeof d.close==='function')d.close();else d.removeAttribute('open');return 'closed'}return 'none'})()",
+            result -> {
+                handlingBack = false;
+                if (isFinishing() || isDestroyed()) return;
+                if ("\"closed\"".equals(result)) return;
+                if (webView != null && webView.canGoBack()) {
+                    webView.goBack();
+                } else {
+                    finish();
+                }
+            }
+        );
     }
 
     @Override
