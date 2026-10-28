@@ -1,0 +1,68 @@
+name: Maize Crush Android Release Candidate
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  release-candidate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Run gameplay regression tests
+        run: npm test
+
+      - name: Verify browser and Android WebView assets are identical
+        run: |
+          cmp game.js android/app/src/main/assets/game.js
+          cmp styles.css android/app/src/main/assets/styles.css
+          cmp index.html android/app/src/main/assets/index.html
+          cmp manifest.webmanifest android/app/src/main/assets/manifest.webmanifest
+          cmp icon.svg android/app/src/main/assets/icon.svg
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Verify Android SDK
+        run: test -d "$ANDROID_HOME/platforms" && echo "Android SDK found"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.9"
+
+      - name: Build Android release variants
+        run: gradle -p android --no-daemon assembleRelease bundleRelease
+
+      - name: Verify release outputs exist
+        run: |
+          test -s android/app/build/outputs/apk/release/app-release-unsigned.apk
+          test -s android/app/build/outputs/bundle/release/app-release.aab
+          ls -lh android/app/build/outputs/apk/release/app-release-unsigned.apk android/app/build/outputs/bundle/release/app-release.aab
+
+      - name: Upload unsigned release candidates
+        uses: actions/upload-artifact@v4
+        with:
+          name: maize-crush-unsigned-release-candidate
+          path: |
+            android/app/build/outputs/apk/release/app-release-unsigned.apk
+            android/app/build/outputs/bundle/release/app-release.aab
+          if-no-files-found: error
+          retention-days: 14
