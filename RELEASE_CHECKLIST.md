@@ -34,7 +34,7 @@ A successful CI build confirms that the code compiles and the automated checks p
 
    ```sh
    keytool -genkeypair -v -keystore maize-crush-release.jks -storetype JKS -keyalg RSA -keysize 2048 -validity 10000 -alias maize-crush
-   base64 maize-crush-release.jks | tr -d '\\n' > maize-crush-release.base64
+   base64 maize-crush-release.jks | tr -d '\n' > maize-crush-release.base64
    ```
 
    Keep the original `.jks` in at least two secure backups. Never commit it to GitHub or send it in chat. **Losing this key can prevent future updates to the same Android package.**
