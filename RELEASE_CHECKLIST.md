@@ -47,6 +47,10 @@ A successful CI build confirms that the code compiles and the automated checks p
 4. Open **Actions → Maize Crush Signed Android Release → Run workflow**. The workflow checks the secrets, runs tests, verifies browser/Android asset parity, builds APK/AAB, and verifies signatures. Download the `maize-crush-signed-release` artifact only after the run succeeds.
 5. Do not create a public release tag until the keystore secrets are configured and the physical-device release checklist above is complete. The workflow builds signed artifacts but does not upload them to Google Play or Uptodown automatically.
 
+## Store listing materials
+
+Use [STORE_LISTING.md](STORE_LISTING.md) for the title, short and full descriptions, feature bullets, support URL, and real-device screenshot plan. Confirm the final signed build matches the copy and review the current requirements in each store's developer console before submission.
+
 ## Privacy policy
 
 The public policy page is `privacy-policy.html`, hosted at `https://tapiwanashemanyonga-gif.github.io/Maize-Crush/privacy-policy.html`. Review it before publishing. If ads, analytics, accounts, or online services are added in a later version, update the policy and store disclosures first.
