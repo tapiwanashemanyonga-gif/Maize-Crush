@@ -11,13 +11,25 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.WindowInsets;
 import android.webkit.WebChromeClient;
+import android.webkit.JavascriptInterface;
+import android.webkit.ValueCallback;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+
 public class MainActivity extends Activity {
+    private static final int FILE_CHOOSER_REQUEST_CODE = 1001;
+    private static final int CREATE_BACKUP_REQUEST_CODE = 1002;
+    private static final int MAX_BACKUP_BYTES = 1024 * 1024;
+
     private WebView webView;
+    private ValueCallback<Uri[]> filePathCallback;
+    private String pendingBackupJson;
     private Object backCallback;
     private boolean handlingBack;
 
@@ -56,7 +68,27 @@ public class MainActivity extends Activity {
                 return true;
             }
         });
-        webView.setWebChromeClient(new WebChromeClient());
+        webView.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public boolean onShowFileChooser(
+                WebView view,
+                ValueCallback<Uri[]> callback,
+                FileChooserParams params
+            ) {
+                if (filePathCallback != null) filePathCallback.onReceiveValue(null);
+                filePathCallback = callback;
+                try {
+                    Intent intent = params.createIntent();
+                    startActivityForResult(intent, FILE_CHOOSER_REQUEST_CODE);
+                    return true;
+                } catch (ActivityNotFoundException | SecurityException error) {
+                    filePathCallback = null;
+                    callback.onReceiveValue(null);
+                    return false;
+                }
+            }
+        });
+        webView.addJavascriptInterface(new BackupBridge(), "MaizeCrushNative");
 
         // Android 15+ enforces edge-to-edge for modern target SDKs. Apply system-bar
         // and display-cutout insets to the WebView so controls remain reachable.
@@ -92,6 +124,70 @@ public class MainActivity extends Activity {
         } else {
             webView.restoreState(savedInstanceState);
         }
+    }
+
+    private final class BackupBridge {
+        @JavascriptInterface
+        public void saveBackup(String json) {
+            if (json == null || json.getBytes(StandardCharsets.UTF_8).length > MAX_BACKUP_BYTES) {
+                runOnUiThread(() -> notifyBackupExportResult(false));
+                return;
+            }
+            runOnUiThread(() -> {
+                pendingBackupJson = json;
+                Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                intent.setType("application/json");
+                intent.putExtra(Intent.EXTRA_TITLE, "maize-crush-backup.json");
+                try {
+                    startActivityForResult(intent, CREATE_BACKUP_REQUEST_CODE);
+                } catch (ActivityNotFoundException | SecurityException error) {
+                    pendingBackupJson = null;
+                    notifyBackupExportResult(false);
+                }
+            });
+        }
+    }
+
+    private void notifyBackupExportResult(boolean success) {
+        if (webView == null || isFinishing() || isDestroyed()) return;
+        webView.evaluateJavascript(
+            "if(typeof window.maizeCrushBackupExportResult==='function'){window.maizeCrushBackupExportResult(" + success + ");}",
+            null
+        );
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == FILE_CHOOSER_REQUEST_CODE) {
+            ValueCallback<Uri[]> callback = filePathCallback;
+            filePathCallback = null;
+            if (callback != null) {
+                callback.onReceiveValue(
+                    resultCode == RESULT_OK ? WebChromeClient.FileChooserParams.parseResult(resultCode, data) : null
+                );
+            }
+            return;
+        }
+        if (requestCode == CREATE_BACKUP_REQUEST_CODE) {
+            String json = pendingBackupJson;
+            pendingBackupJson = null;
+            boolean saved = false;
+            if (resultCode == RESULT_OK && data != null && data.getData() != null && json != null) {
+                try (OutputStream output = getContentResolver().openOutputStream(data.getData())) {
+                    if (output != null) {
+                        output.write(json.getBytes(StandardCharsets.UTF_8));
+                        output.flush();
+                        saved = true;
+                    }
+                } catch (IOException | SecurityException ignored) {
+                    saved = false;
+                }
+            }
+            notifyBackupExportResult(saved);
+            return;
+        }
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     private void handleBackNavigation() {
@@ -132,6 +228,11 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onDestroy() {
+        if (filePathCallback != null) {
+            filePathCallback.onReceiveValue(null);
+            filePathCallback = null;
+        }
+        pendingBackupJson = null;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && backCallback != null) {
             getOnBackInvokedDispatcher().unregisterOnBackInvokedCallback(
                 (android.window.OnBackInvokedCallback) backCallback
