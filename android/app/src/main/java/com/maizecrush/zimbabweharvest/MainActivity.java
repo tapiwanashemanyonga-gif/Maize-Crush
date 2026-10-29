@@ -59,12 +59,28 @@ public class MainActivity extends Activity {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 Uri uri = request.getUrl();
-                if (!"https".equalsIgnoreCase(uri.getScheme())) return false;
-                try {
-                    startActivity(new Intent(Intent.ACTION_VIEW, uri));
-                } catch (ActivityNotFoundException ignored) {
-                    // Keep the game usable even if the device has no browser available.
+                String scheme = uri.getScheme();
+                String url = uri.toString();
+
+                // The JavaScript backup bridge must only be reachable from bundled,
+                // trusted game assets. Never let a remote or arbitrary local page
+                // take over this WebView.
+                if ("file".equalsIgnoreCase(scheme)) {
+                    return !url.startsWith("file:///android_asset/");
                 }
+
+                // Open web links in the external browser instead of navigating the
+                // WebView that exposes the native backup bridge.
+                if ("https".equalsIgnoreCase(scheme) || "http".equalsIgnoreCase(scheme)) {
+                    try {
+                        startActivity(new Intent(Intent.ACTION_VIEW, uri));
+                    } catch (ActivityNotFoundException | SecurityException ignored) {
+                        // Keep the game usable even if the device has no browser available.
+                    }
+                    return true;
+                }
+
+                // Block unsupported schemes (intent:, content:, javascript:, etc.).
                 return true;
             }
         });
