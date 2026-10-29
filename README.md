@@ -27,6 +27,10 @@ npm test
 
 GitHub Actions runs the gameplay-rule tests on pushes and pull requests to `main`.
 
+## Offline web app caching
+
+The browser app registers one authoritative service worker (`sw.js`). It caches the game shell for offline play and retires legacy cache versions when the worker updates. The Android WebView loads the bundled assets directly and does not need a service worker. Browser and Android copies of the game and worker are checked for exact parity in release CI.
+
 ## GitHub Pages
 
 The repository is structured as a static site and includes a root `index.html`. To publish it, open **Settings → Pages**, choose **Deploy from a branch**, select `main` and `/(root)`, then save. GitHub Pages publishes static HTML, CSS, and JavaScript from a repository. See the [GitHub Pages guide](https://docs.github.com/en/pages/getting-started-with-github-pages/creating-a-github-pages-site).
