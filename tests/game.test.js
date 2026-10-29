@@ -1,5 +1,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const path = require("node:path");
 const game = require("../game.js");
 
 test("board is 8 by 8 and starts without horizontal or vertical triples", () => {
@@ -101,3 +103,6 @@ test("endless objective targets keep scaling well beyond the early levels",()=>{
 
 test("saved mission completion is derived from validated progress, not a stale flag",()=>{const forged={level:1,id:game.missionForLevel(1).id,progress:0,complete:true};const normalized=game.normalizeMissionState(forged,1);assert.equal(normalized.progress,0);assert.equal(normalized.complete,false);const target=game.missionForLevel(1).target;assert.equal(game.normalizeMissionState({...forged,progress:target,complete:false},1).complete,true)});
 test("saved level objective completion is derived from validated progress, not a stale flag",()=>{const objective=game.objectiveForLevel(1);const forged={level:1,id:objective.id,progress:0,complete:true};const normalized=game.normalizeObjectiveState(forged,1);assert.equal(normalized.progress,0);assert.equal(normalized.complete,false);assert.equal(game.normalizeObjectiveState({...forged,progress:objective.target,complete:false},1).complete,true)});
+
+
+test("every crop has its own vivid tile palette and the immersive board uses available screen width",()=>{const root=path.join(__dirname,".."),source=fs.readFileSync(path.join(root,"game.js"),"utf8"),css=fs.readFileSync(path.join(root,"styles.css"),"utf8"),androidCss=fs.readFileSync(path.join(root,"android/app/src/main/assets/styles.css"),"utf8");assert.equal(css,androidCss,"browser and Android crop-board styling must stay identical");assert.match(source,/tile\.className="crop-tile crop-"\+crop\.id\+" tile-arrive";/);for(const crop of game.CROPS){assert.ok(css.includes(".crop-tile.crop-"+crop.id+":not(.selected)"),"missing crop palette: "+crop.id)}assert.ok(css.includes(".focus-play .game-board{width:min(100%,94vw);max-width:1000px"),"immersive board should scale from available width");assert.ok(css.includes(".focus-play .game-board{width:100%;max-width:none;gap:2px;padding:3px}"),"small-screen board should remain full-width")});
