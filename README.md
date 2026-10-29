@@ -55,7 +55,7 @@ The browser version registers a service worker on HTTPS hosts such as GitHub Pag
 
 - The level map shows a paginated journey that unlocks as you progress. Procedural levels continue up to JavaScript’s safe-integer limit.
 - The eight themed worlds cover levels 1–32; level 33 onward uses Endless Harvest.
-- Levels 1–20 keep their existing goals and move counts. Later score goals rise by 100 points per level until a 9,000-point ceiling; crop, chain, cascade, special-harvest, and connection targets also have tested ceilings. Moves increase gradually and cap at 38, so endless progression continues without turning objectives into impossible requirements.
+- Move counts remain unchanged by the objective expansion. Score goals rise by 100 points per level until a 9,000-point ceiling; named-crop, chain, cascade, special-harvest, connection, and booster-strategy targets use tested ceilings so later levels remain achievable. Moves increase gradually and cap at 38, so endless progression continues without turning objectives into impossible requirements.
 
 
 ## Save backup and restore
