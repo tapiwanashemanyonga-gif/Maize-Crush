@@ -8,7 +8,7 @@ An original, mobile-friendly HTML5 puzzle game inspired by Zimbabwean crops and 
 - Connect at least three of the same crop in one continuous chain. A four-crop chain triggers a Seed Burst in a nearby 3×3 area; five or six trigger Golden Harvest; seven or more trigger Harvest Storm.
 - Horizontal, vertical, and diagonal connections are allowed.
 - Release to harvest the chain, earn points, and refill the field.
-- Complete the level’s primary objective before your moves run out. Objectives rotate through score targets, collecting a named crop, long chains, cascades, special harvests, and successful connections; target counts scale gradually as endless levels progress. Score-based star ratings remain as optional mastery rewards.
+- Complete the level’s primary objective before your moves run out. Procedurally generated levels continue up to JavaScript’s safe-integer limit, with objectives rotating through score targets, collecting a named crop, long chains, cascades, special harvests, and successful connections. Targets scale with progression but use tested difficulty ceilings so endless play does not turn into mathematically impossible score or connection requirements. Score-based star ratings remain as optional mastery rewards.
 - Progress, best score, achievements, daily challenge completion, and each level’s best star rating are saved locally on the device. Earn one, two, or three stars by reaching the goal, 125% of the goal, or 175% of the goal. Replay a level to improve its saved rating. Stable round checkpoints also let you resume your current board, score, moves, and once-per-round boosters after closing or refreshing the game. Invalid or out-of-date checkpoints are safely discarded. Daily challenge goals change by date and work offline.
 
 Crops: maize, tomatoes, groundnuts, bananas, oranges, and sweet potatoes.
@@ -49,9 +49,9 @@ The browser version registers a service worker on HTTPS hosts such as GitHub Pag
 
 ### Endless Harvest progression
 
-- The level map exposes all 100 levels, with future levels locked until progression unlocks them.
+- The level map shows a paginated journey that unlocks as you progress. Procedural levels continue up to JavaScript’s safe-integer limit.
 - The eight themed worlds cover levels 1–32; level 33 onward uses Endless Harvest.
-- Levels 1–20 keep their existing goals and move counts. Later goals increase by 350 points per level, while move counts increase gradually and cap at 38 to keep long-term progression playable.
+- Levels 1–20 keep their existing goals and move counts. Later score goals rise by 100 points per level until a 9,000-point ceiling; crop, chain, cascade, special-harvest, and connection targets also have tested ceilings. Moves increase gradually and cap at 38, so endless progression continues without turning objectives into impossible requirements.
 
 
 ## Save backup and restore
