@@ -72,3 +72,26 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
 /* Draw a luminous crop-to-crop trail so the connection mechanic reads instantly. */
 .game-board{position:relative;isolation:isolate}.connection-trail{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;z-index:1}.connection-line{fill:none;stroke:var(--lime);stroke-width:5;stroke-linecap:round;stroke-linejoin:round;opacity:.82;filter:drop-shadow(0 0 4px #9de36c99)}.connection-endpoint{r:5;fill:var(--gold);stroke:#fff6df;stroke-width:2;filter:drop-shadow(0 0 5px #f5c75eaa);opacity:0;pointer-events:none}.crop-tile{z-index:2}.crop-tile.selected{z-index:3}.crop-tile.hinted{z-index:3;box-shadow:0 0 0 2px #f5c75e55,0 0 16px #f5c75e55}
 @media(prefers-reduced-motion:reduce){.connection-line,.connection-endpoint{filter:none}.crop-tile.hinted{animation:none!important}}
+
+
+/* Immersive harvest layout: give the actual puzzle priority over the marketing header. */
+@media(min-width:760px){
+  .app-shell{width:min(calc(100% - 40px),1240px)}
+  .hero{min-height:160px;padding-top:16px;padding-bottom:12px}
+  .game-panel{width:100%;max-width:none;margin:0 auto;padding:clamp(22px,3vw,38px)}
+  .game-board{width:min(100%,900px);max-width:900px;gap:clamp(4px,.7vw,8px);padding:clamp(7px,1vw,12px);border-radius:24px}
+  .crop-tile{font-size:clamp(34px,5vw,62px);border-radius:clamp(8px,1vw,14px)}
+  .crop-guide,footer{max-width:1180px}
+  .board-heading,.board-help,.game-message{max-width:900px;margin-left:auto;margin-right:auto}
+}
+@media(min-width:1100px){
+  .game-board{max-width:960px;width:min(100%,960px)}
+  .crop-tile{font-size:clamp(48px,4.6vw,68px)}
+}
+@media(max-width:600px){
+  .app-shell{width:calc(100% - 6px)}
+  .game-panel{padding:12px 5px}
+  .game-board{width:100%;max-width:none;gap:2px;padding:3px}
+  .crop-tile{font-size:clamp(23px,7.8vw,39px);border-radius:5px}
+  .board-heading,.board-help,.game-message{margin-left:2px;margin-right:2px}
+}
