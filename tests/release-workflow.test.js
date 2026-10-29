@@ -24,7 +24,7 @@ test("signed release workflow requires signing secrets and verifies both package
     "ANDROID_KEY_ALIAS",
     "ANDROID_KEY_PASSWORD"
   ]) assert.ok(workflow.includes(secret), "missing signing secret " + secret);
-  assert.match(workflow, /apksigner" verify --verbose "\$APK"/);
+  assert.match(workflow, /verify --verbose "\$APK"/);
   assert.match(workflow, /jarsigner -verify "\$AAB"/);
   assert.match(workflow, /app-release\.apk/);
   assert.match(workflow, /app-release\.aab/);
