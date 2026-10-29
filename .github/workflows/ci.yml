@@ -26,5 +26,13 @@ jobs:
         run: |
           node -e "const m=JSON.parse(require('fs').readFileSync('manifest.webmanifest','utf8')); if(m.orientation !== 'any') throw new Error('PWA must support portrait and landscape orientation'); if(!m.start_url || !m.scope || !Array.isArray(m.icons) || m.icons.length === 0) throw new Error('Required PWA manifest fields are missing')"
 
+      - name: Verify game registers the existing service worker
+        run: |
+          grep -q 'navigator.serviceWorker.register("./sw.js")' game.js
+          if grep -q 'navigator.serviceWorker.register("./service-worker.js")' game.js; then
+            echo "Game references a service worker file that is not shipped."
+            exit 1
+          fi
+
       - name: Validate service worker syntax
         run: node --check sw.js
