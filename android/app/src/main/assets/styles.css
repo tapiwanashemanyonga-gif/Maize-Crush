@@ -72,3 +72,24 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
 /* Draw a luminous crop-to-crop trail so the connection mechanic reads instantly. */
 .game-board{position:relative;isolation:isolate}.connection-trail{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;z-index:1}.connection-line{fill:none;stroke:var(--lime);stroke-width:5;stroke-linecap:round;stroke-linejoin:round;opacity:.82;filter:drop-shadow(0 0 4px #9de36c99)}.connection-endpoint{r:5;fill:var(--gold);stroke:#fff6df;stroke-width:2;filter:drop-shadow(0 0 5px #f5c75eaa);opacity:0;pointer-events:none}.crop-tile{z-index:2}.crop-tile.selected{z-index:3}.crop-tile.hinted{z-index:3;box-shadow:0 0 0 2px #f5c75e55,0 0 16px #f5c75e55}
 @media(prefers-reduced-motion:reduce){.connection-line,.connection-endpoint{filter:none}.crop-tile.hinted{animation:none!important}}
+
+
+/* Optional immersive play mode: keep the crop-connecting board at the centre of the experience. */
+.focus-play .app-shell{width:min(100% - 12px,1180px);padding-top:6px;padding-bottom:8px}
+.focus-play .hero,.focus-play .crop-guide,.focus-play footer{display:none!important}
+.focus-play .topbar{padding:3px 2px 8px}
+.focus-play .brand-mark{width:36px;height:36px}
+.focus-play .game-panel{width:100%;max-width:none;margin:0 auto;padding:clamp(8px,1.6vw,20px);border-radius:18px}
+.focus-play .stats{margin:10px 0 8px}
+.focus-play .objective-card,.focus-play .mission-card{margin:7px 0;padding:9px 12px}
+.focus-play .board-heading{margin:10px 1px 7px}
+.focus-play .game-board{width:min(100%,calc(100dvh - 300px));max-width:900px;gap:clamp(2px,.55vw,7px);padding:clamp(3px,.7vw,9px)}
+.focus-play .crop-tile{font-size:clamp(22px,5vw,52px);border-radius:clamp(4px,.8vw,12px)}
+.focus-play .board-help{margin:7px 0;font-size:11px}
+.focus-play .game-message{min-height:34px;padding:6px}
+.focus-play .action-row,.focus-play .meta-actions{gap:6px;margin-top:7px}
+.focus-play .action-row button,.focus-play .meta-actions button{min-height:36px;padding:8px 11px}
+.focus-play .focus-play-toggle{border-color:#9de36c66;color:var(--lime)}
+@media(max-width:600px){.focus-play .app-shell{width:calc(100% - 6px);padding-top:3px}.focus-play .topbar{padding-bottom:5px}.focus-play .brand small{display:none}.focus-play .brand strong{font-size:12px}.focus-play .game-panel{padding:8px 5px;border-radius:13px}.focus-play .level-row h2{font-size:14px}.focus-play .level-actions{gap:3px}.focus-play .quiet-button{padding:7px 8px;font-size:10px}.focus-play .stats{gap:4px;margin:8px 0 5px}.focus-play .stat{padding:6px 4px}.focus-play .stat>span{font-size:7px}.focus-play .stat strong{font-size:clamp(17px,4.7vw,23px)}.focus-play .score-extra{padding:4px 1px}.focus-play .objective-card,.focus-play .mission-card{padding:7px;margin:5px 0}.focus-play .objective-copy strong{font-size:12px}.focus-play .objective-copy>span:last-child{font-size:9px}.focus-play .mission-copy span{font-size:9px}.focus-play .board-heading{margin:7px 1px 4px}.focus-play .game-board{width:min(100%,calc(100dvh - 285px));gap:2px;padding:3px}.focus-play .crop-tile{font-size:clamp(19px,7.1vw,35px);border-radius:4px}.focus-play .board-help{font-size:8px;margin:5px 0}.focus-play .game-message{font-size:10px;min-height:30px}.focus-play .action-row,.focus-play .meta-actions{gap:4px;margin-top:5px}.focus-play .action-row button,.focus-play .meta-actions button{min-height:32px;padding:6px 8px;font-size:10px}}
+@media(max-height:620px) and (orientation:landscape){.focus-play .app-shell{width:100%;padding:2px 6px}.focus-play .topbar{display:none}.focus-play .game-panel{display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,34%);grid-template-rows:auto auto auto auto auto;gap:4px 12px;align-items:start}.focus-play .level-row{grid-column:1/-1}.focus-play .stats,.focus-play .score-extra,.focus-play .objective-card,.focus-play .mission-card,.focus-play .progress-track{grid-column:2; margin:2px 0}.focus-play .board-heading,.focus-play .game-board,.focus-play .board-help{grid-column:1;grid-row:auto}.focus-play .game-board{grid-row:2 / span 3;width:min(100%,calc(100dvh - 95px));max-width:none}.focus-play .board-heading{margin:0}.focus-play .board-help{margin:0;font-size:9px}.focus-play .game-message{grid-column:2}.focus-play .action-row,.focus-play .meta-actions{grid-column:2;justify-content:flex-start}.focus-play .stats{margin-top:0}.focus-play .stat strong{font-size:20px}}
+@media(prefers-reduced-motion:reduce){.focus-play *{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
