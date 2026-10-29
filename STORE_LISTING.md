@@ -24,7 +24,7 @@ This is 67 characters, within Uptodown's 70-character short-description limit.
 
 Harvest your way through a crop-connection puzzle inspired by Zimbabwe. Drag through matching maize, tomatoes, groundnuts, bananas, oranges and sweet potatoes to create chains—diagonal connections count, so plan your path carefully.
 
-Build longer chains to trigger Seed Burst, Golden Harvest and Harvest Storm effects. Manage your moves and one-use boosters as you progress through endless levels grouped into Zimbabwe-inspired worlds. Each level brings a changing primary goal: reach a score target, harvest a named crop, make a long chain, trigger cascades, activate special harvests, or complete successful connections. Take on daily challenges and optional bonus missions, earn level stars and achievements, track your crops in the Farm Journal, and review your lifetime statistics.
+Build longer chains to trigger Seed Burst, Golden Harvest and Harvest Storm effects. Manage your moves and one-use boosters as you progress through endless levels grouped into Zimbabwe-inspired worlds. Each level brings a changing primary goal: reach a score target, harvest a named crop, make a long chain, trigger cascades, activate special harvests, complete successful connections, or use a farm booster strategically. Take on daily challenges and optional bonus missions, earn level stars and achievements, track your crops in the Farm Journal, and review your lifetime statistics.
 
 Maize Crush is designed for offline play. Your progress and preferences are stored locally on your device, and you can export a save backup to keep or transfer your progress. No account is required. The current version includes no ads or analytics.
 
@@ -32,9 +32,9 @@ Maize Crush is designed for offline play. Your progress and preferences are stor
 
 - Connect three or more matching crops by dragging; diagonal links count.
 - Create special harvest effects with longer chains.
-- Explore endless levels with changing objectives, moves, world chapters and star ratings.
+- Explore endless levels with seven rotating primary objectives, move limits, Zimbabwe-inspired world chapters and star ratings.
 - Complete daily challenges and optional bonus missions alongside the primary level objective.
-- Use Fertilizer Boost, Rain Shower, Market Cart, free hints and undo.
+- Use Fertilizer Boost, Rain Shower and Market Cart to clear crops strategically; free hints and undo help you plan.
 - Earn achievements and follow crop milestones in the Farm Journal.
 - Keep progress locally and export/import a validated save backup.
 - Choose sound, vibration, high-contrast, larger-text and light-theme settings.
