@@ -42,6 +42,14 @@ jobs:
           distribution: temurin
           java-version: "17"
 
+      - name: Verify required Android manifest capabilities
+        run: |
+          grep -q 'android.permission.VIBRATE' android/app/src/main/AndroidManifest.xml
+          if grep -q 'android.permission.INTERNET' android/app/src/main/AndroidManifest.xml; then
+            echo "Unexpected internet permission: the current game is offline-only."
+            exit 1
+          fi
+
       - name: Verify Android SDK
         run: test -d "$ANDROID_HOME/platforms" && echo "Android SDK found"
 
