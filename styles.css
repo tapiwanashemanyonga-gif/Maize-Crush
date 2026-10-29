@@ -98,6 +98,9 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
 
 
 /* Optional immersive play mode: keep the crop-connecting board at the centre of the experience. */
+/* On smaller devices the puzzle is the main experience; the player can exit focus mode at any time. */
+@media(max-width:900px){.focus-play .game-panel{min-height:calc(100dvh - 54px)}.focus-play .game-board{flex:none}.focus-play .game-message{margin-top:5px}}
+
 .focus-play .app-shell{width:min(100% - 12px,1180px);padding-top:6px;padding-bottom:8px}
 .focus-play .hero,.focus-play .crop-guide,.focus-play footer{display:none!important}
 .focus-play .topbar{padding:3px 2px 8px}
