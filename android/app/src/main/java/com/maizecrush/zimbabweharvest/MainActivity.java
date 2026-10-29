@@ -221,6 +221,26 @@ public class MainActivity extends Activity {
     }
 
     @Override
+    protected void onPause() {
+        // Stop WebView rendering and JavaScript timers while the game is backgrounded.
+        // This reduces unnecessary battery use without clearing local progress.
+        if (webView != null) {
+            webView.onPause();
+            webView.pauseTimers();
+        }
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (webView != null) {
+            webView.onResume();
+            webView.resumeTimers();
+        }
+    }
+
+    @Override
     protected void onSaveInstanceState(Bundle outState) {
         if (webView != null) webView.saveState(outState);
         super.onSaveInstanceState(outState);
