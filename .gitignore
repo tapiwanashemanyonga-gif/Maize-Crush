@@ -1,0 +1,26 @@
+# Android and Gradle generated files
+.gradle/
+**/.gradle/
+**/build/
+local.properties
+android/local.properties
+
+# Signing material and secrets — never commit these
+*.jks
+*.keystore
+*.p12
+*.pfx
+*.key
+*.pem
+.env
+.env.*
+
+# Generated Android packages
+*.apk
+*.aab
+
+# IDE and operating-system files
+.idea/
+*.iml
+.DS_Store
+Thumbs.db
