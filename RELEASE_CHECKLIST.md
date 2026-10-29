@@ -48,6 +48,18 @@ A successful CI build confirms that the code compiles and the automated checks p
 4. Open **Actions → Maize Crush Signed Android Release → Run workflow**. The workflow checks the secrets, runs tests, verifies browser/Android asset parity, builds APK/AAB, and verifies signatures. Download the `maize-crush-signed-release` artifact only after the run succeeds.
 5. Do not create a public release tag until the keystore secrets are configured and the physical-device release checklist above is complete. The workflow builds signed artifacts but does not upload them to Google Play or Uptodown automatically.
 
+## Automated GitHub release publication
+
+The **Maize Crush Signed Android Release** workflow now publishes the signed APK and AAB to a GitHub Release when a version tag beginning with `v` is pushed. The workflow requires the four signing secrets above and runs tests, asset-parity checks, signature verification, and release upload.
+
+1. Complete the physical-device checklist and confirm the current `main` commit is green in all workflows.
+2. Increase `versionCode` and set `versionName` in `android/app/build.gradle` before a new app version is tagged.
+3. Ensure the four signing secrets are configured before creating the tag.
+4. Create/publish a version tag such as `v1.0.0` for the validated commit. The workflow creates or updates the matching GitHub Release and attaches `app-release.apk` and `app-release.aab`.
+5. Download the attached APK and test that exact file on a physical device before sharing it. The AAB is the Google Play upload package; store submission and review still happen separately.
+
+A manual **Run workflow** produces a signed artifact for testing and does not publish a release unless the run is triggered by a `v*` tag. If signing secrets are missing, the workflow fails closed and must not be bypassed by distributing unsigned release candidates.
+
 ## Store listing materials
 
 Use [STORE_LISTING.md](STORE_LISTING.md) for the title, short and full descriptions, feature bullets, support URL, and real-device screenshot plan. Confirm the final signed build matches the copy and review the current requirements in each store's developer console before submission.
