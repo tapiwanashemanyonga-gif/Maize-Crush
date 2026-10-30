@@ -37,7 +37,7 @@ The repository is structured as a static site and includes a root `index.html`. 
 
 ## Current milestone
 
-The game includes a responsive 8×8 crop board, pointer-safe drag selection, diagonal chains, cascades, Seed Burst / Golden Harvest / Harvest Storm specials, three one-use-per-round boosters, free hints, undo, daily challenges and streaks, optional bonus missions, primary objectives that rotate through seven goal types, an endless paginated, world-by-world journey map with level unlocks and stars, 13 achievements, lifetime statistics, Farm Journal milestones, persistent sound/accessibility preferences, validated save backup/restore, and safe board/cascade recovery. Reduced-motion settings are respected. Browser and Android WebView assets are checked for byte-for-byte parity in CI.
+The game includes a responsive, enlarged 8×8 crop board for tablets and desktop, pointer-safe drag selection, diagonal chains, cascades, Seed Burst / Golden Harvest / Harvest Storm specials, three one-use-per-round boosters, free hints, undo, daily challenges and streaks, optional bonus missions, primary objectives that rotate through seven goal types, an endless paginated, world-by-world journey map with level unlocks and stars, 13 achievements, lifetime statistics, Farm Journal milestones, persistent sound/accessibility preferences, validated save backup/restore, and safe board/cascade recovery. Reduced-motion settings are respected. Browser and Android WebView assets are checked for byte-for-byte parity in CI.
 
 ## Android APK
 
