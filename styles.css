@@ -155,3 +155,22 @@ body[data-world-theme] .crop-tile.selected{border-color:var(--world-accent);box-
 /* Give the default game the scale of a full mobile puzzle, not a compact demo. */
 @media(min-width:760px){.game-panel{max-width:1040px}.game-board{width:min(100%,92vw,900px);max-width:900px}.crop-tile{font-size:clamp(22px,4.8vw,50px)}}
 @media(max-width:759px){.game-board{width:min(100%,92vw,900px);max-width:900px}.crop-tile{font-size:clamp(19px,5.2vw,40px)}}
+
+
+/* Immersive board sizing: let the crop field dominate the screen on phones and tablets. */
+@media(min-width:760px) and (min-height:561px){
+  .game-panel{max-width:1160px;padding:clamp(16px,2.5vw,30px)}
+  .game-board{width:min(100%,96vw,1080px);max-width:1080px;gap:clamp(4px,.75vw,9px);padding:clamp(7px,1.1vw,14px)}
+  .crop-tile{font-size:clamp(28px,5.8vw,68px);border-radius:clamp(8px,1.2vw,16px)}
+  .focus-play .app-shell{width:calc(100% - 10px)}
+  .focus-play .game-board{width:min(100%,98vw,calc(100dvh - 250px));max-width:1080px}
+  .focus-play .crop-tile{font-size:clamp(32px,6.8vw,78px)}
+}
+@media(max-width:759px) and (min-height:561px){
+  .game-panel{padding:12px 6px}
+  .game-board{width:min(100%,96vw);max-width:900px;gap:clamp(3px,.8vw,6px);padding:5px}
+  .crop-tile{font-size:clamp(22px,6.1vw,46px);border-radius:7px}
+  .focus-play .app-shell{width:calc(100% - 4px)}
+  .focus-play .game-board{width:min(100%,98vw,calc(100dvh - 245px));max-width:900px;gap:clamp(3px,.8vw,7px);padding:5px}
+  .focus-play .crop-tile{font-size:clamp(26px,7vw,54px);border-radius:8px}
+}
