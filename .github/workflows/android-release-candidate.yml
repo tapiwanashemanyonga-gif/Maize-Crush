@@ -85,7 +85,7 @@ jobs:
           AAPT="$(find "$ANDROID_HOME/build-tools" -type f -name aapt | sort -V | tail -n 1)"
           test -n "$AAPT"
           BADGING="$("$AAPT" dump badging "$APK")"
-          printf '%s\\n' "$BADGING"
+          printf '%s\n' "$BADGING"
           grep -F "package: name='com.maizecrush.zimbabweharvest' versionCode='1' versionName='1.0.0'" <<< "$BADGING"
           grep -F "sdkVersion:'24'" <<< "$BADGING"
           grep -F "targetSdkVersion:'36'" <<< "$BADGING"
