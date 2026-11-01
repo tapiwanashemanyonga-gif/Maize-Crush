@@ -77,6 +77,20 @@ jobs:
           test -s android/app/build/outputs/bundle/release/app-release.aab
           ls -lh android/app/build/outputs/apk/release/app-release-unsigned.apk android/app/build/outputs/bundle/release/app-release.aab
 
+      - name: Verify Android APK package metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="android/app/build/outputs/apk/release/app-release-unsigned.apk"
+          AAPT="$(find "$ANDROID_HOME/build-tools" -type f -name aapt | sort -V | tail -n 1)"
+          test -n "$AAPT"
+          BADGING="$("$AAPT" dump badging "$APK")"
+          printf '%s\\n' "$BADGING"
+          grep -F "package: name='com.maizecrush.zimbabweharvest' versionCode='1' versionName='1.0.0'" <<< "$BADGING"
+          grep -F "sdkVersion:'24'" <<< "$BADGING"
+          grep -F "targetSdkVersion:'36'" <<< "$BADGING"
+          grep -F "application-label:'Maize Crush'" <<< "$BADGING"
+
       - name: Upload unsigned release candidates
         uses: actions/upload-artifact@v4
         with:
