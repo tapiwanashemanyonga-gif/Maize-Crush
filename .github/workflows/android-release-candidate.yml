@@ -101,6 +101,27 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+
+      - name: Launch signed release APK on Android emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_2
+          disable-animations: true
+          script: |
+            set -euo pipefail
+            APK="android/app/build/outputs/apk/release/app-release.apk"
+            adb install -r "$APK"
+            adb logcat -c
+            adb shell am start -W -n com.maizecrush.zimbabweharvest/.MainActivity
+            sleep 8
+            test -n "$(adb shell pidof com.maizecrush.zimbabweharvest)"
+            if adb logcat -d -t 1000 | grep -E 'FATAL EXCEPTION.*com\.maizecrush\.zimbabweharvest'; then
+              echo "Maize Crush crashed during emulator startup."
+              exit 1
+            fi
       - name: Smoke-test signing with a temporary CI key
         shell: bash
         run: |
