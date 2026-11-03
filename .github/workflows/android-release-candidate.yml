@@ -140,8 +140,7 @@ jobs:
           disable-animations: true
           script: |
             set -euo pipefail
-            APK="android/app/build/outputs/apk/release/app-release.apk"
-            adb install -r "$APK"
+            adb install -r android/app/build/outputs/apk/release/app-release.apk
             adb logcat -c
             adb shell am start -W -n com.maizecrush.zimbabweharvest/.MainActivity
             sleep 8
