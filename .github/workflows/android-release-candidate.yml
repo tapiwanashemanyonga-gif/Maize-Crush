@@ -151,7 +151,4 @@ jobs:
             adb shell am start -W -n com.maizecrush.zimbabweharvest/.MainActivity
             sleep 8
             test -n "$(adb shell pidof com.maizecrush.zimbabweharvest)"
-            if adb logcat -d -t 1000 | grep -E 'FATAL EXCEPTION.*com\.maizecrush\.zimbabweharvest'; then
-              echo "Maize Crush crashed during emulator startup."
-              exit 1
-            fi
+            if adb logcat -d -t 1000 | grep -E 'FATAL EXCEPTION.*com\.maizecrush\.zimbabweharvest'; then echo "Maize Crush crashed during emulator startup."; exit 1; fi
