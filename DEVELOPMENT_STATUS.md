@@ -5,26 +5,33 @@ Last reviewed: 2026-11-03
 ## Current state
 
 - Default branch: `main`
-- Active release-smoke-test branch: `test/android-emulator-launch-smoke`
+- Active Android release smoke-test branch: `test/android-emulator-launch-smoke`
 - Latest verified default-branch commit: `580aff574436c921d7dcbd247fc56cf46cc5cb69`
-- Current Android identity: `com.maizecrush.zimbabweharvest`, version `1.0.0`, min SDK 24, target SDK 36.
-- Functional work in progress: make the Android 15 emulator smoke test use Linux KVM acceleration correctly and enforce that setup with a regression test.
+- Latest functional QA commit on this branch: `0f970e70299883cbe82407302a810897947fb69d`
+- Pull request: [#67 — Android emulator launch smoke test](https://github.com/tapiwanashemanyonga-gif/Maize-Crush/pull/67) (open; not merged).
+- Android identity: `com.maizecrush.zimbabweharvest`, version `1.0.0`, min SDK 24, target SDK 36.
 
-## Verified CI evidence
+## Completed and verified
 
-- Default-branch gameplay checks: passed on `580aff574436c921d7dcbd247fc56cf46cc5cb69` (run 41639831486).
-- Default-branch Android debug APK: passed on the same commit (run 41639831662).
-- Default-branch unsigned Android release candidate: passed on the same commit (run 41639831469); APK and AAB were uploaded as an unsigned validation artifact.
-- The previous PR emulator smoke test built and signed the app, but the emulator did not boot because the Linux runner user lacked permission to access `/dev/kvm`. The app was not installed or launched in that attempt. This was an emulator-host setup failure, not evidence of an app crash.
+- Core connect gameplay remains path-based, not tile-swapping: 3+ matching crops, adjacent cells, diagonals allowed.
+- Existing endless progression, eight rotating primary objective types, local progress/checkpoints, boosters, accessibility settings, and phone/tablet responsive board remain in place.
+- Linux emulator CI now grants the `/dev/kvm` device permissions before launching the Android 15 emulator.
+- Emulator crash guard runs as one shell command, avoiding the previous shell parser error.
+- Latest PR-branch gameplay regression suite: 89 tests passed, 0 failed (run 41642257982).
+- Latest PR-branch Android debug APK build: passed (run 41642258029).
+- Latest PR-branch Android release candidate: passed (run 41642258001). It built the unsigned APK and AAB, verified package metadata, smoke-tested temporary signing, booted the Android 15 emulator, installed the signed test APK, launched `MainActivity`, confirmed the app process remained alive, and completed the fatal-exception check without a match.
+- Latest default-branch gameplay checks, debug APK, and unsigned release-candidate workflows all passed on `580aff574436c921d7dcbd247fc56cf46cc5cb69` (runs 41639831486, 41639831662, and 41639831469 respectively).
+- The default-branch hourly Android check schedule remains configured in `.github/workflows/android-apk.yml`.
 
-## Remaining release work
+## Release work still required
 
-- Re-run the Android 15 emulator smoke test after applying KVM permissions and verify the signed APK launches without a fatal app exception.
-- Perform physical-device checks on Android 7+, recent Android, small phones, and tablets; emulator CI does not replace these.
-- Review gameplay, save/restore, accessibility, performance, app identity, store disclosures, and the release checklist.
-- Configure the user's private signing credentials only when explicitly authorized; never commit a keystore or signing secrets.
-- Do not distribute the unsigned CI release candidate.
+- Physical-device testing on Android 7+, current Android versions, small phones, and tablets; emulator launch smoke testing is not a substitute.
+- Hands-on validation of drag/diagonal input, level goals, progression beyond level 100, backup/restore, rotation, pause/resume, sound/vibration, and accessibility on real devices.
+- Review performance on lower-memory and slower Android hardware.
+- Confirm app identity, launcher icon, screenshots, store disclosures, privacy policy, and current store requirements.
+- Configure the user's own private release keystore only when explicitly authorized. Never commit signing credentials or a keystore.
+- Do not distribute the unsigned CI release candidate or publish without explicit authorization.
 
 ## Next milestone
 
-Verify the KVM-enabled Android emulator launch on the updated PR branch. If it passes, continue with device-size and gameplay release QA.
+Expand automated Android runtime QA beyond first launch: exercise the board screen on a compact phone and a tablet-sized emulator, verify orientation/resizing and app resume, then continue physical-device release QA.
