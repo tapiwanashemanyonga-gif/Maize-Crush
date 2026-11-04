@@ -97,6 +97,26 @@ class AndroidLayoutSmokeTests(unittest.TestCase):
         )
         self.assertEqual(validate_visible_geometry(cells, 400, 500), 64)
 
+    def test_geometry_validation_tolerates_one_isolated_accessibility_bounds_outlier(self):
+        _, cells, _ = parse_hierarchy(fixture_xml())
+        first = cells[(1, 1)]
+        cells[(1, 1)] = smoke.Cell(
+            first.crop, (first.bounds[0], first.bounds[1],
+                         first.bounds[2], first.bounds[1] + 15)
+        )
+        self.assertEqual(validate_visible_geometry(cells, 400, 500), 64)
+
+    def test_geometry_validation_rejects_multiple_non_square_accessibility_bounds(self):
+        _, cells, _ = parse_hierarchy(fixture_xml())
+        for key in [(1, 1), (1, 2), (1, 3), (1, 4)]:
+            cell = cells[key]
+            cells[key] = smoke.Cell(
+                cell.crop, (cell.bounds[0], cell.bounds[1],
+                            cell.bounds[2], cell.bounds[1] + 15)
+            )
+        with self.assertRaisesRegex(AssertionError, "non-square accessibility bounds"):
+            validate_visible_geometry(cells, 400, 500)
+
     def test_moves_counter_is_read_from_the_moves_left_stat(self):
         xml = (
             '<hierarchy><node text="MOVES LEFT">'
