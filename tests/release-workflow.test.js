@@ -29,3 +29,18 @@ test("signed release workflow requires signing secrets and verifies both package
   assert.match(workflow, /app-release\.apk/);
   assert.match(workflow, /app-release\.aab/);
 });
+
+test("phone and tablet layout smoke workflow enables KVM before emulator startup", () => {
+  const layoutWorkflow = fs.readFileSync(
+    path.resolve(__dirname, "..", ".github", "workflows", "android-layout-smoke.yml"),
+    "utf8"
+  );
+  assert.ok(layoutWorkflow.includes("profile: pixel_2"), "compact-phone emulator profile is required");
+  assert.ok(layoutWorkflow.includes("profile: pixel_tablet"), "tablet emulator profile is required");
+  assert.ok(layoutWorkflow.includes('KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"'));
+  assert.ok(layoutWorkflow.includes("sudo udevadm trigger --name-match=kvm"));
+  assert.ok(
+    layoutWorkflow.indexOf("Enable KVM group perms") < layoutWorkflow.indexOf("Launch, rotate, background and resume"),
+    "KVM permissions must be applied before starting either emulator"
+  );
+});
