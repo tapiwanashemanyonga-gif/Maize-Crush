@@ -8,6 +8,7 @@ from scripts import android_layout_smoke as smoke
 from scripts.android_layout_smoke import (
     button_center,
     dismiss_tutorial,
+    fully_visible_cells,
     dump_hierarchy,
     find_diagonal_chain,
     find_mismatch_pair,
@@ -73,6 +74,26 @@ class AndroidLayoutSmokeTests(unittest.TestCase):
 
     def test_visible_grid_geometry_accepts_square_ordered_tiles(self):
         _, cells, _ = parse_hierarchy(fixture_xml())
+        self.assertEqual(validate_visible_geometry(cells, 400, 500), 64)
+
+    def test_fully_visible_cells_excludes_viewport_clipped_accessibility_bounds(self):
+        _, cells, _ = parse_hierarchy(fixture_xml())
+        clipped = cells[(1, 1)]
+        cells[(1, 1)] = smoke.Cell(
+            clipped.crop, (clipped.bounds[0], clipped.bounds[1],
+                           clipped.bounds[2], 500)
+        )
+        full = fully_visible_cells(cells, 400, 500)
+        self.assertNotIn((1, 1), full)
+        self.assertEqual(len(full), 63)
+
+    def test_geometry_validation_ignores_only_partially_visible_tile_bounds(self):
+        _, cells, _ = parse_hierarchy(fixture_xml())
+        clipped = cells[(1, 1)]
+        cells[(1, 1)] = smoke.Cell(
+            clipped.crop, (clipped.bounds[0], clipped.bounds[1],
+                           clipped.bounds[2], 500)
+        )
         self.assertEqual(validate_visible_geometry(cells, 400, 500), 64)
 
     def test_moves_counter_is_read_from_the_moves_left_stat(self):
