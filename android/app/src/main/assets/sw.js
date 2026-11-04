@@ -1,11 +1,12 @@
 "use strict";
 
-const CACHE_NAME = "maize-crush-shell-v2";
+const CACHE_NAME = "maize-crush-shell-v3";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./styles.css",
   "./game.js",
+  "./crop-art.svg",
   "./manifest.webmanifest",
   "./icon.svg",
   "./privacy-policy.html"
