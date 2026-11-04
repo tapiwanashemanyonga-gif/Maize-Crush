@@ -66,6 +66,8 @@ jobs:
             device_class: tablet
     name: Runtime smoke (${{ matrix.device_class }})
     steps:
+      - name: Check out repository and UI test helper
+        uses: actions/checkout@v4
       - name: Download debug APK
         uses: actions/download-artifact@v4
         with:
