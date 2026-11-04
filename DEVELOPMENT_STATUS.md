@@ -16,14 +16,15 @@ Last reviewed: 2026-11-04
 - Core connect gameplay remains path-based, not tile-swapping: 3+ matching crops, adjacent cells, diagonals allowed.
 - Existing endless progression, eight rotating primary objective types, local progress/checkpoints, boosters, accessibility settings, and phone/tablet responsive board remain in place.
 - The release-candidate emulator job applies the `/dev/kvm` udev permissions and passed its Android 15 launch check.
-- The compact-phone/tablet layout workflow first lacked KVM permissions; adding the proven KVM udev rule fixed startup and both profiles booted in about 30–37 seconds. The next failure exposed two emulator-runner script-wrapper constraints: the artifact path must be discovered recursively, and each shell command/control structure must be self-contained on one line. The recursive APK lookup was added in `938f8960f02293ab9dfa15bb635d7874d83c1c91`; the multiline `if` block then failed with a shell syntax error before installation. Rewrote the APK check, activity assertions, and crash guard as self-contained commands and added regression coverage in `80720bc4478bfd9390ced392930dd181b94275fd`. Latest CI is pending.
+- The compact-phone/tablet workflow's three harness issues are now resolved: KVM permissions, recursive APK artifact discovery, and self-contained one-line shell commands for the emulator runner. The regression suite also caught and corrected an outdated path assertion. On commit `40fca226aa836a5d166838de568deb8a591bbda7`, all 92 tests passed; the debug APK and release-candidate builds passed; and both Android 15 emulator profiles successfully installed and launched the app, remained resumed through portrait/landscape changes, returned from Home, and produced no app-specific fatal exception. Runs: checks `41843302481`, debug APK `41843302259`, release candidate `41843302337`, layout matrix `41843302257` (both device jobs passed).
 - Emulator crash guard runs as one shell command, avoiding the previous shell parser error.
-- Latest PR-branch gameplay regression suite: 89 tests passed, 0 failed (run 41642257982).
-- Latest PR-branch Android debug APK build: passed (run 41642258029).
-- Latest PR-branch Android release candidate: passed (run 41642258001). It built the unsigned APK and AAB, verified package metadata, smoke-tested temporary signing, booted the Android 15 emulator, installed the signed test APK, launched `MainActivity`, confirmed the app process remained alive, and completed the fatal-exception check without a match.
+- Latest verified PR-branch regression suite: 92 tests passed, 0 failed (run 41843302481 on `40fca226aa836a5d166838de568deb8a591bbda7`).
+- Latest verified PR-branch Android debug APK build: passed (run 41843302259 on `40fca226aa836a5d166838de568deb8a591bbda7`).
+- Latest verified PR-branch Android release candidate: passed (run 41843302337 on `40fca226aa836a5d166838de568deb8a591bbda7`). It produced the unsigned APK and AAB, verified package metadata, smoke-tested temporary signing, booted Android 15, installed the signed test APK, launched `MainActivity`, and passed the fatal-exception check. Artifact ID `13329473437` expires 2026-11-18.
+- Latest verified PR-branch compact-phone and tablet runtime smoke: passed (run 41843302257 on `40fca226aa836a5d166838de568deb8a591bbda7`). Both profiles installed the debug APK, launched `MainActivity`, verified `topResumedActivity` after portrait/landscape changes and after Home/resume, and found no app-specific fatal exception.
 - Latest default-branch gameplay checks, debug APK, and unsigned release-candidate workflows all passed on `580aff574436c921d7dcbd247fc56cf46cc5cb69` (runs 41639831486, 41639831662, and 41639831469 respectively).
 - The default-branch hourly Android check schedule remains configured in `.github/workflows/android-apk.yml`.
-- `.github/workflows/android-layout-smoke.yml` builds the debug APK once, then runs Android 15 runtime checks on a compact-phone emulator (`pixel_2`) and tablet emulator (`pixel_tablet`), rotating the display and backgrounding/resuming the app. KVM startup and recursive APK discovery are in place; the latest fix adapts every script command to the emulator runner's line-by-line shell wrapper. Both runtime jobs must still pass install, rotation, background/resume, and crash checks.
+- `.github/workflows/android-layout-smoke.yml` builds the debug APK once, then runs Android 15 runtime checks on a compact-phone emulator (`pixel_2`) and tablet emulator (`pixel_tablet`). It now triggers on pull requests or manual dispatch only, preventing duplicate matrix runs on the same PR commit.
 
 ## Release work still required
 
@@ -36,4 +37,4 @@ Last reviewed: 2026-11-04
 
 ## Next milestone
 
-Verify the self-contained emulator script installs and launches the game on both compact-phone and tablet profiles, then completes rotation and background/resume checks. If successful, extend UI-level checks to verify the actual game board and input; otherwise diagnose the next concrete failure before feature work.
+Extend the passing phone/tablet smoke test with UI-level assertions that the actual crop board and current level objective render, then add automated gesture coverage for adjacent and diagonal crop connections without introducing tile swapping. Keep physical-device testing as a separate release gate.
