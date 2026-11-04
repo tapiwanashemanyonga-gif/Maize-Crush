@@ -1,0 +1,112 @@
+name: Maize Crush Android Device Layout Smoke
+
+on:
+  push:
+    branches: [test/android-emulator-launch-smoke]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-debug:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Run gameplay regression tests
+        run: npm test
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - name: Verify Android SDK
+        run: test -d "$ANDROID_HOME/platforms"
+      - name: Install Android 16 SDK platform and build tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -name sdkmanager | sort -V | tail -n 1)"
+          test -n "$SDKMANAGER"
+          set +o pipefail
+          yes | "$SDKMANAGER" --licenses >/dev/null
+          set -o pipefail
+          "$SDKMANAGER" "platforms;android-36" "build-tools;36.0.0"
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.11.1"
+      - name: Build Android debug APK
+        run: gradle -p android --no-daemon assembleDebug
+      - name: Upload debug APK for device matrix
+        uses: actions/upload-artifact@v4
+        with:
+          name: maize-crush-layout-smoke-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 7
+
+  runtime-smoke:
+    needs: build-debug
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - profile: pixel_2
+            device_class: compact-phone
+          - profile: pixel_c
+            device_class: tablet
+    name: Runtime smoke (\${{ matrix.device_class }})
+    steps:
+      - name: Download debug APK
+        uses: actions/download-artifact@v4
+        with:
+          name: maize-crush-layout-smoke-apk
+          path: app
+      - name: Launch, rotate, background and resume
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: \${{ matrix.profile }}
+          disable-animations: true
+          script: |
+            set -euo pipefail
+            APK="app/app-debug.apk"
+            test -s "$APK"
+            adb install -r "$APK"
+            adb logcat -c
+            adb shell am start -W -n com.maizecrush.zimbabweharvest/.MainActivity
+            sleep 6
+            assert_running() {
+              test -n "$(adb shell pidof com.maizecrush.zimbabweharvest)"
+              adb shell dumpsys activity activities | grep -E 'mResumedActivity|topResumedActivity' | grep -F 'com.maizecrush.zimbabweharvest/.MainActivity'
+            }
+            assert_running
+            adb shell wm size
+            adb shell wm density
+            adb shell settings put system accelerometer_rotation 0
+            adb shell settings put system user_rotation 1
+            sleep 3
+            assert_running
+            adb shell settings put system user_rotation 0
+            sleep 3
+            assert_running
+            adb shell input keyevent KEYCODE_HOME
+            sleep 2
+            adb shell am start -W -n com.maizecrush.zimbabweharvest/.MainActivity
+            sleep 3
+            assert_running
+            if adb logcat -d -t 2000 | grep -E 'FATAL EXCEPTION.*com\\.maizecrush\\.zimbabweharvest'; then
+              echo "Maize Crush crashed during layout or lifecycle smoke testing."
+              exit 1
+            fi
