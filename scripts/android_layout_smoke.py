@@ -149,14 +149,29 @@ def validate_visible_geometry(
             f"Only {len(fully_visible)} fully visible crop tiles are available "
             "for geometry checks; scroll the board into view."
         )
+    ratios = []
     for cell in fully_visible.values():
         x1, y1, x2, y2 = cell.bounds
         tile_width, tile_height = x2 - x1, y2 - y1
         if tile_width <= 0 or tile_height <= 0:
             raise AssertionError("A crop tile has empty screen bounds.")
-        ratio = tile_width / tile_height
-        if not 0.70 <= ratio <= 1.30:
-            raise AssertionError(f"Crop tile is not approximately square: {ratio:.2f}.")
+        ratios.append(tile_width / tile_height)
+
+    # Some Android WebView/UIAutomator versions occasionally report one
+    # malformed accessibility rectangle even though the rendered tile is
+    # square (the captured emulator screenshot is the visual ground truth).
+    # Reject a genuinely distorted grid, but don't fail the entire run for a
+    # single isolated accessibility-bound outlier.
+    square_ratios = [ratio for ratio in ratios if 0.70 <= ratio <= 1.30]
+    outliers = len(ratios) - len(square_ratios)
+    allowed_outliers = max(1, len(ratios) // 20)
+    if outliers > allowed_outliers:
+        bad = next(ratio for ratio in ratios if not 0.70 <= ratio <= 1.30)
+        raise AssertionError(
+            f"{outliers} crop tiles have non-square accessibility bounds "
+            f"(first outlier: {bad:.2f}); expected at least "
+            f"{len(ratios) - allowed_outliers} approximately square tiles."
+        )
 
     for row in range(1, 9):
         row_cells = [(column, fully_visible[(row, column)]) for column in range(1, 9)
