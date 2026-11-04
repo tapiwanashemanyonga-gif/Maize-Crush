@@ -86,38 +86,24 @@ jobs:
           profile: ${{ matrix.profile }}
           disable-animations: true
           script: |
-            set -euo pipefail
-            APK="$(find app -type f -name 'app-debug.apk' -print -quit)"
-            if [ -z "$APK" ]; then
-              echo "Downloaded debug APK was not found. Artifact contents:"
-              find app -type f -print
-              exit 1
-            fi
-            test -s "$APK"
-            adb install -r "$APK"
+            test -n "$(find app -type f -name 'app-debug.apk' -print -quit)" || { echo "Downloaded debug APK was not found. Artifact contents:"; find app -type f -print; exit 1; }
+            adb install -r "$(find app -type f -name 'app-debug.apk' -print -quit)"
             adb logcat -c
             adb shell am start -W -n com.maizecrush.zimbabweharvest/.MainActivity
             sleep 6
-            assert_running() {
-              test -n "$(adb shell pidof com.maizecrush.zimbabweharvest)"
-              adb shell dumpsys activity activities | grep -E 'mResumedActivity|topResumedActivity' | grep -F 'com.maizecrush.zimbabweharvest/.MainActivity'
-            }
-            assert_running
+            assert_running() { test -n "$(adb shell pidof com.maizecrush.zimbabweharvest)" && adb shell dumpsys activity activities | grep -E 'mResumedActivity|topResumedActivity' | grep -F 'com.maizecrush.zimbabweharvest/.MainActivity'; }; assert_running
             adb shell wm size
             adb shell wm density
             adb shell settings put system accelerometer_rotation 0
             adb shell settings put system user_rotation 1
             sleep 3
-            assert_running
+            assert_running() { test -n "$(adb shell pidof com.maizecrush.zimbabweharvest)" && adb shell dumpsys activity activities | grep -E 'mResumedActivity|topResumedActivity' | grep -F 'com.maizecrush.zimbabweharvest/.MainActivity'; }; assert_running
             adb shell settings put system user_rotation 0
             sleep 3
-            assert_running
+            assert_running() { test -n "$(adb shell pidof com.maizecrush.zimbabweharvest)" && adb shell dumpsys activity activities | grep -E 'mResumedActivity|topResumedActivity' | grep -F 'com.maizecrush.zimbabweharvest/.MainActivity'; }; assert_running
             adb shell input keyevent KEYCODE_HOME
             sleep 2
             adb shell am start -W -n com.maizecrush.zimbabweharvest/.MainActivity
             sleep 3
-            assert_running
-            if adb logcat -d -t 2000 | grep -F 'FATAL EXCEPTION' | grep -F 'com.maizecrush.zimbabweharvest'; then
-              echo "Maize Crush crashed during layout or lifecycle smoke testing."
-              exit 1
-            fi
+            assert_running() { test -n "$(adb shell pidof com.maizecrush.zimbabweharvest)" && adb shell dumpsys activity activities | grep -E 'mResumedActivity|topResumedActivity' | grep -F 'com.maizecrush.zimbabweharvest/.MainActivity'; }; assert_running
+            if adb logcat -d -t 2000 | grep -F 'FATAL EXCEPTION' | grep -F 'com.maizecrush.zimbabweharvest'; then echo "Maize Crush crashed during layout or lifecycle smoke testing."; exit 1; fi

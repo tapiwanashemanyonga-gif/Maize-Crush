@@ -54,3 +54,15 @@ test("phone and tablet smoke workflow locates the downloaded APK without assumin
   assert.ok(layoutWorkflow.includes("Downloaded debug APK was not found. Artifact contents:"));
   assert.ok(!layoutWorkflow.includes('APK="app/app-debug.apk"'), "do not assume the artifact is extracted at the app directory root");
 });
+
+test("emulator runner script uses self-contained one-line shell commands", () => {
+  const layoutWorkflow = fs.readFileSync(
+    path.resolve(__dirname, "..", ".github", "workflows", "android-layout-smoke.yml"),
+    "utf8"
+  );
+  const script = layoutWorkflow.split("script: |")[1];
+  assert.ok(script.includes('test -n "$(find app -type f -name \'app-debug.apk\' -print -quit)" || { echo "Downloaded debug APK was not found. Artifact contents:"; find app -type f -print; exit 1; }'));
+  assert.ok(script.includes('adb install -r "$(find app -type f -name \'app-debug.apk\' -print -quit)"'));
+  assert.equal((script.match(/assert_running\(\) \{/g) || []).length, 4);
+  assert.ok(!/^\s+if .*; then\s*$/m.test(script), "multi-line if blocks are not supported by the emulator runner script wrapper");
+});
