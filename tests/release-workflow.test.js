@@ -71,3 +71,18 @@ test("emulator runner delegates UI inspection and gesture assertions to the test
   assert.ok(!/^\s+if .*; then\s*$/m.test(script), "keep runner shell logic self-contained");
   assert.ok(!script.includes("assert_running() {"), "activity checks live in the Python helper");
 });
+
+test("phone and tablet runtime jobs check out the UI smoke helper before running it", () => {
+  const layoutWorkflow = fs.readFileSync(
+    path.resolve(__dirname, "..", ".github", "workflows", "android-layout-smoke.yml"),
+    "utf8"
+  );
+  const runtimeJob = layoutWorkflow.split("  runtime-smoke:")[1];
+  assert.ok(runtimeJob, "runtime-smoke job must exist");
+  const checkoutIndex = runtimeJob.indexOf("uses: actions/checkout@v4");
+  const downloadIndex = runtimeJob.indexOf("uses: actions/download-artifact@v4");
+  const helperIndex = runtimeJob.indexOf("python3 scripts/android_layout_smoke.py");
+  assert.ok(checkoutIndex >= 0, "each matrix runner needs the repository source");
+  assert.ok(downloadIndex > checkoutIndex, "checkout must happen before artifact download");
+  assert.ok(helperIndex > checkoutIndex, "the UI helper must be present before execution");
+});
