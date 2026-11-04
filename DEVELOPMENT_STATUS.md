@@ -8,7 +8,7 @@ Last reviewed: 2026-11-04
 - Active Android release smoke-test branch: `test/android-emulator-launch-smoke`
 - Latest verified default-branch commit: `580aff574436c921d7dcbd247fc56cf46cc5cb69`
 - Latest functional QA commit on this branch: `0f970e70299883cbe82407302a810897947fb69d`
-- Latest verified CI/test-harness commit: `3eebaa07ff967d5f6553d111f2371430cc262725` (current branch head before this log update).
+- Latest verified CI/test-harness commit: `3eebaa07ff967d5f6553d111f2371430cc262725` (previous stable test harness).
 - Pull request: [#67 — Android emulator launch smoke test](https://github.com/tapiwanashemanyonga-gif/Maize-Crush/pull/67) (open; not merged).
 - Android identity: `com.maizecrush.zimbabweharvest`, version `1.0.0`, min SDK 24, target SDK 36.
 
@@ -37,4 +37,4 @@ Last reviewed: 2026-11-04
 
 ## Next milestone
 
-Extend the passing phone/tablet smoke test with UI-level assertions that the actual crop board and current level objective render, then add automated gesture coverage for adjacent and diagonal crop connections without introducing tile swapping. Keep physical-device testing as a separate release gate.
+Verify the corrected phone/tablet UI matrix and Android release/debug builds on commit `984b4a4f500e1460f3c2742d19979342572c0406`. If the UI matrix passes, proceed to save/restore and progression reliability QA; physical-device testing remains a separate release gate.
