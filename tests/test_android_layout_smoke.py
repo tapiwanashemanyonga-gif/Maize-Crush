@@ -106,8 +106,11 @@ class AndroidLayoutSmokeTests(unittest.TestCase):
                 return ""
             if args[:3] == ("shell", "uiautomator", "dump"):
                 return next(outputs)
-            if args[:3] == ("shell", "sh", "-c"):
-                return next(outputs)
+            if args[:2] == ("shell", "test"):
+                result = next(outputs)
+                if result == "missing":
+                    raise RuntimeError("remote hierarchy file not found")
+                return ""
             if args[0] == "pull":
                 Path(args[-1]).write_text("<hierarchy />", encoding="utf-8")
                 return ""
