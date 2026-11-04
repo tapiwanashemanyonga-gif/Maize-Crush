@@ -54,9 +54,9 @@ test("phone and tablet smoke workflow locates and installs the downloaded debug 
     path.resolve(__dirname, "..", ".github", "workflows", "android-layout-smoke.yml"),
     "utf8"
   );
-  assert.match(layoutWorkflow, /APK="\$\(find app -type f -name 'app-debug\.apk' -print -quit\)"/);
-  assert.match(layoutWorkflow, /test -n "\$APK"/);
-  assert.match(layoutWorkflow, /adb install -r "\$APK"/);
+  assert.ok(layoutWorkflow.includes('test -n "$(find app -type f -name \'app-debug.apk\' -print -quit)" || { echo "Downloaded debug APK was not found."; find app -type f -print; exit 1; }'));
+  assert.ok(layoutWorkflow.includes('adb install -r "$(find app -type f -name \'app-debug.apk\' -print -quit)"'));
+  assert.ok(!layoutWorkflow.includes('APK="$(find app'), "do not rely on variables across runner shell lines");
   assert.match(layoutWorkflow, /adb shell pm clear com\.maizecrush\.zimbabweharvest/);
   assert.match(layoutWorkflow, /python3 scripts\/android_layout_smoke\.py/);
 });

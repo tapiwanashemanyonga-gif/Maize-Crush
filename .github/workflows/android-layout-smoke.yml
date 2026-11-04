@@ -87,9 +87,8 @@ jobs:
           disable-animations: true
           script: |
             set -euo pipefail
-            APK="$(find app -type f -name 'app-debug.apk' -print -quit)"
-            test -n "$APK" || { echo "Downloaded debug APK was not found."; find app -type f -print; exit 1; }
-            adb install -r "$APK"
+            test -n "$(find app -type f -name 'app-debug.apk' -print -quit)" || { echo "Downloaded debug APK was not found."; find app -type f -print; exit 1; }
+            adb install -r "$(find app -type f -name 'app-debug.apk' -print -quit)"
             adb shell pm clear com.maizecrush.zimbabweharvest
             adb logcat -c
             adb shell am start -W -n com.maizecrush.zimbabweharvest/.MainActivity
