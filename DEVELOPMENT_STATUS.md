@@ -7,7 +7,7 @@ Last reviewed: 2026-11-04
 - Default branch: `main` (latest verified commit `580aff574436c921d7dcbd247fc56cf46cc5cb69`).
 - Active QA branch: `test/android-emulator-launch-smoke`.
 - Pull request: [#67 — Android emulator launch smoke test](https://github.com/tapiwanashemanyonga-gif/Maize-Crush/pull/67), open and not merged.
-- Current branch head at this review: `ca664cb27e6f820267f3ad16b0daee09c3d5e260` on `test/android-emulator-launch-smoke`. Recent commits add original SVG crop art, Android offline asset parity, crop sprite tests, staggered falling/refill animations, a clearer harvest-clear effect, and browser/Android animation parity tests. The PR remains open and unmerged.
+- Current branch head at this review: `f122c6d5cf541d7de672bf82f5f6942a5847c529` on `test/android-emulator-launch-smoke` (status documentation commit). Feature code and animation parity tests are at `ca664cb27e6f820267f3ad16b0daee09c3d5e260`. Recent commits add original SVG crop art, Android offline asset parity, crop sprite tests, staggered falling/refill animations, and a clearer harvest-clear effect. The PR remains open and unmerged.
 - Android identity: `com.maizecrush.zimbabweharvest`, version `1.0.0`, min SDK 24, target SDK 36.
 
 ## Verified functionality and CI
