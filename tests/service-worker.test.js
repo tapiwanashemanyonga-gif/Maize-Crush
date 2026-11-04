@@ -27,8 +27,8 @@ test("original Zimbabwe harvest crop artwork contains all six accessible sprite 
   for (const crop of ["maize", "tomato", "groundnut", "banana", "orange", "sweetpotato"]) {
     assert.match(artwork, new RegExp('<symbol id="crop-' + crop + '"'));
   }
-  assert.match(read("game.js"), /crop-art\\.svg#crop-/);
-  assert.match(read("sw.js"), /"\\.\\/crop-art\\.svg"/);
+  assert.ok(read("game.js").includes("crop-art.svg#crop-"));
+  assert.ok(read("sw.js").includes('"./crop-art.svg"'));
 });
 
 test("browser and Android WebView gameplay and worker assets are byte-identical", () => {
