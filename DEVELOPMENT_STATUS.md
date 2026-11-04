@@ -16,14 +16,14 @@ Last reviewed: 2026-11-04
 - Core connect gameplay remains path-based, not tile-swapping: 3+ matching crops, adjacent cells, diagonals allowed.
 - Existing endless progression, eight rotating primary objective types, local progress/checkpoints, boosters, accessibility settings, and phone/tablet responsive board remain in place.
 - The release-candidate emulator job applies the `/dev/kvm` udev permissions and passed its Android 15 launch check.
-- The compact-phone/tablet layout workflow first failed because it omitted the proven KVM setup. Adding the KVM udev rule fixed emulator startup: both device profiles booted in about 30–37 seconds. The next run exposed a separate harness issue: the downloaded artifact's directory layout did not match the hard-coded `app/app-debug.apk` path, so both jobs stopped before installing the app. The workflow now locates `app-debug.apk` recursively and prints extracted paths if it is missing; regression coverage was added in `tests/release-workflow.test.js` (commit `938f8960f02293ab9dfa15bb635d7874d83c1c91`). Latest CI is pending.
+- The compact-phone/tablet layout workflow first lacked KVM permissions; adding the proven KVM udev rule fixed startup and both profiles booted in about 30–37 seconds. The next failure exposed two emulator-runner script-wrapper constraints: the artifact path must be discovered recursively, and each shell command/control structure must be self-contained on one line. The recursive APK lookup was added in `938f8960f02293ab9dfa15bb635d7874d83c1c91`; the multiline `if` block then failed with a shell syntax error before installation. Rewrote the APK check, activity assertions, and crash guard as self-contained commands and added regression coverage in `80720bc4478bfd9390ced392930dd181b94275fd`. Latest CI is pending.
 - Emulator crash guard runs as one shell command, avoiding the previous shell parser error.
 - Latest PR-branch gameplay regression suite: 89 tests passed, 0 failed (run 41642257982).
 - Latest PR-branch Android debug APK build: passed (run 41642258029).
 - Latest PR-branch Android release candidate: passed (run 41642258001). It built the unsigned APK and AAB, verified package metadata, smoke-tested temporary signing, booted the Android 15 emulator, installed the signed test APK, launched `MainActivity`, confirmed the app process remained alive, and completed the fatal-exception check without a match.
 - Latest default-branch gameplay checks, debug APK, and unsigned release-candidate workflows all passed on `580aff574436c921d7dcbd247fc56cf46cc5cb69` (runs 41639831486, 41639831662, and 41639831469 respectively).
 - The default-branch hourly Android check schedule remains configured in `.github/workflows/android-apk.yml`.
-- `.github/workflows/android-layout-smoke.yml` builds the debug APK once, then runs Android 15 runtime checks on a compact-phone emulator (`pixel_2`) and tablet emulator (`pixel_tablet`), rotating the display and backgrounding/resuming the app. KVM startup is now fixed; the latest fix addresses APK extraction path discovery. Both runtime jobs must still pass through install, rotation, background/resume, and crash checks.
+- `.github/workflows/android-layout-smoke.yml` builds the debug APK once, then runs Android 15 runtime checks on a compact-phone emulator (`pixel_2`) and tablet emulator (`pixel_tablet`), rotating the display and backgrounding/resuming the app. KVM startup and recursive APK discovery are in place; the latest fix adapts every script command to the emulator runner's line-by-line shell wrapper. Both runtime jobs must still pass install, rotation, background/resume, and crash checks.
 
 ## Release work still required
 
@@ -36,4 +36,4 @@ Last reviewed: 2026-11-04
 
 ## Next milestone
 
-Verify the recursive APK discovery lets both compact-phone and tablet emulator jobs install and launch the game, then complete rotation and background/resume checks. If they pass, extend UI-level checks to verify the actual game board and input; otherwise diagnose the next concrete failure before feature work.
+Verify the self-contained emulator script installs and launches the game on both compact-phone and tablet profiles, then completes rotation and background/resume checks. If successful, extend UI-level checks to verify the actual game board and input; otherwise diagnose the next concrete failure before feature work.
