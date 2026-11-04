@@ -85,9 +85,21 @@ def visible_cells(cells: dict[tuple[int, int], Cell], width: int, height: int):
     return {key: cell for key, cell in cells.items() if is_visible(cell, width, height)}
 
 
+def fully_visible_cells(
+    cells: dict[tuple[int, int], Cell], width: int, height: int
+):
+    """Exclude cells whose accessibility bounds are clipped by the viewport."""
+    result = {}
+    for key, cell in cells.items():
+        x1, y1, x2, y2 = cell.bounds
+        if x1 > 0 and y1 > 0 and x2 < width and y2 < height:
+            result[key] = cell
+    return result
+
+
 def find_diagonal_chain(
     cells: dict[tuple[int, int], Cell], width: int, height: int
-) -> Optional[list[tuple[int, int]]]:
+):
     visible = visible_cells(cells, width, height)
     for row in range(1, 7):
         for column in range(1, 9):
@@ -128,7 +140,16 @@ def validate_visible_geometry(
         raise AssertionError(
             f"Only {len(visible)} crop tiles are visible in the accessibility tree."
         )
-    for cell in visible.values():
+    # UIAutomator clips partially off-screen nodes to the viewport edge. Those
+    # truncated bounds are not the real tile dimensions, so validate shape only
+    # on cells fully visible in this particular scroll position.
+    fully_visible = fully_visible_cells(cells, width, height)
+    if len(fully_visible) < 8:
+        raise AssertionError(
+            f"Only {len(fully_visible)} fully visible crop tiles are available "
+            "for geometry checks; scroll the board into view."
+        )
+    for cell in fully_visible.values():
         x1, y1, x2, y2 = cell.bounds
         tile_width, tile_height = x2 - x1, y2 - y1
         if tile_width <= 0 or tile_height <= 0:
@@ -323,7 +344,10 @@ def collect_board(width: int, height: int):
         raise AssertionError("The Level 1 objective card is missing from the UI.")
     best = max(
         snapshots,
-        key=lambda item: len(visible_cells(item[2], width, height))
+        key=lambda item: (
+            len(fully_visible_cells(item[2], width, height)),
+            len(visible_cells(item[2], width, height)),
+        ),
     )
     visible_count = validate_visible_geometry(best[2], width, height)
     print(
