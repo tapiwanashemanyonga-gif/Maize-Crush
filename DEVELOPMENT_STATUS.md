@@ -7,7 +7,7 @@ Last reviewed: 2026-11-04
 - Default branch: `main` (latest verified commit `580aff574436c921d7dcbd247fc56cf46cc5cb69`).
 - Active QA branch: `test/android-emulator-launch-smoke`.
 - Pull request: [#67 — Android emulator launch smoke test](https://github.com/tapiwanashemanyonga-gif/Maize-Crush/pull/67), open and not merged.
-- Latest branch head before this cycle: `9c5c2eba7c045011c307a5b4efdfd3f2e57b52f4`; this cycle's code commits: `aa6f26bbfd1e985739434a96ae4514933a9f20de` and `ca16235371d3c2fd479d7df6e6e961c27c31619e`.
+- Current branch head: `7b6cdab31ef766062a0ee4c2e968ed9c4325f494`; this cycle also includes the crop artwork and renderer commits `a6f57246f277741eed07cb95ec966a5dcfa29844`, `231d948f9ba584f7552535718794f0fdea1c66b7`, `46c855b19acee1770dbe0d45491e8803f5792082`, `382d2a40927445497830cd3814b27ed9574d0561`, `09eb445ec440d8289ed936f66061d556ab69b9a4`, `21d001cde187bb78170977773f7c93c72ec7225e`, `41c2089cf7a3c30a61f9d2cb3c275de465823cc7`, `05d1dfe9adb06780114f7cbca12b9e113a3055a3`, and `7b6cdab31ef766062a0ee4c2e968ed9c4325f494`.
 - Android identity: `com.maizecrush.zimbabweharvest`, version `1.0.0`, min SDK 24, target SDK 36.
 
 ## Verified functionality and CI
@@ -37,6 +37,15 @@ Last reviewed: 2026-11-04
 - Review app identity, launcher icon, screenshots, permissions, privacy policy, store disclosures, and current store requirements.
 - The user's own release keystore must remain private and must never be committed. Do not sign or publish without explicit authorization.
 
+## Original crop-art milestone (in progress)
+
+- Added `crop-art.svg`, a lightweight original six-symbol vector sprite sheet: maize, tomato, groundnut, banana, orange, and sweet potato. It uses hand-authored vector paths and gradients; no third-party game art or copied Candy Crush assets.
+- Updated board rendering to use scalable SVG sprite symbols rather than emoji glyphs, preserving accessible crop names and the existing 8×8 path-connecting mechanics.
+- Added responsive sprite sizing and selected/clearing visual states; reduced-motion preference is respected.
+- Mirrored the sprite sheet, renderer, CSS, and service worker into Android WebView assets. Bumped the offline shell cache to v3 and precached `crop-art.svg` so the new art is available offline.
+- Added tests for all six sprite symbols and browser/Android asset parity.
+- A CI run on intermediate commit `05d1dfe9adb06780114f7cbca12b9e113a3055a3` failed because the pre-existing service-worker test still expected cache v2. Updated that assertion and added sprite/offline coverage in `7b6cdab31ef766062a0ee4c2e968ed9c4325f494`; latest checks are running and must be verified before calling the artwork milestone complete.
+
 ## Next milestone
 
-Verify the updated compact-phone/tablet runtime gesture matrix and all Android builds on the latest branch head. Once that passes, move to the first substantial visual-content milestone: original illustrated Zimbabwean crop sprites, animated harvest effects, and audio feedback. Physical-device testing remains a separate release gate.
+Verify the latest crop-art test suite, Android debug/release builds, and compact-phone/tablet runtime tests. Then implement harvest-clear/refill animations and optional sound effects. Physical-device testing remains a separate release gate.
