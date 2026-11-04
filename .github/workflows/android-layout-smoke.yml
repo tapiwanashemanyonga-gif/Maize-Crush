@@ -87,7 +87,12 @@ jobs:
           disable-animations: true
           script: |
             set -euo pipefail
-            APK="app/app-debug.apk"
+            APK="$(find app -type f -name 'app-debug.apk' -print -quit)"
+            if [ -z "$APK" ]; then
+              echo "Downloaded debug APK was not found. Artifact contents:"
+              find app -type f -print
+              exit 1
+            fi
             test -s "$APK"
             adb install -r "$APK"
             adb logcat -c

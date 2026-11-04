@@ -44,3 +44,13 @@ test("phone and tablet layout smoke workflow enables KVM before emulator startup
     "KVM permissions must be applied before starting either emulator"
   );
 });
+
+test("phone and tablet smoke workflow locates the downloaded APK without assuming its ZIP folder layout", () => {
+  const layoutWorkflow = fs.readFileSync(
+    path.resolve(__dirname, "..", ".github", "workflows", "android-layout-smoke.yml"),
+    "utf8"
+  );
+  assert.match(layoutWorkflow, /APK="\$\(find app -type f -name 'app-debug\.apk' -print -quit\)"/);
+  assert.ok(layoutWorkflow.includes("Downloaded debug APK was not found. Artifact contents:"));
+  assert.ok(!layoutWorkflow.includes('APK="app/app-debug.apk"'), "do not assume the artifact is extracted at the app directory root");
+});
