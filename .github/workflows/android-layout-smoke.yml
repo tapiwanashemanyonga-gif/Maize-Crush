@@ -62,7 +62,7 @@ jobs:
         include:
           - profile: pixel_2
             device_class: compact-phone
-          - profile: pixel_c
+          - profile: pixel_tablet
             device_class: tablet
     name: Runtime smoke (${{ matrix.device_class }})
     steps:
