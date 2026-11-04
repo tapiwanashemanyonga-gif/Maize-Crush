@@ -106,7 +106,7 @@ jobs:
             adb shell am start -W -n com.maizecrush.zimbabweharvest/.MainActivity
             sleep 3
             assert_running
-            if adb logcat -d -t 2000 | grep -E 'FATAL EXCEPTION.*com\\.maizecrush\\.zimbabweharvest'; then
+            if adb logcat -d -t 2000 | grep -F 'FATAL EXCEPTION' | grep -F 'com.maizecrush.zimbabweharvest'; then
               echo "Maize Crush crashed during layout or lifecycle smoke testing."
               exit 1
             fi
