@@ -15,6 +15,7 @@ from scripts.android_layout_smoke import (
     has_moves_value,
     parse_hierarchy,
     validate_visible_geometry,
+    scroll_gutter_x,
 )
 
 
@@ -173,6 +174,30 @@ class AndroidLayoutSmokeTests(unittest.TestCase):
                 with patch.object(smoke.time, "sleep"):
                     with self.assertRaisesRegex(AssertionError, "did not expose"):
                         dismiss_tutorial(400, 800)
+
+
+    def test_scroll_gesture_uses_right_gutter_away_from_android_edge(self):
+        self.assertEqual(scroll_gutter_x(936), 912)
+        self.assertEqual(scroll_gutter_x(1600), 1576)
+        self.assertEqual(scroll_gutter_x(400), 376)
+
+    def test_scroll_forward_and_backward_use_the_same_safe_gutter(self):
+        commands = []
+        with patch.object(smoke, "run_adb", side_effect=lambda *args, **kwargs: commands.append(args)):
+            with patch.object(smoke.time, "sleep"):
+                smoke.scroll_forward(936, 1600)
+                smoke.scroll_backward(936, 1600)
+        self.assertEqual(commands[0][0:3], ("shell", "input", "swipe"))
+        self.assertEqual(commands[0][3], "912")
+        self.assertEqual(commands[1][3], "912")
+
+    def test_optional_screenshot_failure_does_not_fail_the_smoke_test(self):
+        with tempfile.TemporaryDirectory() as directory:
+            with patch.object(smoke, "ARTIFACTS", Path(directory)):
+                with patch.object(smoke, "run_adb", side_effect=RuntimeError("device offline")):
+                    with patch.object(smoke.time, "sleep"):
+                        self.assertFalse(smoke.save_screenshot("optional.png"))
+
 
 
 if __name__ == "__main__":
