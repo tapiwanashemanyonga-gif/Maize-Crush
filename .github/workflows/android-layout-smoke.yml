@@ -64,7 +64,7 @@ jobs:
             device_class: compact-phone
           - profile: pixel_c
             device_class: tablet
-    name: Runtime smoke (\${{ matrix.device_class }})
+    name: Runtime smoke (${{ matrix.device_class }})
     steps:
       - name: Download debug APK
         uses: actions/download-artifact@v4
@@ -77,7 +77,7 @@ jobs:
           api-level: 35
           target: google_apis
           arch: x86_64
-          profile: \${{ matrix.profile }}
+          profile: ${{ matrix.profile }}
           disable-animations: true
           script: |
             set -euo pipefail
