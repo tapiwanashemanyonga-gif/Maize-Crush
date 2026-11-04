@@ -237,10 +237,23 @@ def dump_hierarchy():
     return parse_hierarchy(local.read_text(encoding="utf-8"))
 
 
-def save_screenshot(name: str) -> None:
+def save_screenshot(name: str) -> bool:
+    """Capture a diagnostic image without failing valid gameplay checks if ADB flakes."""
     ARTIFACTS.mkdir(exist_ok=True)
-    run_adb("shell", "screencap", "-p", REMOTE_PNG)
-    run_adb("pull", REMOTE_PNG, str(ARTIFACTS / name))
+    for attempt in range(2):
+        try:
+            run_adb("wait-for-device", timeout=15)
+            run_adb("shell", "screencap", "-p", REMOTE_PNG, timeout=20)
+            run_adb("pull", REMOTE_PNG, str(ARTIFACTS / name), timeout=20)
+            return True
+        except (RuntimeError, subprocess.TimeoutExpired) as error:
+            print(
+                f"Screenshot {name} unavailable (attempt {attempt + 1}/2): {error}",
+                file=sys.stderr,
+            )
+            time.sleep(1)
+    print(f"Continuing without optional screenshot: {name}", file=sys.stderr)
+    return False
 
 
 def assert_running() -> None:
@@ -293,9 +306,14 @@ def dismiss_tutorial(width: int, height: int) -> None:
     )
 
 
+def scroll_gutter_x(width: int) -> int:
+    # Stay clear of both Android edge-gesture zones and the crop tiles.
+    return max(24, width - 24)
+
+
 def scroll_forward(width: int, height: int) -> None:
-    # Use the narrow outer gutter, never the crop board itself.
-    x = 2
+    # Swipe in the outer right gutter, outside the board and Android edge zone.
+    x = scroll_gutter_x(width)
     run_adb(
         "shell", "input", "swipe", str(x), str(int(height * 0.78)),
         str(x), str(int(height * 0.22)), "350"
@@ -304,7 +322,7 @@ def scroll_forward(width: int, height: int) -> None:
 
 
 def scroll_backward(width: int, height: int) -> None:
-    x = 2
+    x = scroll_gutter_x(width)
     run_adb(
         "shell", "input", "swipe", str(x), str(int(height * 0.22)),
         str(x), str(int(height * 0.78)), "350"
