@@ -1,6 +1,6 @@
 # Maize Crush development status
 
-Last reviewed: 2026-11-03
+Last reviewed: 2026-11-04
 
 ## Current state
 
@@ -22,6 +22,7 @@ Last reviewed: 2026-11-03
 - Latest PR-branch Android release candidate: passed (run 41642258001). It built the unsigned APK and AAB, verified package metadata, smoke-tested temporary signing, booted the Android 15 emulator, installed the signed test APK, launched `MainActivity`, confirmed the app process remained alive, and completed the fatal-exception check without a match.
 - Latest default-branch gameplay checks, debug APK, and unsigned release-candidate workflows all passed on `580aff574436c921d7dcbd247fc56cf46cc5cb69` (runs 41639831486, 41639831662, and 41639831469 respectively).
 - The default-branch hourly Android check schedule remains configured in `.github/workflows/android-apk.yml`.
+- Added `.github/workflows/android-layout-smoke.yml`: builds the debug APK once, then runs Android 15 runtime checks on a compact-phone emulator (`pixel_2`) and tablet emulator (`pixel_c`), rotating the display and backgrounding/resuming the app. This new workflow has not yet produced a result; its first CI run must validate emulator profile availability and lifecycle assertions.
 
 ## Release work still required
 
@@ -34,4 +35,4 @@ Last reviewed: 2026-11-03
 
 ## Next milestone
 
-Expand automated Android runtime QA beyond first launch: exercise the board screen on a compact phone and a tablet-sized emulator, verify orientation/resizing and app resume, then continue physical-device release QA.
+Verify the new compact-phone/tablet emulator matrix workflow end-to-end. Fix any emulator profile or lifecycle assertion failures before extending UI-level checks; then continue physical-device release QA.
