@@ -196,17 +196,11 @@ def dump_hierarchy():
         except RuntimeError as error:
             last_output = str(error)
         try:
-            remote_state = run_adb(
-                "shell", "sh", "-c",
-                f"test -s '{REMOTE_XML}' && echo ready || echo missing",
-                timeout=10,
-            )
-        except RuntimeError as error:
-            remote_state = "missing"
-            last_output += " | remote-file check: " + str(error)
-        if remote_state.strip() == "ready":
+            run_adb("shell", "test", "-s", REMOTE_XML, timeout=10)
             hierarchy_ready = True
             break
+        except RuntimeError as error:
+            last_output += " | remote-file check: " + str(error)
         print(
             f"UIAutomator dump attempt {attempt + 1}/4 did not create a readable "
             f"hierarchy file. Output: {last_output or '(no output)'}"
