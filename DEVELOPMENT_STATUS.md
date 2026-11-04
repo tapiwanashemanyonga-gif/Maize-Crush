@@ -7,7 +7,7 @@ Last reviewed: 2026-11-04
 - Default branch: `main` (latest verified commit `580aff574436c921d7dcbd247fc56cf46cc5cb69`).
 - Active QA branch: `test/android-emulator-launch-smoke`.
 - Pull request: [#67 — Android emulator launch smoke test](https://github.com/tapiwanashemanyonga-gif/Maize-Crush/pull/67), open and not merged.
-- Current branch head: `7b6cdab31ef766062a0ee4c2e968ed9c4325f494`; this cycle also includes the crop artwork and renderer commits `a6f57246f277741eed07cb95ec966a5dcfa29844`, `231d948f9ba584f7552535718794f0fdea1c66b7`, `46c855b19acee1770dbe0d45491e8803f5792082`, `382d2a40927445497830cd3814b27ed9574d0561`, `09eb445ec440d8289ed936f66061d556ab69b9a4`, `21d001cde187bb78170977773f7c93c72ec7225e`, `41c2089cf7a3c30a61f9d2cb3c275de465823cc7`, `05d1dfe9adb06780114f7cbca12b9e113a3055a3`, and `7b6cdab31ef766062a0ee4c2e968ed9c4325f494`, followed by test-fix commit `86feda6686a96b3c68f0c5d9c3200b6a10539a57`.
+- Current branch head at this review: `ca664cb27e6f820267f3ad16b0daee09c3d5e260` on `test/android-emulator-launch-smoke`. Recent commits add original SVG crop art, Android offline asset parity, crop sprite tests, staggered falling/refill animations, a clearer harvest-clear effect, and browser/Android animation parity tests. The PR remains open and unmerged.
 - Android identity: `com.maizecrush.zimbabweharvest`, version `1.0.0`, min SDK 24, target SDK 36.
 
 ## Verified functionality and CI
@@ -37,15 +37,24 @@ Last reviewed: 2026-11-04
 - Review app identity, launcher icon, screenshots, permissions, privacy policy, store disclosures, and current store requirements.
 - The user's own release keystore must remain private and must never be committed. Do not sign or publish without explicit authorization.
 
-## Original crop-art milestone (in progress)
+## Original crop-art milestone
 
 - Added `crop-art.svg`, a lightweight original six-symbol vector sprite sheet: maize, tomato, groundnut, banana, orange, and sweet potato. It uses hand-authored vector paths and gradients; no third-party game art or copied Candy Crush assets.
 - Updated board rendering to use scalable SVG sprite symbols rather than emoji glyphs, preserving accessible crop names and the existing 8×8 path-connecting mechanics.
 - Added responsive sprite sizing and selected/clearing visual states; reduced-motion preference is respected.
 - Mirrored the sprite sheet, renderer, CSS, and service worker into Android WebView assets. Bumped the offline shell cache to v3 and precached `crop-art.svg` so the new art is available offline.
 - Added tests for all six sprite symbols and browser/Android asset parity.
-- CI on intermediate commit `05d1dfe9adb06780114f7cbca12b9e113a3055a3` failed because the pre-existing service-worker test still expected cache v2. After updating it, the first sprite test commit `7b6cdab31ef766062a0ee4c2e968ed9c4325f494` exposed an invalid escaped regular expression in the test itself; replaced the regex with literal path checks in `86feda6686a96b3c68f0c5d9c3200b6a10539a57`. Latest checks must be verified before calling the artwork milestone complete.
+- Earlier CI failures were fixed: the service-worker cache assertion was updated for v3, and the sprite test's invalid regular expression was replaced with literal path checks. On commit `9c4a44593467c6052d7c6b7d9aed9e33dc08792f`, gameplay checks and APK workflow passed; release-candidate and device smoke workflows were still running at the time of review. A later release-candidate run on `86feda6686a96b3c68f0c5d9c3200b6a10539a57` failed during the emulator phase; investigate the current run before treating it as a product failure.
+
+## Harvest and refill animation milestone (in progress)
+
+- Improved harvest clearing with a quicker shrink/fade and a warm highlight, while retaining the special-clear effect.
+- Refill tiles now animate downward into the board with a small stagger by row and column, giving the player a visible falling-crop response after a successful connection or booster.
+- The animation honours the reduced-motion preference; Android WebView CSS and renderer files are kept byte-for-byte aligned with browser files.
+- Added tests/crop-animation.test.js to check browser/Android asset parity, falling animation, clear state, and reduced-motion handling.
+- Commits: 857380f2e8000b6689f9fb2d0af57fe1385c2f3f, 51701665aca6b2fe9f93a024d5840a12586067dd, 1b6aa73ffea10ef53a4de54873d204a737d581da, a04b2baec61e3ee0651991c50c748e751df56065, ca664cb27e6f820267f3ad16b0daee09c3d5e260.
+- CI runs for the animation changes were triggered on commit 1b6aa73ffea10ef53a4de54873d204a737d581da; the newer test-file commit is at ca664cb27e6f820267f3ad16b0daee09c3d5e260. Recheck Actions for the newest SHA before claiming validation.
 
 ## Next milestone
 
-Verify the latest crop-art test suite, Android debug/release builds, and compact-phone/tablet runtime tests. Then implement harvest-clear/refill animations and optional sound effects. Physical-device testing remains a separate release gate.
+Verify animation tests, Android debug/release builds, and compact-phone/tablet runtime tests. Then add optional original sound effects with a clear in-game mute control. Physical-device testing remains a separate release gate.
