@@ -16,14 +16,14 @@ Last reviewed: 2026-11-04
 - Core connect gameplay remains path-based, not tile-swapping: 3+ matching crops, adjacent cells, diagonals allowed.
 - Existing endless progression, eight rotating primary objective types, local progress/checkpoints, boosters, accessibility settings, and phone/tablet responsive board remain in place.
 - The release-candidate emulator job applies the `/dev/kvm` udev permissions and passed its Android 15 launch check.
-- The new compact-phone/tablet layout workflow initially failed on both emulator jobs because it omitted that KVM setup: the debug build and gameplay tests passed, but the emulator booted without hardware acceleration and ADB failed during startup. Added the same proven KVM permission step to that workflow and a regression assertion in `tests/release-workflow.test.js` (fix commit `b6431a519d4e7009ac4fb86e564a5df874d3d9bf`); rerun is pending.
+- The compact-phone/tablet layout workflow first failed because it omitted the proven KVM setup. Adding the KVM udev rule fixed emulator startup: both device profiles booted in about 30–37 seconds. The next run exposed a separate harness issue: the downloaded artifact's directory layout did not match the hard-coded `app/app-debug.apk` path, so both jobs stopped before installing the app. The workflow now locates `app-debug.apk` recursively and prints extracted paths if it is missing; regression coverage was added in `tests/release-workflow.test.js` (commit `938f8960f02293ab9dfa15bb635d7874d83c1c91`). Latest CI is pending.
 - Emulator crash guard runs as one shell command, avoiding the previous shell parser error.
 - Latest PR-branch gameplay regression suite: 89 tests passed, 0 failed (run 41642257982).
 - Latest PR-branch Android debug APK build: passed (run 41642258029).
 - Latest PR-branch Android release candidate: passed (run 41642258001). It built the unsigned APK and AAB, verified package metadata, smoke-tested temporary signing, booted the Android 15 emulator, installed the signed test APK, launched `MainActivity`, confirmed the app process remained alive, and completed the fatal-exception check without a match.
 - Latest default-branch gameplay checks, debug APK, and unsigned release-candidate workflows all passed on `580aff574436c921d7dcbd247fc56cf46cc5cb69` (runs 41639831486, 41639831662, and 41639831469 respectively).
 - The default-branch hourly Android check schedule remains configured in `.github/workflows/android-apk.yml`.
-- `.github/workflows/android-layout-smoke.yml` builds the debug APK once, then runs Android 15 runtime checks on a compact-phone emulator (`pixel_2`) and tablet emulator (`pixel_tablet`), rotating the display and backgrounding/resuming the app. Its first run's emulator jobs failed due to missing KVM permissions; the fix and regression test are committed, and the new run must confirm both device jobs pass.
+- `.github/workflows/android-layout-smoke.yml` builds the debug APK once, then runs Android 15 runtime checks on a compact-phone emulator (`pixel_2`) and tablet emulator (`pixel_tablet`), rotating the display and backgrounding/resuming the app. KVM startup is now fixed; the latest fix addresses APK extraction path discovery. Both runtime jobs must still pass through install, rotation, background/resume, and crash checks.
 
 ## Release work still required
 
@@ -36,4 +36,4 @@ Last reviewed: 2026-11-04
 
 ## Next milestone
 
-Verify that the KVM fix makes both compact-phone and tablet emulator jobs pass. If they pass, extend UI-level checks beyond activity launch; if not, diagnose the next concrete emulator/runtime failure before any feature work.
+Verify the recursive APK discovery lets both compact-phone and tablet emulator jobs install and launch the game, then complete rotation and background/resume checks. If they pass, extend UI-level checks to verify the actual game board and input; otherwise diagnose the next concrete failure before feature work.
