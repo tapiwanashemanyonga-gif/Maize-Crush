@@ -15,7 +15,7 @@ def fixture_xml(crop_overrides=None):
     nodes = []
     for row in range(1, 9):
         for column in range(1, 9):
-            crop = crop_overrides.get((row, column), "Crop" + str((row + column) % 6))
+            crop = crop_overrides.get((row, column), "Crop" + str(row) + "_" + str(column))
             x1 = 10 + (column - 1) * 40
             y1 = 100 + (row - 1) * 40
             nodes.append(
