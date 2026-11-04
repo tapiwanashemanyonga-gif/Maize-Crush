@@ -174,3 +174,10 @@ body[data-world-theme] .crop-tile.selected{border-color:var(--world-accent);box-
   .focus-play .game-board{width:min(100%,98vw,calc(100dvh - 245px));max-width:900px;gap:clamp(3px,.8vw,7px);padding:5px}
   .focus-play .crop-tile{font-size:clamp(26px,7vw,54px);border-radius:8px}
 }
+
+/* Original vector crop illustrations: crisp at every board size and device density. */
+.crop-tile .crop-art{display:block;width:78%;height:78%;overflow:visible;pointer-events:none;filter:drop-shadow(0 2px 2px #25180b55);transition:transform .16s ease,filter .16s ease}
+.crop-tile .crop-art use{width:100%;height:100%}
+.crop-tile.selected .crop-art{transform:scale(1.12);filter:drop-shadow(0 3px 4px #102b17aa) saturate(1.12)}
+.crop-tile.clearing .crop-art{transform:scale(.72) rotate(-9deg)}
+@media(prefers-reduced-motion:reduce){.crop-tile .crop-art{transition:none}}
