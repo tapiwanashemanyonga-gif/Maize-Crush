@@ -37,6 +37,12 @@ Last reviewed: 2026-11-04
 - Review app identity, launcher icon, screenshots, permissions, privacy policy, store disclosures, and current store requirements.
 - The user's own release keystore must remain private and must never be committed. Do not sign or publish without explicit authorization.
 
+## Latest crop-art WebView fix (2026-11-04)
+
+- Latest commit `6e740f88d9311f6c7ff675c0aab1e0ee8d55c939` changed the board renderer to reference inline SVG symbols in `index.html`, avoiding external SVG `<use>` references that Android WebView may not render reliably.
+- CI failed because `tests/service-worker.test.js` still asserted the previous external `crop-art.svg#crop-` reference. The implementation change and inline SVG sprite sheet were present; the test had not been updated for the new rendering strategy.
+- Updating the regression test to assert inline sprite symbol IDs and `#crop-` fragment usage, while retaining Android/browser asset parity and offline precache checks. New CI runs must pass before treating this fix as verified.
+
 ## Original crop-art milestone
 
 - Added `crop-art.svg`, a lightweight original six-symbol vector sprite sheet: maize, tomato, groundnut, banana, orange, and sweet potato. It uses hand-authored vector paths and gradients; no third-party game art or copied Candy Crush assets.
