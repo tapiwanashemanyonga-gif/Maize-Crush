@@ -7,7 +7,7 @@ Last reviewed: 2026-11-04
 - Default branch: `main` (latest verified commit `580aff574436c921d7dcbd247fc56cf46cc5cb69`).
 - Active QA branch: `test/android-emulator-launch-smoke`.
 - Pull request: [#67 — Android emulator launch smoke test](https://github.com/tapiwanashemanyonga-gif/Maize-Crush/pull/67), open and not merged.
-- Current branch head: `7b6cdab31ef766062a0ee4c2e968ed9c4325f494`; this cycle also includes the crop artwork and renderer commits `a6f57246f277741eed07cb95ec966a5dcfa29844`, `231d948f9ba584f7552535718794f0fdea1c66b7`, `46c855b19acee1770dbe0d45491e8803f5792082`, `382d2a40927445497830cd3814b27ed9574d0561`, `09eb445ec440d8289ed936f66061d556ab69b9a4`, `21d001cde187bb78170977773f7c93c72ec7225e`, `41c2089cf7a3c30a61f9d2cb3c275de465823cc7`, `05d1dfe9adb06780114f7cbca12b9e113a3055a3`, and `7b6cdab31ef766062a0ee4c2e968ed9c4325f494`.
+- Current branch head: `7b6cdab31ef766062a0ee4c2e968ed9c4325f494`; this cycle also includes the crop artwork and renderer commits `a6f57246f277741eed07cb95ec966a5dcfa29844`, `231d948f9ba584f7552535718794f0fdea1c66b7`, `46c855b19acee1770dbe0d45491e8803f5792082`, `382d2a40927445497830cd3814b27ed9574d0561`, `09eb445ec440d8289ed936f66061d556ab69b9a4`, `21d001cde187bb78170977773f7c93c72ec7225e`, `41c2089cf7a3c30a61f9d2cb3c275de465823cc7`, `05d1dfe9adb06780114f7cbca12b9e113a3055a3`, and `7b6cdab31ef766062a0ee4c2e968ed9c4325f494`, followed by test-fix commit `86feda6686a96b3c68f0c5d9c3200b6a10539a57`.
 - Android identity: `com.maizecrush.zimbabweharvest`, version `1.0.0`, min SDK 24, target SDK 36.
 
 ## Verified functionality and CI
@@ -44,7 +44,7 @@ Last reviewed: 2026-11-04
 - Added responsive sprite sizing and selected/clearing visual states; reduced-motion preference is respected.
 - Mirrored the sprite sheet, renderer, CSS, and service worker into Android WebView assets. Bumped the offline shell cache to v3 and precached `crop-art.svg` so the new art is available offline.
 - Added tests for all six sprite symbols and browser/Android asset parity.
-- A CI run on intermediate commit `05d1dfe9adb06780114f7cbca12b9e113a3055a3` failed because the pre-existing service-worker test still expected cache v2. Updated that assertion and added sprite/offline coverage in `7b6cdab31ef766062a0ee4c2e968ed9c4325f494`; latest checks are running and must be verified before calling the artwork milestone complete.
+- CI on intermediate commit `05d1dfe9adb06780114f7cbca12b9e113a3055a3` failed because the pre-existing service-worker test still expected cache v2. After updating it, the first sprite test commit `7b6cdab31ef766062a0ee4c2e968ed9c4325f494` exposed an invalid escaped regular expression in the test itself; replaced the regex with literal path checks in `86feda6686a96b3c68f0c5d9c3200b6a10539a57`. Latest checks must be verified before calling the artwork milestone complete.
 
 ## Next milestone
 
