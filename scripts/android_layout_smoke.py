@@ -236,20 +236,40 @@ def tap(point: tuple[int, int]) -> None:
 
 
 def dismiss_tutorial(width: int, height: int) -> None:
-    deadline = time.time() + 8
+    deadline = time.time() + 30
+    last_texts: set[str] = set()
     while time.time() < deadline:
-        root, _, texts = dump_hierarchy()
-        point = button_center(root, "let's harvest", width, height)
-        if point:
-            tap(point)
-            print("Dismissed first-run tutorial using its accessible button.")
+        root, cells, texts = dump_hierarchy()
+        last_texts = texts
+        tutorial_visible = any(
+            "how to harvest" in normalized(text) for text in texts
+        )
+        if tutorial_visible:
+            point = button_center(root, "let's harvest", width, height)
+            if point:
+                tap(point)
+                time.sleep(0.8)
+                _, next_cells, next_texts = dump_hierarchy()
+                if not any(
+                    "how to harvest" in normalized(text) for text in next_texts
+                ):
+                    print("Dismissed first-run tutorial using its accessible button.")
+                    return
+                print("Tutorial remains visible after the first tap; retrying its start button.")
+            else:
+                print("Tutorial is visible; waiting for its start button to enter the accessibility tree.")
+        elif (
+            any("level 1" in normalized(text) for text in texts)
+            or len(cells) >= 8
+        ):
+            print("Game board is accessible; no first-run tutorial is open.")
             return
-        if any("how to harvest" in normalized(text) for text in texts):
-            raise AssertionError(
-                "The first-run tutorial is visible but its Let’s harvest button "
-                "is not exposed as an accessible control."
-            )
-        time.sleep(0.35)
+        time.sleep(0.5)
+    summary = ", ".join(sorted(last_texts)[:12]) or "(no accessible text)"
+    raise AssertionError(
+        "Android UI did not expose the first-run tutorial or Level 1 board "
+        f"within 30 seconds. Last accessible text: {summary}"
+    )
 
 
 def scroll_forward(width: int, height: int) -> None:
