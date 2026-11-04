@@ -159,16 +159,16 @@ def validate_visible_geometry(
             raise AssertionError(f"Crop tile is not approximately square: {ratio:.2f}.")
 
     for row in range(1, 9):
-        row_cells = [(column, visible[(row, column)]) for column in range(1, 9)
-                     if (row, column) in visible]
+        row_cells = [(column, fully_visible[(row, column)]) for column in range(1, 9)
+                     if (row, column) in fully_visible]
         row_cells.sort(key=lambda item: item[0])
         centers = [(cell.bounds[0] + cell.bounds[2]) / 2 for _, cell in row_cells]
         if any(left >= right for left, right in zip(centers, centers[1:])):
             raise AssertionError(f"Crop columns are out of order in row {row}.")
 
     for column in range(1, 9):
-        column_cells = [(row, visible[(row, column)]) for row in range(1, 9)
-                        if (row, column) in visible]
+        column_cells = [(row, fully_visible[(row, column)]) for row in range(1, 9)
+                        if (row, column) in fully_visible]
         column_cells.sort(key=lambda item: item[0])
         centers = [(cell.bounds[1] + cell.bounds[3]) / 2 for _, cell in column_cells]
         if any(top >= bottom for top, bottom in zip(centers, centers[1:])):
