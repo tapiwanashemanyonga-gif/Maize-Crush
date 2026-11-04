@@ -185,9 +185,40 @@ def screen_size() -> tuple[int, int]:
 
 def dump_hierarchy():
     ARTIFACTS.mkdir(exist_ok=True)
-    run_adb("shell", "uiautomator", "dump", REMOTE_XML, timeout=60)
+    run_adb("shell", "rm", "-f", REMOTE_XML, timeout=10)
+    last_output = ""
+    hierarchy_ready = False
+    for attempt in range(4):
+        try:
+            last_output = run_adb(
+                "shell", "uiautomator", "dump", "--compressed", REMOTE_XML, timeout=30
+            )
+        except RuntimeError as error:
+            last_output = str(error)
+        try:
+            remote_state = run_adb(
+                "shell", "sh", "-c",
+                f"test -s '{REMOTE_XML}' && echo ready || echo missing",
+                timeout=10,
+            )
+        except RuntimeError as error:
+            remote_state = "missing"
+            last_output += " | remote-file check: " + str(error)
+        if remote_state.strip() == "ready":
+            hierarchy_ready = True
+            break
+        print(
+            f"UIAutomator dump attempt {attempt + 1}/4 did not create a readable "
+            f"hierarchy file. Output: {last_output or '(no output)'}"
+        )
+        time.sleep(1.5)
+    if not hierarchy_ready:
+        raise RuntimeError(
+            "UIAutomator did not create a readable hierarchy file after four "
+            f"attempts. Last output: {last_output or '(no output)'}"
+        )
     local = ARTIFACTS / "uiautomator-latest.xml"
-    run_adb("pull", REMOTE_XML, str(local))
+    run_adb("pull", REMOTE_XML, str(local), timeout=30)
     return parse_hierarchy(local.read_text(encoding="utf-8"))
 
 
