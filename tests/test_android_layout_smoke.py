@@ -7,6 +7,7 @@ from scripts import android_layout_smoke as smoke
 
 from scripts.android_layout_smoke import (
     button_center,
+    dismiss_tutorial,
     dump_hierarchy,
     find_diagonal_chain,
     find_mismatch_pair,
@@ -124,6 +125,33 @@ class AndroidLayoutSmokeTests(unittest.TestCase):
         self.assertEqual(root.tag, "hierarchy")
         self.assertEqual(cells, {})
         self.assertEqual(texts, set())
+
+
+    def test_tutorial_waits_for_webview_accessibility_before_tapping_start(self):
+        empty = parse_hierarchy("<hierarchy />")
+        tutorial = parse_hierarchy(
+            '<hierarchy><node text="How to harvest" />'
+            '<node class="android.widget.Button" clickable="true" '
+            'text="Let’s harvest →" bounds="[100,200][300,260]" /></hierarchy>'
+        )
+        board = parse_hierarchy(
+            '<hierarchy><node text="Level 1 · Maize Fields" /></hierarchy>'
+        )
+        with patch.object(smoke, "dump_hierarchy", side_effect=[
+            empty, tutorial, board
+        ]):
+            with patch.object(smoke, "tap") as tap:
+                with patch.object(smoke.time, "sleep"):
+                    dismiss_tutorial(400, 800)
+        tap.assert_called_once_with((200, 230))
+
+    def test_tutorial_wait_fails_clearly_when_no_game_ui_becomes_accessible(self):
+        empty = parse_hierarchy("<hierarchy />")
+        with patch.object(smoke, "dump_hierarchy", return_value=empty):
+            with patch.object(smoke.time, "time", side_effect=[0, 31]):
+                with patch.object(smoke.time, "sleep"):
+                    with self.assertRaisesRegex(AssertionError, "did not expose"):
+                        dismiss_tutorial(400, 800)
 
 
 if __name__ == "__main__":
