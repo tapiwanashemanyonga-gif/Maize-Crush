@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 100" role="img" aria-label="Maize Crush original Zimbabwean crop artwork">
+<defs>
+ <linearGradient id="leaf" x2="0" y2="1"><stop stop-color="#8bd85c"/><stop offset="1" stop-color="#287844"/></linearGradient>
+ <linearGradient id="gold" x2="1" y2="1"><stop stop-color="#fff09a"/><stop offset=".48" stop-color="#ffc83e"/><stop offset="1" stop-color="#d88a19"/></linearGradient>
+ <linearGradient id="red" x2="0" y2="1"><stop stop-color="#ff9b87"/><stop offset=".5" stop-color="#ef5147"/><stop offset="1" stop-color="#a92332"/></linearGradient>
+ <linearGradient id="nut" x2="1" y2="1"><stop stop-color="#f5d3a0"/><stop offset=".55" stop-color="#c98b52"/><stop offset="1" stop-color="#80502e"/></linearGradient>
+ <linearGradient id="banana" x2="0" y2="1"><stop stop-color="#fff5a5"/><stop offset=".55" stop-color="#ffd84a"/><stop offset="1" stop-color="#d69a20"/></linearGradient>
+ <linearGradient id="orange" x2="1" y2="1"><stop stop-color="#ffd08b"/><stop offset=".5" stop-color="#ff982e"/><stop offset="1" stop-color="#d84d19"/></linearGradient>
+ <linearGradient id="purple" x2="1" y2="1"><stop stop-color="#e3b4ff"/><stop offset=".5" stop-color="#a66ad4"/><stop offset="1" stop-color="#67358f"/></linearGradient>
+</defs>
+<symbol id="crop-maize" viewBox="0 0 100 100">
+ <path d="M22 83Q8 58 18 35Q30 47 38 62Q37 33 55 13Q67 42 58 68Q77 44 88 47Q85 75 60 87Z" fill="url(#leaf)" stroke="#1e6338" stroke-width="3"/>
+ <path d="M38 19Q24 42 40 80Q50 91 60 77Q76 42 58 18Q49 7 38 19Z" fill="url(#gold)" stroke="#a86b17" stroke-width="3"/>
+ <path d="M40 26Q48 35 58 25M37 38Q48 47 62 37M37 51Q49 60 63 50M40 64Q50 72 60 63M45 76Q51 81 56 75" fill="none" stroke="#fff2b0" stroke-width="3" stroke-linecap="round"/>
+ <path d="M27 85Q44 72 44 48M72 84Q57 66 59 43" fill="none" stroke="#b4ed78" stroke-width="3" stroke-linecap="round"/>
+</symbol>
+<symbol id="crop-tomato" viewBox="0 0 100 100">
+ <path d="M50 30C22 13 8 38 16 63Q25 91 50 88Q80 91 88 62Q95 35 69 27Q60 21 50 30Z" fill="url(#red)" stroke="#a52b32" stroke-width="3"/>
+ <path d="M50 32Q43 16 29 22Q38 31 48 36Q44 20 50 15Q58 24 53 36Q66 22 76 26Q66 37 54 39" fill="url(#leaf)" stroke="#24683a" stroke-width="2.5" stroke-linejoin="round"/>
+ <path d="M31 48Q36 39 45 42" fill="none" stroke="#ffd1bd" stroke-width="4" stroke-linecap="round"/>
+ <ellipse cx="65" cy="65" rx="8" ry="5" fill="#ffb3a0" opacity=".35"/>
+</symbol>
+<symbol id="crop-groundnut" viewBox="0 0 100 100">
+ <path d="M47 15Q28 12 27 31Q15 43 27 55Q18 76 39 84Q52 94 64 80Q83 72 73 54Q87 35 69 24Q64 11 47 15Z" fill="url(#nut)" stroke="#81502f" stroke-width="3"/>
+ <path d="M30 28Q49 35 68 26M26 43Q48 51 75 42M27 60Q49 69 73 58M37 78Q51 83 65 75" fill="none" stroke="#f7dfb8" stroke-width="3" opacity=".8"/>
+ <path d="M47 16Q44 6 52 5Q61 5 60 15" fill="none" stroke="#6e9b45" stroke-width="4" stroke-linecap="round"/>
+</symbol>
+<symbol id="crop-banana" viewBox="0 0 100 100">
+ <path d="M17 23Q20 62 48 77Q70 89 87 57Q73 73 54 62Q32 50 28 19Z" fill="url(#banana)" stroke="#b27a19" stroke-width="3" stroke-linejoin="round"/>
+ <path d="M22 19Q34 54 56 59Q73 65 86 52Q74 82 48 74Q22 65 17 24Z" fill="#ffe46a" stroke="#c18a24" stroke-width="2.5"/>
+ <path d="M17 17L27 15L30 22L22 27ZM84 48L91 49L89 57L82 58Z" fill="#5a7132"/>
+ <path d="M34 31Q45 52 63 55" fill="none" stroke="#fff6b8" stroke-width="3" stroke-linecap="round"/>
+</symbol>
+<symbol id="crop-orange" viewBox="0 0 100 100">
+ <circle cx="50" cy="54" r="34" fill="url(#orange)" stroke="#bd541c" stroke-width="3"/>
+ <path d="M49 20Q50 9 63 11Q70 14 72 20Q59 25 49 20Z" fill="url(#leaf)" stroke="#367b3d" stroke-width="2.5"/>
+ <path d="M50 21Q49 13 53 8" fill="none" stroke="#684327" stroke-width="4" stroke-linecap="round"/>
+ <path d="M30 45Q38 31 51 34" fill="none" stroke="#ffe0ad" stroke-width="4" stroke-linecap="round"/>
+ <circle cx="68" cy="65" r="5" fill="#ffca78" opacity=".45"/>
+</symbol>
+<symbol id="crop-sweetpotato" viewBox="0 0 100 100">
+ <path d="M14 56Q20 31 43 31Q59 16 77 33Q97 50 78 69Q65 90 43 80Q19 84 14 56Z" fill="url(#purple)" stroke="#673a8b" stroke-width="3"/>
+ <path d="M24 49Q37 39 47 43M38 68Q52 59 68 66" fill="none" stroke="#f0d5ff" stroke-width="4" stroke-linecap="round"/>
+ <path d="M45 29Q37 17 29 21Q35 33 46 35M54 28Q61 13 75 17Q70 31 55 34" fill="url(#leaf)" stroke="#347746" stroke-width="2.5" stroke-linejoin="round"/>
+ <path d="M14 56Q8 52 10 45M78 69Q88 75 91 67" fill="none" stroke="#8a54b2" stroke-width="4" stroke-linecap="round"/>
+</symbol>
+</svg>
