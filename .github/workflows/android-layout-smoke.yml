@@ -1,8 +1,6 @@
 name: Maize Crush Android Device Layout Smoke
 
 on:
-  push:
-    branches: [test/android-emulator-launch-smoke]
   pull_request:
     branches: [main]
   workflow_dispatch:
