@@ -367,9 +367,10 @@ def enter_focus_play(width: int, height: int) -> None:
 
 
 def scroll_gutter_x(width: int) -> int:
-    # Stay 72 px inside the right edge: outside Android's edge-gesture strip
-    # and in the unused margin beside the centered tablet game panel.
-    return max(72, width - 72)
+    # On wide tablet emulators the game panel spans nearly the full width;
+    # use its left outer gutter so vertical scrolling never crosses crop tiles.
+    # Compact phones have no safe side gutter, but their full board fits already.
+    return 80 if width >= 1000 else max(72, width - 72)
 
 
 def scroll_forward(width: int, height: int) -> None:
