@@ -169,6 +169,18 @@ class AndroidLayoutSmokeTests(unittest.TestCase):
         self.assertEqual(texts, set())
 
 
+    def test_screen_size_swaps_natural_dimensions_for_landscape_rotation(self):
+        with patch.object(smoke, "run_adb", side_effect=[
+            "Physical size: 1080x1920", "1"
+        ]):
+            self.assertEqual(smoke.screen_size(), (1920, 1080))
+
+    def test_screen_size_keeps_natural_dimensions_for_portrait_rotation(self):
+        with patch.object(smoke, "run_adb", side_effect=[
+            "Physical size: 1080x1920", "0"
+        ]):
+            self.assertEqual(smoke.screen_size(), (1080, 1920))
+
     def test_tutorial_waits_for_webview_accessibility_before_tapping_start(self):
         empty = parse_hierarchy("<hierarchy />")
         tutorial = parse_hierarchy(
