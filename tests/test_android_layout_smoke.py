@@ -267,7 +267,7 @@ class AndroidLayoutSmokeTests(unittest.TestCase):
             for row in range(1, 9)
             for column in range(1, 9)
         }
-        root = ET.fromstring("<hierarchy />")
+        root = parse_hierarchy("<hierarchy />")[0]
         texts = {"Level 1 · Maize Fields", "Harvest score"}
         with patch.object(smoke, "dump_hierarchy", return_value=(root, cells, texts)):
             with patch.object(smoke, "reset_scroll_top") as reset:
