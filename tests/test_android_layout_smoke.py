@@ -249,6 +249,20 @@ class AndroidLayoutSmokeTests(unittest.TestCase):
                     smoke.enter_focus_play(400, 800)
         tap.assert_called_once_with((200, 230))
 
+    def test_focus_play_uses_android_accessibility_label_when_visible_text_is_missing(self):
+        focus = parse_hierarchy(
+            '<hierarchy><node class="android.widget.Button" clickable="true" '
+            'content-desc="Enter immersive play mode" bounds="[100,200][300,260]" /></hierarchy>'
+        )
+        after = parse_hierarchy(
+            '<hierarchy><node text="Exit focus play" /></hierarchy>'
+        )
+        with patch.object(smoke, "dump_hierarchy", side_effect=[focus, after]):
+            with patch.object(smoke, "tap") as tap:
+                with patch.object(smoke.time, "sleep"):
+                    smoke.enter_focus_play(400, 800)
+        tap.assert_called_once_with((200, 230))
+
     def test_focus_play_is_not_toggled_off_when_already_active(self):
         active = parse_hierarchy(
             '<hierarchy><node class="android.widget.Button" clickable="true" '
