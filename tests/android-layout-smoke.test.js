@@ -18,7 +18,8 @@ test("Android phone and tablet workflow runs UI-level board and gesture checks",
   assert.ok(workflow.includes("if: always()"));
   assert.ok(script.includes("uiautomator"));
   assert.ok(script.includes("find_diagonal_chain"));
-  assert.ok(script.includes("fresh field"));
+  assert.ok(script.includes("tap_restart_button"));
+  assert.ok(script.includes("never swiping over tiles"));
   assert.ok(script.toLowerCase().includes("moves left"));
   assert.ok(script.includes("tile swapping is not allowed"));
   assert.ok(script.includes("landscape"));
