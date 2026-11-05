@@ -98,12 +98,19 @@ def fully_visible_cells(
             continue
         if tile_width <= 0 or tile_height <= 0:
             continue
-        near_edge = (
-            x1 <= edge_margin or y1 <= edge_margin
-            or width - x2 <= edge_margin or height - y2 <= edge_margin
-        )
         ratio = tile_width / tile_height
-        if near_edge and not 0.70 <= ratio <= 1.30:
+        # A wide, shallow rectangle is a vertically clipped tile only when
+        # it touches the top/bottom viewport edge. A tall, narrow rectangle
+        # is horizontally clipped only when it touches the left/right edge.
+        vertical_edge_clip = (
+            ratio > 1.30
+            and (y1 <= edge_margin or height - y2 <= edge_margin)
+        )
+        horizontal_edge_clip = (
+            ratio < 0.70
+            and (x1 <= edge_margin or width - x2 <= edge_margin)
+        )
+        if vertical_edge_clip or horizontal_edge_clip:
             continue
         result[key] = cell
     return result
