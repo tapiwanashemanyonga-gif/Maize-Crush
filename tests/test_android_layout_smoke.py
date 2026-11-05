@@ -169,6 +169,18 @@ class AndroidLayoutSmokeTests(unittest.TestCase):
         self.assertEqual(texts, set())
 
 
+    def test_screen_size_swaps_natural_dimensions_for_landscape_rotation(self):
+        with patch.object(smoke, "run_adb", side_effect=[
+            "Physical size: 1080x1920", "1"
+        ]):
+            self.assertEqual(smoke.screen_size(), (1920, 1080))
+
+    def test_screen_size_keeps_natural_dimensions_for_portrait_rotation(self):
+        with patch.object(smoke, "run_adb", side_effect=[
+            "Physical size: 1080x1920", "0"
+        ]):
+            self.assertEqual(smoke.screen_size(), (1080, 1920))
+
     def test_tutorial_waits_for_webview_accessibility_before_tapping_start(self):
         empty = parse_hierarchy("<hierarchy />")
         tutorial = parse_hierarchy(
@@ -248,6 +260,48 @@ class AndroidLayoutSmokeTests(unittest.TestCase):
                 with patch.object(smoke.time, "sleep"):
                     smoke.enter_focus_play(400, 800)
         tap.assert_called_once_with((200, 230))
+
+    def test_focus_play_uses_android_accessibility_label_when_visible_text_is_missing(self):
+        focus = parse_hierarchy(
+            '<hierarchy><node class="android.widget.Button" clickable="true" '
+            'content-desc="Enter immersive play mode" bounds="[100,200][300,260]" /></hierarchy>'
+        )
+        after = parse_hierarchy(
+            '<hierarchy><node text="Exit focus play" /></hierarchy>'
+        )
+        with patch.object(smoke, "dump_hierarchy", side_effect=[focus, after]):
+            with patch.object(smoke, "tap") as tap:
+                with patch.object(smoke.time, "sleep"):
+                    smoke.enter_focus_play(400, 800)
+        tap.assert_called_once_with((200, 230))
+
+    def test_focus_play_recognizes_short_exit_focus_label(self):
+        active = parse_hierarchy(
+            '<hierarchy><node class="android.widget.Button" clickable="true" '
+            'text="Exit focus" bounds="[100,200][300,260]" /></hierarchy>'
+        )
+        with patch.object(smoke, "dump_hierarchy", return_value=active):
+            with patch.object(smoke, "tap") as tap:
+                smoke.enter_focus_play(400, 800)
+        tap.assert_not_called()
+
+    def test_restart_button_generates_a_new_field_without_scrolling(self):
+        screen = parse_hierarchy(
+            '<hierarchy><node class="android.widget.Button" clickable="true" '
+            'text="↻ Restart" bounds="[100,200][300,260]" /></hierarchy>'
+        )
+        with patch.object(smoke, "dump_hierarchy", return_value=screen):
+            with patch.object(smoke, "tap") as tap:
+                with patch.object(smoke.time, "sleep"):
+                    self.assertTrue(smoke.tap_restart_button(400, 800))
+        tap.assert_called_once_with((200, 230))
+
+    def test_restart_button_reports_missing_control_without_touching_board(self):
+        screen = parse_hierarchy("<hierarchy />")
+        with patch.object(smoke, "dump_hierarchy", return_value=screen):
+            with patch.object(smoke, "tap") as tap:
+                self.assertFalse(smoke.tap_restart_button(400, 800))
+        tap.assert_not_called()
 
     def test_focus_play_is_not_toggled_off_when_already_active(self):
         active = parse_hierarchy(
