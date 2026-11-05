@@ -196,10 +196,10 @@ class AndroidLayoutSmokeTests(unittest.TestCase):
                         dismiss_tutorial(400, 800)
 
 
-    def test_scroll_gesture_uses_right_gutter_away_from_android_edge(self):
-        self.assertEqual(scroll_gutter_x(936), 912)
-        self.assertEqual(scroll_gutter_x(1600), 1576)
-        self.assertEqual(scroll_gutter_x(400), 376)
+    def test_scroll_gesture_uses_safe_inset_away_from_android_edge(self):
+        self.assertEqual(scroll_gutter_x(936), 72)
+        self.assertEqual(scroll_gutter_x(1600), 112)
+        self.assertEqual(scroll_gutter_x(400), 72)
 
     def test_scroll_forward_and_backward_use_the_same_safe_gutter(self):
         commands = []
@@ -208,8 +208,46 @@ class AndroidLayoutSmokeTests(unittest.TestCase):
                 smoke.scroll_forward(936, 1600)
                 smoke.scroll_backward(936, 1600)
         self.assertEqual(commands[0][0:3], ("shell", "input", "swipe"))
-        self.assertEqual(commands[0][3], "912")
-        self.assertEqual(commands[1][3], "912")
+        self.assertEqual(commands[0][3], "72")
+        self.assertEqual(commands[1][3], "72")
+
+
+    def test_tutorial_waits_through_system_launcher_anr_dialog(self):
+        dialog = parse_hierarchy(
+            '<hierarchy><node text="Pixel Launcher isn\'t responding" />'
+            '<node class="android.widget.Button" clickable="true" '
+            'text="Wait" bounds="[100,300][300,360]" /></hierarchy>'
+        )
+        tutorial = parse_hierarchy(
+            '<hierarchy><node text="How to harvest" />'
+            '<node class="android.widget.Button" clickable="true" '
+            'text="Let’s harvest →" bounds="[100,200][300,260]" /></hierarchy>'
+        )
+        board = parse_hierarchy(
+            '<hierarchy><node text="Level 1 · Maize Fields" /></hierarchy>'
+        )
+        with patch.object(smoke, "dump_hierarchy", side_effect=[
+            dialog, tutorial, board
+        ]):
+            with patch.object(smoke, "tap") as tap:
+                with patch.object(smoke.time, "sleep"):
+                    dismiss_tutorial(400, 800)
+        self.assertEqual(tap.call_args_list[0].args, ((200, 330),))
+        self.assertEqual(tap.call_args_list[1].args, ((200, 230),))
+
+    def test_focus_play_is_entered_when_control_is_available(self):
+        focus = parse_hierarchy(
+            '<hierarchy><node class="android.widget.Button" clickable="true" '
+            'text="Focus play" bounds="[100,200][300,260]" /></hierarchy>'
+        )
+        after = parse_hierarchy(
+            '<hierarchy><node text="Exit focus play" /></hierarchy>'
+        )
+        with patch.object(smoke, "dump_hierarchy", side_effect=[focus, after]):
+            with patch.object(smoke, "tap") as tap:
+                with patch.object(smoke.time, "sleep"):
+                    smoke.enter_focus_play(400, 800)
+        tap.assert_called_once_with((200, 230))
 
     def test_optional_screenshot_failure_does_not_fail_the_smoke_test(self):
         with tempfile.TemporaryDirectory() as directory:
