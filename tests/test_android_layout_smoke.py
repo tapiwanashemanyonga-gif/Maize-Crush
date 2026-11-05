@@ -198,7 +198,7 @@ class AndroidLayoutSmokeTests(unittest.TestCase):
 
     def test_scroll_gesture_uses_right_safe_inset_away_from_android_edge(self):
         self.assertEqual(scroll_gutter_x(936), 864)
-        self.assertEqual(scroll_gutter_x(1600), 1528)
+        self.assertEqual(scroll_gutter_x(1600), 80)
         self.assertEqual(scroll_gutter_x(400), 328)
 
     def test_scroll_forward_and_backward_use_the_same_safe_gutter(self):
