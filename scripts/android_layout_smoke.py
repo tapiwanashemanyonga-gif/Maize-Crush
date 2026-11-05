@@ -285,10 +285,21 @@ def tap(point: tuple[int, int]) -> None:
 
 
 def dismiss_tutorial(width: int, height: int) -> None:
-    deadline = time.time() + 30
+    deadline = time.time() + 45
     last_texts: set[str] = set()
     while time.time() < deadline:
         root, cells, texts = dump_hierarchy()
+        # Android emulator images occasionally show a system ANR dialog for
+        # Pixel Launcher even while the game Activity is healthy underneath.
+        # Choose Wait rather than closing the app or mistaking the dialog for
+        # a failed game launch.
+        if any("isn't responding" in normalized(text) for text in texts):
+            wait_point = button_center(root, "wait", width, height)
+            if wait_point:
+                print("Emulator system app is unresponsive; choosing Wait and retrying the game UI.")
+                tap(wait_point)
+                time.sleep(1.5)
+                continue
         last_texts = texts
         tutorial_visible = any(
             "how to harvest" in normalized(text) for text in texts
@@ -321,9 +332,27 @@ def dismiss_tutorial(width: int, height: int) -> None:
     )
 
 
+def enter_focus_play(width: int, height: int) -> None:
+    """Use the game's explicit immersive mode so the full field is testable."""
+    root, _, texts = dump_hierarchy()
+    point = button_center(root, "focus play", width, height)
+    if not point:
+        print("Focus-play control is not visible; continuing with the default layout.")
+        return
+    tap(point)
+    time.sleep(0.8)
+    _, _, after = dump_hierarchy()
+    if any("exit focus" in normalized(value) for value in after):
+        print("Entered Focus Play for full-board viewport and gesture checks.")
+    else:
+        print("Focus Play was tapped; continuing after the layout settles.")
+
+
 def scroll_gutter_x(width: int) -> int:
-    # Stay clear of both Android edge-gesture zones and the crop tiles.
-    return max(24, width - 24)
+    # The old right-edge swipe was inside Android's system-gesture region.
+    # Use a left-side safe inset; at both configured emulator sizes this is
+    # outside the game panel while remaining beyond the edge-gesture strip.
+    return max(72, int(width * 0.07))
 
 
 def scroll_forward(width: int, height: int) -> None:
@@ -568,6 +597,7 @@ def main() -> int:
     time.sleep(1.0)
     assert_running()
     dismiss_tutorial(width, height)
+    enter_focus_play(width, height)
     snapshots, _, _, _ = collect_board(width, height)
     if not any(has_moves_value(item[1], 20) for item in snapshots):
         raise AssertionError("A fresh Level 1 round should begin with 20 moves.")
