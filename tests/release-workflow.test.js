@@ -29,3 +29,60 @@ test("signed release workflow requires signing secrets and verifies both package
   assert.match(workflow, /app-release\.apk/);
   assert.match(workflow, /app-release\.aab/);
 });
+
+test("phone and tablet layout smoke workflow enables KVM before the UI test runner", () => {
+  const layoutWorkflow = fs.readFileSync(
+    path.resolve(__dirname, "..", ".github", "workflows", "android-layout-smoke.yml"),
+    "utf8"
+  );
+  assert.ok(layoutWorkflow.includes("profile: pixel_2"), "compact-phone emulator profile is required");
+  assert.ok(layoutWorkflow.includes("profile: pixel_tablet"), "tablet emulator profile is required");
+  assert.ok(layoutWorkflow.includes("pull_request:") && layoutWorkflow.includes("branches: [main]"));
+  assert.ok(layoutWorkflow.includes("workflow_dispatch:"));
+  assert.ok(!layoutWorkflow.includes("  push:"), "avoid duplicate push and pull-request matrix runs");
+  assert.ok(layoutWorkflow.includes('KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"'));
+  assert.ok(layoutWorkflow.includes("sudo udevadm trigger --name-match=kvm"));
+  assert.ok(
+    layoutWorkflow.indexOf("Enable KVM group perms") <
+      layoutWorkflow.indexOf("Launch and verify the real crop board and gestures"),
+    "KVM permissions must be applied before starting either emulator"
+  );
+});
+
+test("phone and tablet smoke workflow locates and installs the downloaded debug APK", () => {
+  const layoutWorkflow = fs.readFileSync(
+    path.resolve(__dirname, "..", ".github", "workflows", "android-layout-smoke.yml"),
+    "utf8"
+  );
+  assert.ok(layoutWorkflow.includes('test -n "$(find app -type f -name \'app-debug.apk\' -print -quit)" || { echo "Downloaded debug APK was not found."; find app -type f -print; exit 1; }'));
+  assert.ok(layoutWorkflow.includes('adb install -r "$(find app -type f -name \'app-debug.apk\' -print -quit)"'));
+  assert.ok(!layoutWorkflow.includes('APK="$(find app'), "do not rely on variables across runner shell lines");
+  assert.match(layoutWorkflow, /adb shell pm clear com\.maizecrush\.zimbabweharvest/);
+  assert.match(layoutWorkflow, /python3 scripts\/android_layout_smoke\.py/);
+});
+
+test("emulator runner delegates UI inspection and gesture assertions to the tested Python helper", () => {
+  const layoutWorkflow = fs.readFileSync(
+    path.resolve(__dirname, "..", ".github", "workflows", "android-layout-smoke.yml"),
+    "utf8"
+  );
+  const script = layoutWorkflow.split("script: |")[1];
+  assert.ok(script.includes("python3 scripts/android_layout_smoke.py"));
+  assert.ok(!/^\s+if .*; then\s*$/m.test(script), "keep runner shell logic self-contained");
+  assert.ok(!script.includes("assert_running() {"), "activity checks live in the Python helper");
+});
+
+test("phone and tablet runtime jobs check out the UI smoke helper before running it", () => {
+  const layoutWorkflow = fs.readFileSync(
+    path.resolve(__dirname, "..", ".github", "workflows", "android-layout-smoke.yml"),
+    "utf8"
+  );
+  const runtimeJob = layoutWorkflow.split("  runtime-smoke:")[1];
+  assert.ok(runtimeJob, "runtime-smoke job must exist");
+  const checkoutIndex = runtimeJob.indexOf("uses: actions/checkout@v4");
+  const downloadIndex = runtimeJob.indexOf("uses: actions/download-artifact@v4");
+  const helperIndex = runtimeJob.indexOf("python3 scripts/android_layout_smoke.py");
+  assert.ok(checkoutIndex >= 0, "each matrix runner needs the repository source");
+  assert.ok(downloadIndex > checkoutIndex, "checkout must happen before artifact download");
+  assert.ok(helperIndex > checkoutIndex, "the UI helper must be present before execution");
+});
