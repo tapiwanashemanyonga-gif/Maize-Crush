@@ -145,3 +145,11 @@ test("Android release workflows verify built APK package, label, version and SDK
 
 
 test("Android release candidate enables KVM before launching the signed game APK on an Android emulator",()=>{const workflow=fs.readFileSync(path.join(__dirname,"..",".github/workflows/android-release-candidate.yml"),"utf8");assert.match(workflow,/reactivecircus\/android-emulator-runner@v2/);assert.match(workflow,/api-level: 35/);assert.match(workflow,/target: google_apis/);assert.ok(workflow.includes('KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"'),"KVM device permissions must be enabled on Linux runners");assert.ok(workflow.includes("sudo udevadm trigger --name-match=kvm"),"KVM udev rules must be applied before emulator launch");assert.ok(workflow.indexOf("Enable KVM group perms")<workflow.indexOf("Launch signed release APK on Android emulator"),"KVM must be enabled before starting the emulator");assert.match(workflow,/adb install -r android\/app\/build\/outputs\/apk\/release\/app-release\.apk/);assert.match(workflow,/am start -W -n com\.maizecrush\.zimbabweharvest\/\.MainActivity/);assert.match(workflow,/pidof com\.maizecrush\.zimbabweharvest/);assert.match(workflow,/FATAL EXCEPTION/);assert.match(workflow,/if adb logcat .*; then echo .*; exit 1; fi/,"emulator crash check must be a single shell line");assert.ok(workflow.includes("FATAL EXCEPTION.*com\\.maizecrush\\.zimbabweharvest"),"crash filter must target the app package");assert.ok(workflow.indexOf("Launch signed release APK on Android emulator")>workflow.indexOf("Smoke-test signing with a temporary CI key"),"emulator must test the temporarily signed release APK")});
+
+
+test("Android WebView drag sampling resolves tile coordinates and includes the pointer-up endpoint", () => {
+  const source = fs.readFileSync(path.join(__dirname, "..", "game.js"), "utf8");
+  assert.match(source, /function locateTileAtPoint\\(x,y\\)/);
+  assert.match(source, /pointermove.*locateTileAtPoint\\(e\\.clientX,e\\.clientY\\)/);
+  assert.match(source, /pointerup.*extendPath\\(locateTileAtPoint\\(e\\.clientX,e\\.clientY\\)/);
+});
