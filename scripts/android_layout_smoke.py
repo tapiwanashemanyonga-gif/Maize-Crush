@@ -219,7 +219,7 @@ def screen_size() -> tuple[int, int]:
     return tuple(map(int, sizes[-1]))
 
 
-def dump_hierarchy():
+def dump_hierarchy(recover_anr: bool = True):
     ARTIFACTS.mkdir(exist_ok=True)
     run_adb("shell", "rm", "-f", REMOTE_XML, timeout=10)
     last_output = ""
@@ -257,7 +257,8 @@ def dump_hierarchy():
             print("System launcher ANR detected during UI scan; choosing Wait and retrying.")
             tap(wait_point)
             time.sleep(1.0)
-            return dump_hierarchy()
+            if recover_anr:
+                return dump_hierarchy(recover_anr=False)
     return parsed
 
 
