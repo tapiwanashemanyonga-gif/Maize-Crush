@@ -328,13 +328,21 @@ def dismiss_tutorial(width: int, height: int) -> None:
     summary = ", ".join(sorted(last_texts)[:12]) or "(no accessible text)"
     raise AssertionError(
         "Android UI did not expose the first-run tutorial or Level 1 board "
-        f"within 30 seconds. Last accessible text: {summary}"
+        f"within 45 seconds. Last accessible text: {summary}"
     )
 
 
 def enter_focus_play(width: int, height: int) -> None:
-    """Use the game's explicit immersive mode so the full field is testable."""
+    """Ensure immersive mode is on without toggling an already-active mode off."""
     root, _, texts = dump_hierarchy()
+    if any(
+        "exit focus play" in normalized(
+            node.attrib.get("text", "") or node.attrib.get("content-desc", "")
+        )
+        for node in root.iter()
+    ):
+        print("Focus Play is already active; keeping the immersive board visible.")
+        return
     point = button_center(root, "focus play", width, height)
     if not point:
         print("Focus-play control is not visible; continuing with the default layout.")
@@ -356,7 +364,7 @@ def scroll_gutter_x(width: int) -> int:
 
 
 def scroll_forward(width: int, height: int) -> None:
-    # Swipe in the outer right gutter, outside the board and Android edge zone.
+    # Swipe in the safe left inset, outside the board and Android edge zone.
     x = scroll_gutter_x(width)
     run_adb(
         "shell", "input", "swipe", str(x), str(int(height * 0.78)),
