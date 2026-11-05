@@ -196,10 +196,10 @@ class AndroidLayoutSmokeTests(unittest.TestCase):
                         dismiss_tutorial(400, 800)
 
 
-    def test_scroll_gesture_uses_safe_inset_away_from_android_edge(self):
-        self.assertEqual(scroll_gutter_x(936), 72)
-        self.assertEqual(scroll_gutter_x(1600), 112)
-        self.assertEqual(scroll_gutter_x(400), 72)
+    def test_scroll_gesture_uses_right_safe_inset_away_from_android_edge(self):
+        self.assertEqual(scroll_gutter_x(936), 864)
+        self.assertEqual(scroll_gutter_x(1600), 1528)
+        self.assertEqual(scroll_gutter_x(400), 328)
 
     def test_scroll_forward_and_backward_use_the_same_safe_gutter(self):
         commands = []
@@ -208,8 +208,8 @@ class AndroidLayoutSmokeTests(unittest.TestCase):
                 smoke.scroll_forward(936, 1600)
                 smoke.scroll_backward(936, 1600)
         self.assertEqual(commands[0][0:3], ("shell", "input", "swipe"))
-        self.assertEqual(commands[0][3], "72")
-        self.assertEqual(commands[1][3], "72")
+        self.assertEqual(commands[0][3], "864")
+        self.assertEqual(commands[1][3], "864")
 
 
     def test_tutorial_waits_through_system_launcher_anr_dialog(self):
@@ -258,6 +258,25 @@ class AndroidLayoutSmokeTests(unittest.TestCase):
             with patch.object(smoke, "tap") as tap:
                 smoke.enter_focus_play(400, 800)
         tap.assert_not_called()
+
+    def test_collect_board_does_not_scroll_when_all_crop_tiles_are_visible(self):
+        cells = {
+            (row, column): smoke.Cell(
+                "maize", (column * 40 + 1, row * 40 + 1, column * 40 + 36, row * 40 + 36)
+            )
+            for row in range(1, 9)
+            for column in range(1, 9)
+        }
+        root = ET.fromstring("<hierarchy />")
+        texts = {"Level 1 · Maize Fields", "Harvest score"}
+        with patch.object(smoke, "dump_hierarchy", return_value=(root, cells, texts)):
+            with patch.object(smoke, "reset_scroll_top") as reset:
+                snapshots, found, found_texts, last = smoke.collect_board(400, 400)
+        reset.assert_not_called()
+        self.assertEqual(len(found), 64)
+        self.assertEqual(len(snapshots), 1)
+        self.assertEqual(last, 0)
+        self.assertIn("Harvest score", found_texts)
 
     def test_optional_screenshot_failure_does_not_fail_the_smoke_test(self):
         with tempfile.TemporaryDirectory() as directory:
