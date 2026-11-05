@@ -249,6 +249,16 @@ class AndroidLayoutSmokeTests(unittest.TestCase):
                     smoke.enter_focus_play(400, 800)
         tap.assert_called_once_with((200, 230))
 
+    def test_focus_play_is_not_toggled_off_when_already_active(self):
+        active = parse_hierarchy(
+            '<hierarchy><node class="android.widget.Button" clickable="true" '
+            'text="Exit focus play" bounds="[100,200][300,260]" /></hierarchy>'
+        )
+        with patch.object(smoke, "dump_hierarchy", return_value=active):
+            with patch.object(smoke, "tap") as tap:
+                smoke.enter_focus_play(400, 800)
+        tap.assert_not_called()
+
     def test_optional_screenshot_failure_does_not_fail_the_smoke_test(self):
         with tempfile.TemporaryDirectory() as directory:
             with patch.object(smoke, "ARTIFACTS", Path(directory)):
