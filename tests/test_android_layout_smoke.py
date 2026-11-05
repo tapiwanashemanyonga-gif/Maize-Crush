@@ -190,7 +190,7 @@ class AndroidLayoutSmokeTests(unittest.TestCase):
     def test_tutorial_wait_fails_clearly_when_no_game_ui_becomes_accessible(self):
         empty = parse_hierarchy("<hierarchy />")
         with patch.object(smoke, "dump_hierarchy", return_value=empty):
-            with patch.object(smoke.time, "time", side_effect=[0, 31]):
+            with patch.object(smoke.time, "time", side_effect=[0, 46]):
                 with patch.object(smoke.time, "sleep"):
                     with self.assertRaisesRegex(AssertionError, "did not expose"):
                         dismiss_tutorial(400, 800)
