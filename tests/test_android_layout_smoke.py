@@ -197,8 +197,10 @@ class AndroidLayoutSmokeTests(unittest.TestCase):
 
 
     def test_scroll_gesture_uses_right_safe_inset_away_from_android_edge(self):
+        self.assertEqual(scroll_gutter_x(2560), 2355)
+        self.assertEqual(scroll_gutter_x(1920), 1766)
+        self.assertEqual(scroll_gutter_x(1600), 1472)
         self.assertEqual(scroll_gutter_x(936), 864)
-        self.assertEqual(scroll_gutter_x(1600), 80)
         self.assertEqual(scroll_gutter_x(400), 328)
 
     def test_scroll_forward_and_backward_use_the_same_safe_gutter(self):
@@ -300,6 +302,18 @@ class AndroidLayoutSmokeTests(unittest.TestCase):
         self.assertEqual(len(fully_visible), 56)
         # UIAutomator still reports the clipped row as visible, but its
         # truncated 15px bounds must not be treated as the crop's true shape.
+        self.assertEqual(validate_visible_geometry(cells, 400, 500), 64)
+
+
+    def test_geometry_ignores_bottom_row_clipped_just_inside_viewport_edge(self):
+        _, cells, _ = parse_hierarchy(fixture_xml())
+        for column in range(1, 9):
+            cell = cells[(8, column)]
+            x1, _, x2, _ = cell.bounds
+            cells[(8, column)] = smoke.Cell(
+                cell.crop, (x1, 485, x2, 499)
+            )
+        self.assertEqual(len(fully_visible_cells(cells, 400, 500)), 56)
         self.assertEqual(validate_visible_geometry(cells, 400, 500), 64)
 
 if __name__ == "__main__":
