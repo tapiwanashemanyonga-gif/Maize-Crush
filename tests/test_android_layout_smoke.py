@@ -275,6 +275,34 @@ class AndroidLayoutSmokeTests(unittest.TestCase):
                     smoke.enter_focus_play(400, 800)
         tap.assert_called_once_with((200, 230))
 
+    def test_focus_play_recognizes_short_exit_focus_label(self):
+        active = parse_hierarchy(
+            '<hierarchy><node class="android.widget.Button" clickable="true" '
+            'text="Exit focus" bounds="[100,200][300,260]" /></hierarchy>'
+        )
+        with patch.object(smoke, "dump_hierarchy", return_value=active):
+            with patch.object(smoke, "tap") as tap:
+                smoke.enter_focus_play(400, 800)
+        tap.assert_not_called()
+
+    def test_restart_button_generates_a_new_field_without_scrolling(self):
+        screen = parse_hierarchy(
+            '<hierarchy><node class="android.widget.Button" clickable="true" '
+            'text="↻ Restart" bounds="[100,200][300,260]" /></hierarchy>'
+        )
+        with patch.object(smoke, "dump_hierarchy", return_value=screen):
+            with patch.object(smoke, "tap") as tap:
+                with patch.object(smoke.time, "sleep"):
+                    self.assertTrue(smoke.tap_restart_button(400, 800))
+        tap.assert_called_once_with((200, 230))
+
+    def test_restart_button_reports_missing_control_without_touching_board(self):
+        screen = parse_hierarchy("<hierarchy />")
+        with patch.object(smoke, "dump_hierarchy", return_value=screen):
+            with patch.object(smoke, "tap") as tap:
+                self.assertFalse(smoke.tap_restart_button(400, 800))
+        tap.assert_not_called()
+
     def test_focus_play_is_not_toggled_off_when_already_active(self):
         active = parse_hierarchy(
             '<hierarchy><node class="android.widget.Button" clickable="true" '
