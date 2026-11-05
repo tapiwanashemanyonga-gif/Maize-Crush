@@ -88,16 +88,24 @@ def visible_cells(cells: dict[tuple[int, int], Cell], width: int, height: int):
 def fully_visible_cells(
     cells: dict[tuple[int, int], Cell], width: int, height: int
 ):
-    """Exclude cells touching viewport edges where UIAutomator may truncate bounds."""
+    """Exclude non-square accessibility rectangles truncated at viewport edges."""
     edge_margin = 16
     result = {}
     for key, cell in cells.items():
         x1, y1, x2, y2 = cell.bounds
-        if (
-            x1 > edge_margin and y1 > edge_margin
-            and x2 < width - edge_margin and y2 < height - edge_margin
-        ):
-            result[key] = cell
+        tile_width, tile_height = x2 - x1, y2 - y1
+        if x1 < 0 or y1 < 0 or x2 > width or y2 > height:
+            continue
+        if tile_width <= 0 or tile_height <= 0:
+            continue
+        near_edge = (
+            x1 <= edge_margin or y1 <= edge_margin
+            or width - x2 <= edge_margin or height - y2 <= edge_margin
+        )
+        ratio = tile_width / tile_height
+        if near_edge and not 0.70 <= ratio <= 1.30:
+            continue
+        result[key] = cell
     return result
 
 
