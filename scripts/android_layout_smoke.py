@@ -88,11 +88,15 @@ def visible_cells(cells: dict[tuple[int, int], Cell], width: int, height: int):
 def fully_visible_cells(
     cells: dict[tuple[int, int], Cell], width: int, height: int
 ):
-    """Exclude cells whose accessibility bounds are clipped by the viewport."""
+    """Exclude cells touching viewport edges where UIAutomator may truncate bounds."""
+    edge_margin = 16
     result = {}
     for key, cell in cells.items():
         x1, y1, x2, y2 = cell.bounds
-        if x1 > 0 and y1 > 0 and x2 < width and y2 < height:
+        if (
+            x1 > edge_margin and y1 > edge_margin
+            and x2 < width - edge_margin and y2 < height - edge_margin
+        ):
             result[key] = cell
     return result
 
@@ -367,14 +371,15 @@ def enter_focus_play(width: int, height: int) -> None:
 
 
 def scroll_gutter_x(width: int) -> int:
-    # On wide tablet emulators the game panel spans nearly the full width;
-    # use its left outer gutter so vertical scrolling never crosses crop tiles.
-    # Compact phones have no safe side gutter, but their full board fits already.
-    return 80 if width >= 1000 else max(72, width - 72)
+    # Swipe near the right side of the WebView, but leave an 8% inset from
+    # Android's system edge gesture zone. On compact screens keep the 72px inset.
+    if width >= 1000:
+        return width - max(80, round(width * 0.08))
+    return max(72, width - 72)
 
 
 def scroll_forward(width: int, height: int) -> None:
-    # Swipe in the safe left inset, outside the board and Android edge zone.
+    # Swipe in the safe right inset, outside the board and Android edge zone.
     x = scroll_gutter_x(width)
     run_adb(
         "shell", "input", "swipe", str(x), str(int(height * 0.78)),
