@@ -287,5 +287,20 @@ class AndroidLayoutSmokeTests(unittest.TestCase):
 
 
 
+
+    def test_geometry_ignores_eight_partially_clipped_bottom_row_tiles(self):
+        _, cells, _ = parse_hierarchy(fixture_xml())
+        for column in range(1, 9):
+            cell = cells[(8, column)]
+            x1, _, x2, _ = cell.bounds
+            cells[(8, column)] = smoke.Cell(
+                cell.crop, (x1, 485, x2, 500)
+            )
+        fully_visible = fully_visible_cells(cells, 400, 500)
+        self.assertEqual(len(fully_visible), 56)
+        # UIAutomator still reports the clipped row as visible, but its
+        # truncated 15px bounds must not be treated as the crop's true shape.
+        self.assertEqual(validate_visible_geometry(cells, 400, 500), 64)
+
 if __name__ == "__main__":
     unittest.main()
