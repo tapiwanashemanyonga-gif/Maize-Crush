@@ -249,7 +249,16 @@ def dump_hierarchy():
         )
     local = ARTIFACTS / "uiautomator-latest.xml"
     run_adb("pull", REMOTE_XML, str(local), timeout=30)
-    return parse_hierarchy(local.read_text(encoding="utf-8"))
+    parsed = parse_hierarchy(local.read_text(encoding="utf-8"))
+    root, _, texts = parsed
+    if any("isn't responding" in normalized(value) for value in texts):
+        wait_point = button_center(root, "wait", *screen_size())
+        if wait_point:
+            print("System launcher ANR detected during UI scan; choosing Wait and retrying.")
+            tap(wait_point)
+            time.sleep(1.0)
+            return dump_hierarchy()
+    return parsed
 
 
 def save_screenshot(name: str) -> bool:
@@ -357,10 +366,9 @@ def enter_focus_play(width: int, height: int) -> None:
 
 
 def scroll_gutter_x(width: int) -> int:
-    # The old right-edge swipe was inside Android's system-gesture region.
-    # Use a left-side safe inset; at both configured emulator sizes this is
-    # outside the game panel while remaining beyond the edge-gesture strip.
-    return max(72, int(width * 0.07))
+    # Stay 72 px inside the right edge: outside Android's edge-gesture strip
+    # and in the unused margin beside the centered tablet game panel.
+    return max(72, width - 72)
 
 
 def scroll_forward(width: int, height: int) -> None:
@@ -388,10 +396,23 @@ def reset_scroll_top(width: int, height: int) -> None:
 
 
 def collect_board(width: int, height: int):
-    reset_scroll_top(width, height)
     snapshots = []
     all_cells: dict[tuple[int, int], Cell] = {}
     all_texts: set[str] = set()
+    root, cells, texts = dump_hierarchy()
+    snapshots.append((0, root, cells, texts))
+    all_cells.update(cells)
+    all_texts.update(texts)
+    # Compact phones often fit the entire 8x8 field without scrolling.
+    # Do not swipe across playable crop tiles just to return to the top.
+    if len(cells) == 64 and len(visible_cells(cells, width, height)) == 64:
+        validate_visible_geometry(cells, width, height)
+        print("Rendered board verified: all 64 crop cells are visible without scrolling.")
+        return snapshots, all_cells, all_texts, 0
+    reset_scroll_top(width, height)
+    snapshots = []
+    all_cells = {}
+    all_texts = set()
     last_index = 0
     for index in range(14):
         root, cells, texts = dump_hierarchy()
