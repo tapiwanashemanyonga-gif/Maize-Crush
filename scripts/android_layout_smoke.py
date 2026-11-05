@@ -216,7 +216,17 @@ def screen_size() -> tuple[int, int]:
     sizes = SIZE_RE.findall(output)
     if not sizes:
         raise RuntimeError("Could not read emulator display size: " + output)
-    return tuple(map(int, sizes[-1]))
+    width, height = map(int, sizes[-1])
+    # wm size reports the device's natural dimensions. UIAutomator and
+    # screenshots use the current orientation, so swap dimensions after a
+    # quarter-turn; otherwise clipped landscape rows can look falsely square.
+    try:
+        rotation = int(run_adb("shell", "settings", "get", "system", "user_rotation").strip())
+    except (RuntimeError, ValueError):
+        rotation = 0
+    if rotation in (1, 3):
+        return height, width
+    return width, height
 
 
 def dump_hierarchy(recover_anr: bool = True):
