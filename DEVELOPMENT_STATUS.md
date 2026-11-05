@@ -36,4 +36,5 @@ Last reviewed: 2026-11-05
 
 - Branch: `qa/android-layout-smoke-mainline` (based on main commit `9ab62a589cbcd2138fd48d786a28cb42517785b2`).
 - Changes: add a clipped-bottom-row geometry regression test; run the device-layout workflow on main pushes as well as pull requests; keep this status log current.
-- Next: inspect the pull-request CI, then verify the compact-phone and tablet runtime jobs on the merged main commit. If either fails, fix that QA blocker before adding another gameplay feature.
+- First PR CI exposed one stale repository test that explicitly prohibited a `push:` trigger (96/97 tests passed; APK, checks and release-candidate jobs stopped at `npm test`). Updated that test to require the new main-only push trigger while retaining pull-request and manual triggers.
+- Next: verify the corrected PR checks, then the compact-phone and tablet runtime jobs. If either device job fails, fix that QA blocker before adding another gameplay feature.
