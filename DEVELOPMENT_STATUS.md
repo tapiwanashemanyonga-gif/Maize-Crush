@@ -36,5 +36,6 @@ Last reviewed: 2026-11-05
 
 - Branch: `qa/android-layout-smoke-mainline` (based on main commit `9ab62a589cbcd2138fd48d786a28cb42517785b2`).
 - Changes: add a clipped-bottom-row geometry regression test; run the device-layout workflow on main pushes as well as pull requests; keep this status log current.
-- First PR CI exposed one stale repository test that explicitly prohibited a `push:` trigger (96/97 tests passed; APK, checks and release-candidate jobs stopped at `npm test`). Updated that test to require the new main-only push trigger while retaining pull-request and manual triggers.
-- Next: verify the corrected PR checks, then the compact-phone and tablet runtime jobs. If either device job fails, fix that QA blocker before adding another gameplay feature.
+- First PR CI exposed one stale repository test that explicitly prohibited a `push:` trigger (96/97 tests passed); updated its expectation. The next run passed all Node checks, the 22 Python helper tests, Android debug build, and unsigned release candidate with API 35 emulator launch.
+- Runtime matrix then exposed two harness edge cases: tablet swipes at x=80 landed outside the centered WebView content, and the compact-phone landscape snapshot had bottom-row bounds ending within 1px of the viewport edge. Updated the swipe inset to use the right-side WebView gutter and widened the clipped-bound exclusion margin to 16px; added regression coverage for both conditions.
+- Next: rerun all PR CI, especially compact-phone/tablet runtime jobs. If either device job still fails, fix that QA blocker before adding another gameplay feature.
