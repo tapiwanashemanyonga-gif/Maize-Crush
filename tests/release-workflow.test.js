@@ -37,9 +37,9 @@ test("phone and tablet layout smoke workflow enables KVM before the UI test runn
   );
   assert.ok(layoutWorkflow.includes("profile: pixel_2"), "compact-phone emulator profile is required");
   assert.ok(layoutWorkflow.includes("profile: pixel_tablet"), "tablet emulator profile is required");
+  assert.ok(layoutWorkflow.includes("on:\n  push:\n    branches: [main]"), "mainline pushes must run the phone/tablet matrix");
   assert.ok(layoutWorkflow.includes("pull_request:") && layoutWorkflow.includes("branches: [main]"));
   assert.ok(layoutWorkflow.includes("workflow_dispatch:"));
-  assert.ok(!layoutWorkflow.includes("  push:"), "avoid duplicate push and pull-request matrix runs");
   assert.ok(layoutWorkflow.includes('KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"'));
   assert.ok(layoutWorkflow.includes("sudo udevadm trigger --name-match=kvm"));
   assert.ok(
