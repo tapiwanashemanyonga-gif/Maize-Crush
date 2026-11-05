@@ -149,7 +149,7 @@ test("Android release candidate enables KVM before launching the signed game APK
 
 test("Android WebView drag sampling resolves tile coordinates and includes the pointer-up endpoint", () => {
   const source = fs.readFileSync(path.join(__dirname, "..", "game.js"), "utf8");
-  assert.match(source, /function locateTileAtPoint\\(x,y\\)/);
-  assert.match(source, /pointermove.*locateTileAtPoint\\(e\\.clientX,e\\.clientY\\)/);
-  assert.match(source, /pointerup.*extendPath\\(locateTileAtPoint\\(e\\.clientX,e\\.clientY\\)/);
+  assert.ok(source.includes("function locateTileAtPoint(x,y)"));
+  assert.ok(source.includes('pointermove",e=>{if(pointerDown&&activePointerId===e.pointerId)extendPath(locateTileAtPoint(e.clientX,e.clientY)'));
+  assert.ok(source.includes('pointerup",e=>{if(activePointerId!==e.pointerId)return;extendPath(locateTileAtPoint(e.clientX,e.clientY)'));
 });
