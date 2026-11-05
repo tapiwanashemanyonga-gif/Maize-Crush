@@ -26,12 +26,14 @@ Last reviewed: 2026-11-05
   - GitHub Pages deployment: run `42050479416`.
 - Verified artifacts from the merged commit: debug APK artifact `maize-crush-android-debug-apk` (59,206 bytes) and unsigned release candidate artifact `maize-crush-unsigned-release-candidate` (99,177 bytes; APK and AAB). These are CI build outputs, not a user-signed public release.
 
-## Open QA follow-up
+## Android phone/tablet smoke follow-up — in progress
 
-- PR [#68](https://github.com/tapiwanashemanyonga-gif/Maize-Crush/pull/68) is still open and is based on the pre-PR-69 mainline. Its latest device-layout matrix (run `42042889383`) failed in the smoke harness:
-  - Compact phone: diagonal connect and no-swap assertions passed, then landscape geometry validation classified eight clipped accessibility bounds as non-square.
-  - Tablet: the helper found zero fully visible crop tiles immediately after dismissing the tutorial and could not bring the board into view.
-- This is a test-harness/orientation/scroll-detection issue, not evidence that the crop renderer is broken. PR #69's newer smoke run passed both device profiles. Next, port/rebase the known-good rotation, focus-mode and safe-scroll handling into PR #68, retain the regression tests, and rerun the full phone/tablet matrix before merging it.
+- Earlier PR #68 device-matrix run [42042889383](https://github.com/tapiwanashemanyonga-gif/Maize-Crush/actions/runs/42042889383) completed its debug build successfully but both emulator jobs failed in the UI smoke helper. The compact-phone run accepted a diagonal connection and confirmed the mismatched drag did not swap crops or consume a move, then failed during landscape geometry validation. The tablet run launched the app but found zero fully visible crop tiles after tutorial dismissal.
+- The tablet helper on PR #68 did not include the latest mainline accessibility-label handling for Focus Play and used an unreliable tablet scroll gutter. The phone failure exposed eight bottom-row accessibility rectangles clipped to the viewport edge.
+- New PR [#70](https://github.com/tapiwanashemanyonga-gif/Maize-Crush/pull/70) is based directly on current main (c7edc390524d305a72b255020e56652419b692b8) and ports the mainline rotation/Focus Play logic together with edge-aware clipped-bound filtering and a right-side tablet scroll gutter.
+- Added regression coverage for eight clipped bottom-row tiles, clipped bounds just inside the viewport edge, and safe tablet scroll-gutter coordinates. The phone/tablet smoke workflow now also runs on pushes to main.
+- PR #70 head: 78ee4d7d223577fcd40d7047de2f8fb2cdd48f44. The pull request has been opened; its new CI conclusions are pending and must be checked before merge. No emulator pass is claimed for this increment yet.
+- PR #68 remains open but is superseded by the clean, current-mainline PR #70; do not merge the stale branch.
 
 ## Remaining release gates
 
@@ -40,6 +42,10 @@ Last reviewed: 2026-11-05
 - Review launcher icon, package identity, permissions, privacy policy, screenshots, store descriptions, age/content rating and current store declarations.
 - The release APK/AAB built by CI are unsigned. A temporary CI-only key is used solely to verify the signing pipeline. The user's private release keystore must never enter the repository; do not sign or publish without explicit authorization and the required credentials.
 
-## Next milestone
+## Latest increment
 
-Fix and revalidate PR #68's compact-phone/tablet smoke harness using the successful PR #69 implementation, then merge the mainline device-matrix trigger. After that, audit progression/save/backup recovery and low-end performance. Physical-device testing and user-controlled release signing remain mandatory release gates.
+- Branch: qa/android-layout-smoke-mainline-v2.
+- Commits: c6e7f75 (edge-aware clipping and tablet gutter), 302779c (Python regression tests), e507b43 (main-push workflow trigger), and 78ee4d7 (workflow assertion test).
+- Diff: four files only; no app gameplay, Android identity, permissions, signing files, or bundled assets changed.
+- Pull request: [#70](https://github.com/tapiwanashemanyonga-gif/Maize-Crush/pull/70), awaiting GitHub Actions.
+- Next: inspect all PR #70 CI jobs and logs. Fix any failed helper/device job before merging. Keep PR #68 closed only after the replacement matrix passes or the superseded branch is otherwise safely retired.
