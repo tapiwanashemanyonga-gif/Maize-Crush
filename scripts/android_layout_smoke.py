@@ -355,6 +355,10 @@ def enter_focus_play(width: int, height: int) -> None:
         return
     point = button_center(root, "focus play", width, height)
     if not point:
+        # Android WebView exposes the button aria-label as content-desc rather
+        # than its visible text on some tablet accessibility trees.
+        point = button_center(root, "enter immersive play mode", width, height)
+    if not point:
         print("Focus-play control is not visible; continuing with the default layout.")
         return
     tap(point)
