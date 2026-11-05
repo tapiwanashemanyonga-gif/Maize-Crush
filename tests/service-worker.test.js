@@ -27,7 +27,11 @@ test("original Zimbabwe harvest crop artwork contains all six accessible sprite 
   for (const crop of ["maize", "tomato", "groundnut", "banana", "orange", "sweetpotato"]) {
     assert.match(artwork, new RegExp('<symbol id="crop-' + crop + '"'));
   }
-  assert.ok(read("game.js").includes('setAttribute("href","#crop-"+crop.id)'));
+  const game = read("game.js");
+  assert.ok(game.includes('document.getElementById("crop-"+crop.id)'));
+  assert.ok(game.includes("node.cloneNode(true)"));
+  assert.ok(game.includes("tile.textContent=crop.emoji"));
+  assert.doesNotMatch(game, /createElementNS\(svgNS,"use"\)/);
   const html = read("index.html");
   for (const crop of ["maize", "tomato", "groundnut", "banana", "orange", "sweetpotato"]) {
     assert.ok(html.includes('<symbol id="crop-' + crop + '"'), "inline browser sprite missing: " + crop);
