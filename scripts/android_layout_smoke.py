@@ -513,7 +513,7 @@ def tap_restart_button(width: int, height: int) -> bool:
 
 
 def ensure_diagonal_path(width: int, height: int):
-    for attempt in range(6):
+    for attempt in range(12):
         snapshots, _, _, last_index = collect_board(width, height)
         path_snapshot = find_path_snapshot(snapshots, width, height)
         if path_snapshot:
@@ -527,7 +527,7 @@ def ensure_diagonal_path(width: int, height: int):
         if attempt == 11 or not tap_restart_button(width, height):
             break
         print(f"No straight diagonal triple on field {attempt + 1}; restarting for a new field.")
-    raise AssertionError("Could not find a visible three-crop diagonal connection after six fields.")
+    raise AssertionError("Could not find a visible three-crop diagonal connection after twelve fresh rounds.")
 
 
 def cell_center(cell: Cell) -> tuple[int, int]:
