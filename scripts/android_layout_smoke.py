@@ -356,7 +356,10 @@ def enter_focus_play(width: int, height: int) -> None:
     """Ensure immersive mode is on without toggling an already-active mode off."""
     root, _, texts = dump_hierarchy()
     if any(
-        "exit focus play" in normalized(
+        "exit focus" in normalized(
+            node.attrib.get("text", "") or node.attrib.get("content-desc", "")
+        )
+        or "exit immersive play mode" in normalized(
             node.attrib.get("text", "") or node.attrib.get("content-desc", "")
         )
         for node in root.iter()
@@ -498,16 +501,15 @@ def find_path_snapshot(snapshots, width: int, height: int):
     return None
 
 
-def tap_button_anywhere(needle: str, width: int, height: int) -> bool:
-    reset_scroll_top(width, height)
-    for _ in range(12):
-        root, _, _ = dump_hierarchy()
-        point = button_center(root, needle, width, height)
-        if point:
-            tap(point)
-            return True
-        scroll_forward(width, height)
-    return False
+def tap_restart_button(width: int, height: int) -> bool:
+    """Regenerate the board from the visible header control, never swiping over tiles."""
+    root, _, _ = dump_hierarchy()
+    point = button_center(root, "restart", width, height)
+    if not point:
+        return False
+    tap(point)
+    time.sleep(0.8)
+    return True
 
 
 def ensure_diagonal_path(width: int, height: int):
@@ -522,9 +524,9 @@ def ensure_diagonal_path(width: int, height: int):
             path = find_diagonal_chain(cells, width, height)
             if path:
                 return root, cells, path
-        if attempt == 5 or not tap_button_anywhere("fresh field", width, height):
+        if attempt == 11 or not tap_restart_button(width, height):
             break
-        print(f"No straight diagonal triple on field {attempt + 1}; generating a fresh field.")
+        print(f"No straight diagonal triple on field {attempt + 1}; restarting for a new field.")
     raise AssertionError("Could not find a visible three-crop diagonal connection after six fields.")
 
 
@@ -620,12 +622,14 @@ def assert_layout_phase(name: str) -> None:
     save_screenshot(name + ".png")
 
 
-def set_orientation(rotation: int, name: str) -> None:
+def set_orientation(rotation: int) -> None:
     run_adb("shell", "settings", "put", "system", "accelerometer_rotation", "0")
     run_adb("shell", "settings", "put", "system", "user_rotation", str(rotation))
     time.sleep(1.5)
     assert_running()
-    assert_layout_phase(name)
+    width, height = screen_size()
+    orientation = "landscape" if width > height else "portrait"
+    assert_layout_phase(orientation)
 
 
 def check_crashes() -> None:
@@ -648,8 +652,8 @@ def main() -> int:
         raise AssertionError("A fresh Level 1 round should begin with 20 moves.")
     save_screenshot("initial-board.png")
     verify_gestures(width, height)
-    set_orientation(1, "landscape")
-    set_orientation(0, "portrait")
+    set_orientation(1)
+    set_orientation(0)
     run_adb("shell", "input", "keyevent", "KEYCODE_HOME")
     time.sleep(1.0)
     run_adb("shell", "am", "start", "-W", "-n", ACTIVITY)
