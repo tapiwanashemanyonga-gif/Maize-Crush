@@ -160,9 +160,7 @@ test("undo persists the restored stable round checkpoint", () => {
   const end = source.indexOf("\\nfunction applySettings", start);
   assert.ok(start >= 0 && end > start, "undoMove must remain a distinct function");
   const undo = source.slice(start, end);
-  assert.match(
-    undo,
-    /busy=false;renderBoard\\(\\);updateStats\\(\\);saveRoundCheckpoint\\(\\);announce\\("Last move undone/,
+  assert.ok(
+    undo.includes('busy=false;renderBoard();updateStats();saveRoundCheckpoint();announce("Last move undone'),
     "the restored board, score, moves and objective state must be checkpointed before undo completes"
-  );
-});
+  );});
