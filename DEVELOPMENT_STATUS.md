@@ -1,6 +1,6 @@
 # Maize Crush development status
 
-Last reviewed: 2026-11-05
+Last reviewed: 2026-11-06
 
 ## Current verified baseline
 
@@ -26,15 +26,12 @@ Last reviewed: 2026-11-05
   - GitHub Pages deployment: run `42050479416`.
 - Verified artifacts from the merged commit: debug APK artifact `maize-crush-android-debug-apk` (59,206 bytes) and unsigned release candidate artifact `maize-crush-unsigned-release-candidate` (99,177 bytes; APK and AAB). These are CI build outputs, not a user-signed public release.
 
-## Android phone/tablet smoke follow-up — in progress
+## Android phone/tablet smoke — verified and merged
 
-- Earlier PR #68 device-matrix run [42042889383](https://github.com/tapiwanashemanyonga-gif/Maize-Crush/actions/runs/42042889383) completed its debug build successfully but both emulator jobs failed in the UI smoke helper. The compact-phone run accepted a diagonal connection and confirmed the mismatched drag did not swap crops or consume a move, then failed during landscape geometry validation. The tablet run launched the app but found zero fully visible crop tiles after tutorial dismissal.
-- The tablet helper on PR #68 did not include the latest mainline accessibility-label handling for Focus Play and used an unreliable tablet scroll gutter. The phone failure exposed eight bottom-row accessibility rectangles clipped to the viewport edge.
-- New PR [#70](https://github.com/tapiwanashemanyonga-gif/Maize-Crush/pull/70) is based directly on current main (c7edc390524d305a72b255020e56652419b692b8) and ports the mainline rotation/Focus Play logic together with edge-aware clipped-bound filtering and a right-side tablet scroll gutter.
-- Added regression coverage for eight clipped bottom-row tiles, clipped bounds just inside the viewport edge, and safe tablet scroll-gutter coordinates. The phone/tablet smoke workflow now also runs on pushes to main.
-- PR #70 head: 78ee4d7d223577fcd40d7047de2f8fb2cdd48f44. The pull request has been opened; its new CI conclusions are pending and must be checked before merge. No emulator pass is claimed for this increment yet.
-- PR #68 remains open but is superseded by the clean, current-mainline PR #70; do not merge the stale branch.
-
+- PR [#70](https://github.com/tapiwanashemanyonga-gif/Maize-Crush/pull/70) passed all four workflows on head `a9391522c5f1a042f23b54692c17a9f25631da1b`: gameplay/helper checks (run `42076573642`), Android debug APK (run `42076573630`), unsigned release candidate/package metadata/temporary signing/emulator launch (run `42076573623`), and compact-phone plus tablet runtime smoke (run `42076573702`).
+- Both phone and tablet runtime jobs completed successfully. The device run uploaded separate screenshots/accessibility artifacts for both profiles and the debug APK used by the matrix.
+- PR #70 was squash-merged to `main` as `ab2931ad0b9420e56c5c6ecb17d7a91399362a70`. The stale pre-PR-69 PR #68 was closed as superseded, without merging it.
+- Post-merge `main` checks run `42228558109`, Android debug APK run `42228558092`, and Pages deployment run `42228558023` all completed successfully on `ab2931ad0b9420e56c5c6ecb17d7a91399362a70`. At the time of this update, post-merge release-candidate run `42228558132` and device-layout run `42228558089` were still in progress; their conclusions must be verified before treating the full mainline matrix as green.
 ## Remaining release gates
 
 - Test on physical devices (Android 7/API 24+, current Android, compact phone and tablet); emulator coverage is not a substitute.
@@ -42,10 +39,12 @@ Last reviewed: 2026-11-05
 - Review launcher icon, package identity, permissions, privacy policy, screenshots, store descriptions, age/content rating and current store declarations.
 - The release APK/AAB built by CI are unsigned. A temporary CI-only key is used solely to verify the signing pipeline. The user's private release keystore must never enter the repository; do not sign or publish without explicit authorization and the required credentials.
 
-## Latest increment
+## Latest increment — in review
 
-- Branch: qa/android-layout-smoke-mainline-v2.
-- Commits: c6e7f75 (edge-aware clipping and tablet gutter), 302779c (Python regression tests), e507b43 (main-push workflow trigger), and 78ee4d7 (workflow assertion test).
-- Diff: four files only; no app gameplay, Android identity, permissions, signing files, or bundled assets changed.
-- Pull request: [#70](https://github.com/tapiwanashemanyonga-gif/Maize-Crush/pull/70), awaiting GitHub Actions.
-- Next: inspect all PR #70 CI jobs and logs. Fix any failed helper/device job before merging. Keep PR #68 closed only after the replacement matrix passes or the superseded branch is otherwise safely retired.
+- Branch: `fix/persist-undo-round-checkpoint`, based on verified `main` commit `ab2931ad0b9420e56c5c6ecb17d7a91399362a70`.
+- `game.js` now writes the restored board/score/moves/objective checkpoint after Undo, so restarting after undo no longer recovers the previous pre-undo board.
+- Mirrored the change into `android/app/src/main/assets/game.js`; both game engines remain byte-for-byte identical.
+- Added a regression test asserting that `undoMove` persists the stable checkpoint after restoring the round.
+- Commits: `677370d` (browser checkpoint), `dcf68a6` (Android asset parity), `efa9b72` (regression test). No signing files, credentials, unrelated assets, or generated outputs were changed.
+- Validation for this increment is pending GitHub Actions; do not claim the new test or build has passed until the branch workflows finish.
+- Next: verify the post-merge mainline release/device workflows, then validate this Undo checkpoint fix through the full CI matrix. Continue with backup-import transaction safety and Android background/restore behavior afterward.
