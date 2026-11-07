@@ -4,7 +4,7 @@ Last reviewed: 2026-11-07
 
 ## Current verified baseline
 
-- Default branch: `main`; latest commit is `1123ac7b9e56e422f06a44a9f2a647f7b28ae5d3`.
+- Default branch: `main`; latest gameplay/Android code commit is `1b8350315dea64270bbd6238d88dece973bcce11`.
 - Android identity: `com.maizecrush.zimbabweharvest`, version `1.0.0` (`versionCode 1`), min SDK 24, target SDK 36.
 - Gameplay is an original 8×8 connect-path puzzle: drag through 3+ matching adjacent crops; diagonal connections count; tiles are never swapped.
 - Six Zimbabwe-harvest illustrations are bundled: maize, tomato, groundnut, banana, orange and sweet potato. The game includes eight objective types, endless level scaling, local progress, boosters, accessibility options and responsive phone/tablet layouts.
@@ -26,16 +26,18 @@ Last reviewed: 2026-11-07
 - All five post-merge workflows passed on that exact main commit: gameplay checks `42376143608`, Android debug APK `42376143561`, unsigned release candidate `42376143539`, phone/tablet runtime smoke `42376143645`, and Pages deployment `42376143305`.
 - Verified artifacts from the post-merge main commit: debug APK (59,218 bytes), unsigned release candidate package bundle (99,201 bytes), phone smoke screenshots/accessibility snapshot (6,686,567 bytes), and tablet smoke screenshots/accessibility snapshot (11,172,131 bytes). They are available from the [mainline workflow runs](https://github.com/tapiwanashemanyonga-gif/Maize-Crush/actions).
 
-## Backup restore transaction safety — in progress
+## Backup restore transaction safety — verified and merged
 
 - The previous importer wrote progress, statistics, level records, daily state, round checkpoint and preferences one key at a time. A storage/quota error partway through could leave a partially imported save.
 - Added a reusable storage transaction helper that snapshots every target key before writing, rejects duplicate/invalid entries, applies all updates, and restores attempted keys in reverse order if a write fails. It reports whether rollback completed.
 - The backup importer now routes every save-key change through that helper. It distinguishes a failed restore with successful rollback from a rollback that could not fully complete.
-- Mirrored the updated game engine/importer to Android's bundled WebView asset. Browser and Android copies must remain byte-for-byte identical.
-- Added regression tests for successful apply/removal, rollback after a quota-style write failure, incomplete rollback reporting, duplicate-key rejection, and use of the transaction by the importer.
-- Branch: `fix/transactional-backup-restore`, based on verified main `1123ac7b9e56e422f06a44a9f2a647f7b28ae5d3`. Commits so far: `f988139` (transaction helper/API), `31d461b` (Android helper mirror), `729526f` (transactional importer), `39492ea` and `eb61588` (regression tests and final newline), `ca312e8` (full Android/browser engine parity), `f60e36d` (development log).
-- PR [#72](https://github.com/tapiwanashemanyonga-gif/Maize-Crush/pull/72) is open. CI is queued/running on its latest head; do not merge until all required workflows pass.
-- The existing `feature/backup-import-safety` branch is stale and diverged (5 commits ahead, 159 behind main); it was inspected but not merged or reused.
+- Browser and Android WebView game engines are byte-for-byte identical after the importer change.
+- Added regression tests for successful apply/removal, rollback after a quota-style write failure, incomplete rollback reporting, duplicate-key rejection, and importer integration.
+- PR [#72](https://github.com/tapiwanashemanyonga-gif/Maize-Crush/pull/72) passed all four workflows on head `7ba575a32be0dbc834d9eaeae7508a9838a79f29`: gameplay checks run `42376819019` (103 tests, 103 passed, 0 failed), debug APK run `42376818989`, unsigned release candidate/Android emulator verification run `42376818994`, and compact-phone/tablet runtime smoke run `42376818956`. Both device profiles passed.
+- PR #72 was squash-merged as `1b8350315dea64270bbd6238d88dece973bcce11`.
+- All five post-merge main workflows passed on that exact commit: gameplay checks run `42377163215` (103/103), Android debug APK run `42377163123`, unsigned release candidate run `42377163218`, compact-phone/tablet runtime smoke run `42377163295`, and Pages deployment run `42377162736`.
+- Verified post-merge artifacts: debug APK (59,688 bytes), unsigned release candidate bundle (100,033 bytes), compact-phone smoke screenshots/accessibility snapshot (6,914,299 bytes), and tablet smoke screenshots/accessibility snapshot (11,692,511 bytes). See the [mainline workflow runs](https://github.com/tapiwanashemanyonga-gif/Maize-Crush/actions).
+- The existing `feature/backup-import-safety` branch was inspected but not merged or reused because it was stale and diverged (5 commits ahead, 159 behind main).
 
 ## Remaining release gates
 
@@ -46,7 +48,8 @@ Last reviewed: 2026-11-07
 
 ## Latest increment
 
-- Branch: `fix/transactional-backup-restore`.
-- Four changed project files: `game.js`, `android/app/src/main/assets/game.js`, `tests/game.test.js`, and this status log.
+- Merged to `main` as `1b8350315dea64270bbd6238d88dece973bcce11` via PR #72.
+- Four project files changed: `game.js`, `android/app/src/main/assets/game.js`, `tests/game.test.js`, and `DEVELOPMENT_STATUS.md`.
 - No Android identity, permissions, artwork, release signing files, credentials or generated build outputs were changed.
-- Next: inspect PR CI and job logs on the exact head SHA. Fix any failing test/build/device check before merging. After backup restore safety is verified, audit Android WebView background/resume and process-death recovery.
+- The exact merged code commit passed 103 automated tests, Android debug/release builds, Android 15 release-emulator verification, compact-phone and tablet runtime smoke, and Pages deployment.
+- Next milestone: audit Android WebView background/resume and process-death recovery, including whether the most recent round checkpoint is flushed before Android pauses or destroys the activity. Keep physical-device testing and release-signing gates open.
