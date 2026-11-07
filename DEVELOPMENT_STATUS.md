@@ -45,7 +45,7 @@ Last reviewed: 2026-11-07
 - The native Activity previously paused WebView rendering and JavaScript timers immediately on `onPause`, without first explicitly asking the game to checkpoint its last stable round.
 - New branch `fix/android-background-checkpoint` adds a JavaScript background-checkpoint hook. Android invokes it from `onPause` and pauses WebView/timers only after the evaluation callback; a foreground-resume guard prevents a late callback from pausing a WebView after the user returns.
 - The same hook is used for browser `pagehide` and `blur`. It deliberately skips a checkpoint while a cascade/round mutation is busy, preserving the last stable checkpoint instead of writing a partial board.
-- Added static regression checks for the native lifecycle ordering and browser/Android checkpoint-hook parity. PR validation is pending; do not claim background/process-death runtime coverage until an emulator lifecycle test and physical-device checks verify it.
+- Added static regression checks for native lifecycle ordering and browser/Android checkpoint-hook parity. Extended the compact-phone/tablet emulator smoke to background/resume the Activity, force-stop the process, relaunch it, and assert the same 19-move round checkpoint is restored. The new emulator checks are pending CI; physical-device checks remain necessary.
 
 ## Remaining release gates
 

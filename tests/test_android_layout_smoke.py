@@ -352,6 +352,33 @@ class AndroidLayoutSmokeTests(unittest.TestCase):
         self.assertEqual(last, 0)
         self.assertIn("Harvest score", found_texts)
 
+    def test_round_checkpoint_relaunch_assertion_accepts_restored_moves(self):
+        root = parse_hierarchy(
+            '<hierarchy><node text="MOVES LEFT">'
+            '<node text="19" bounds="[0,0][20,20]" />'
+            '</node></hierarchy>'
+        )[0]
+        with patch.object(smoke, "collect_board", return_value=([(0, root, {}, set())], {}, set(), 0)):
+            smoke.assert_round_checkpoint_after_relaunch(400, 800, 19)
+
+    def test_round_checkpoint_relaunch_assertion_rejects_lost_moves(self):
+        root = parse_hierarchy(
+            '<hierarchy><node text="MOVES LEFT">'
+            '<node text="20" bounds="[0,0][20,20]" />'
+            '</node></hierarchy>'
+        )[0]
+        with patch.object(smoke, "collect_board", return_value=([(0, root, {}, set())], {}, set(), 0)):
+            with self.assertRaisesRegex(AssertionError, "did not restore the expected 19 moves"):
+                smoke.assert_round_checkpoint_after_relaunch(400, 800, 19)
+
+    def test_main_smoke_backgrounds_and_force_stops_before_checkpoint_relaunch_assertion(self):
+        source = Path(smoke.__file__).read_text(encoding="utf-8")
+        main = source[source.index("def main() -> int:"):]
+        self.assertIn('run_adb("shell", "am", "force-stop", PACKAGE)', main)
+        self.assertIn("assert_round_checkpoint_after_relaunch(width, height, 19)", main)
+        self.assertLess(main.index('"KEYCODE_HOME"'), main.index('"force-stop"'))
+        self.assertLess(main.index('"force-stop"'), main.index('"process-relaunch"'))
+
     def test_optional_screenshot_failure_does_not_fail_the_smoke_test(self):
         with tempfile.TemporaryDirectory() as directory:
             with patch.object(smoke, "ARTIFACTS", Path(directory)):

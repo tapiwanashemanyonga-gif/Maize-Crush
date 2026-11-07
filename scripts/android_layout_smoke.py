@@ -657,6 +657,21 @@ def check_crashes() -> None:
         raise AssertionError("Android logcat contains an app-specific fatal exception.")
 
 
+def assert_round_checkpoint_after_relaunch(
+    width: int, height: int, expected_moves: int
+) -> None:
+    snapshots, _, _, _ = collect_board(width, height)
+    if not any(has_moves_value(root, expected_moves) for _, root, _, _ in snapshots):
+        raise AssertionError(
+            "The saved round checkpoint did not restore the expected "
+            f"{expected_moves} moves after process relaunch."
+        )
+    print(
+        f"Round checkpoint recovered after process relaunch: "
+        f"{expected_moves} moves remain."
+    )
+
+
 def main() -> int:
     ARTIFACTS.mkdir(exist_ok=True)
     width, height = screen_size()
@@ -679,10 +694,23 @@ def main() -> int:
     time.sleep(1.0)
     assert_running()
     assert_layout_phase("resume")
+    assert_round_checkpoint_after_relaunch(width, height, 19)
+
+    # Background the Activity first so onPause can synchronously checkpoint the
+    # stable round, then kill the process and verify Android restores that round.
+    run_adb("shell", "input", "keyevent", "KEYCODE_HOME")
+    time.sleep(1.0)
+    run_adb("shell", "am", "force-stop", PACKAGE)
+    time.sleep(0.5)
+    run_adb("shell", "am", "start", "-W", "-n", ACTIVITY)
+    time.sleep(1.0)
+    assert_running()
+    assert_layout_phase("process-relaunch")
+    assert_round_checkpoint_after_relaunch(width, height, 19)
     check_crashes()
     print(
-        "PASS: rendered 8×8 board and objective, diagonal matching drag, "
-        "no-swap mismatch, landscape/portrait layout, and app resume."
+        "PASS: 8×8 crop board, diagonal connect, no-swap rule, "
+        "landscape/portrait layout, background resume, and process-death round recovery."
     )
     return 0
 
