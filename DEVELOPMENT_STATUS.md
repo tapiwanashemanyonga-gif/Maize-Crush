@@ -56,8 +56,10 @@ Last reviewed: 2026-11-07
 
 ## Latest increment
 
-- Merged to `main` as `1b8350315dea64270bbd6238d88dece973bcce11` via PR #72.
-- Four project files changed: `game.js`, `android/app/src/main/assets/game.js`, `tests/game.test.js`, and `DEVELOPMENT_STATUS.md`.
-- No Android identity, permissions, artwork, release signing files, credentials or generated build outputs were changed.
-- The exact merged code commit passed 103 automated tests, Android debug/release builds, Android 15 release-emulator verification, compact-phone and tablet runtime smoke, and Pages deployment.
-- Next milestone: audit Android WebView background/resume and process-death recovery, including whether the most recent round checkpoint is flushed before Android pauses or destroys the activity. Keep physical-device testing and release-signing gates open.
+- Branch: `fix/android-background-checkpoint`.
+- Commit: `331d924da72c5040b8cb356ada2f80a2c913dda2` (one commit ahead of current main `8bf9b3d2b6b1074921ad461b7d71a1a47efba84f`).
+- Five-file diff: Android Activity lifecycle, matching browser/Android game checkpoint hook, Android lifecycle regression tests, and this status log.
+- The native Activity now requests a stable localStorage checkpoint before pausing WebView rendering/timers; a resume guard prevents a late callback from pausing the foreground WebView. The game skips checkpoint writes while a cascade is busy and uses the same hook on browser blur/pagehide.
+- No package identity, permissions, art, ads, signing configuration, credentials, or generated build outputs changed.
+- Pull request and CI validation are not yet complete. No Android background/process-death runtime pass is claimed.
+- Next: run all PR workflows, inspect any failure, then add/verify emulator background-resume and process-relaunch coverage before merging. Physical-device and release-signing gates remain open.
