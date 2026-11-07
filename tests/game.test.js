@@ -153,3 +153,15 @@ test("Android WebView drag sampling resolves tile coordinates and includes the p
   assert.ok(source.includes('pointermove",e=>{if(pointerDown&&activePointerId===e.pointerId)extendPath(locateTileAtPoint(e.clientX,e.clientY)'));
   assert.ok(source.includes('pointerup",e=>{if(activePointerId!==e.pointerId)return;extendPath(locateTileAtPoint(e.clientX,e.clientY)'));
 });
+
+test("undo persists the restored stable round checkpoint", () => {
+  const source = fs.readFileSync(path.join(__dirname, "..", "game.js"), "utf8");
+  const start = source.indexOf("function undoMove()");
+  const end = source.indexOf("function applySettings", start);
+  assert.ok(start >= 0 && end > start, "undoMove must remain a distinct function");
+  const undo = source.slice(start, end);
+  assert.ok(
+    undo.includes('busy=false;renderBoard();updateStats();saveRoundCheckpoint();announce("Last move undone'),
+    "the restored board, score, moves and objective state must be checkpointed before undo completes"
+  );
+});
