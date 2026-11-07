@@ -35,3 +35,30 @@ test("private signing material is excluded from source control", () => {
     assert.ok(ignore.includes(pattern), "missing ignore rule " + pattern);
   }
 });
+
+
+test("Android backgrounding checkpoints the stable round before pausing WebView timers", () => {
+  const activity = read("android/app/src/main/java/com/maizecrush/zimbabweharvest/MainActivity.java");
+  const pauseStart = activity.indexOf("protected void onPause()");
+  const resumeStart = activity.indexOf("protected void onResume()", pauseStart);
+  assert.ok(pauseStart >= 0 && resumeStart > pauseStart, "onPause and onResume must remain distinct lifecycle methods");
+  const pause = activity.slice(pauseStart, resumeStart);
+  assert.ok(pause.indexOf("evaluateJavascript") >= 0, "onPause must ask the game to checkpoint");
+  assert.ok(pause.indexOf("evaluateJavascript") < pause.indexOf("pauseWebViewAfterCheckpoint(current)"), "WebView timers must be paused only after the checkpoint callback");
+  assert.match(pause, /activityResumed\s*=\s*false/);
+  assert.match(activity, /private void pauseWebViewAfterCheckpoint\(WebView target\)/);
+  assert.match(activity, /target != webView \|\| activityResumed/);
+  const resumeEnd = activity.indexOf("protected void onSaveInstanceState()", resumeStart);
+  const resume = activity.slice(resumeStart, resumeEnd);
+  assert.match(resume, /activityResumed\s*=\s*true/);
+  assert.match(resume, /webView\.onResume\(\);\s*webView\.resumeTimers\(\);/);
+});
+
+test("game exposes one stable-round checkpoint hook for Android backgrounding and browser page loss", () => {
+  const source = read("game.js");
+  const androidSource = read("android/app/src/main/assets/game.js");
+  assert.equal(source, androidSource, "browser and Android checkpoint behavior must remain identical");
+  assert.match(source, /window\.maizeCrushPrepareForBackground=\(\)=>\{if\(busy\)return false;saveRoundCheckpoint\(\);return true\}/);
+  assert.match(source, /window\.addEventListener\("pagehide",window\.maizeCrushPrepareForBackground\)/);
+  assert.match(source, /window\.addEventListener\("blur",window\.maizeCrushPrepareForBackground\)/);
+});
