@@ -57,9 +57,9 @@ Last reviewed: 2026-11-07
 ## Latest increment
 
 - Branch: `fix/android-background-checkpoint`.
-- Commit: `331d924da72c5040b8cb356ada2f80a2c913dda2` (one commit ahead of current main `8bf9b3d2b6b1074921ad461b7d71a1a47efba84f`).
-- Five-file diff: Android Activity lifecycle, matching browser/Android game checkpoint hook, Android lifecycle regression tests, and this status log.
-- The native Activity now requests a stable localStorage checkpoint before pausing WebView rendering/timers; a resume guard prevents a late callback from pausing the foreground WebView. The game skips checkpoint writes while a cascade is busy and uses the same hook on browser blur/pagehide.
-- No package identity, permissions, art, ads, signing configuration, credentials, or generated build outputs changed.
-- Pull request and CI validation are not yet complete. No Android background/process-death runtime pass is claimed.
-- Next: run all PR workflows, inspect any failure, then add/verify emulator background-resume and process-relaunch coverage before merging. Physical-device and release-signing gates remain open.
+- Latest branch commit: `fac78421702e180c58d02385a1340350b492c118`; three commits ahead of current main `8bf9b3d2b6b1074921ad461b7d71a1a47efba84f`.
+- Seven-file diff: Android Activity lifecycle, matching browser/Android checkpoint hook, lifecycle tests, compact-phone/tablet process-relaunch smoke, and this status log.
+- The native Activity requests a stable localStorage checkpoint before pausing WebView rendering/timers; a resume guard prevents a late callback from pausing the foreground WebView. The game skips checkpoint writes while a cascade is busy and uses the same hook on browser blur/pagehide.
+- The emulator smoke now backgrounds/resumes the Activity, force-stops the process, relaunches it, and checks that the 19-move stable round is recovered on both compact-phone and tablet profiles.
+- On the previous PR head `3716c9eb328f974215e3e60913a3a65b90ac5653`, gameplay tests passed 105/105, the debug APK built, and the release APK/AAB build, metadata validation, and temporary CI signing smoke passed. The release emulator launch and phone/tablet runtime jobs were still running when the additional process-relaunch check was committed. Fresh workflows for `fac78421702e180c58d02385a1340350b492c118` must pass before merge.
+- No package identity, permissions, art, ads, signing configuration, credentials, or generated build outputs changed. Physical-device and release-signing gates remain open.
