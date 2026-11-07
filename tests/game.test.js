@@ -165,3 +165,52 @@ test("undo persists the restored stable round checkpoint", () => {
     "the restored board, score, moves and objective state must be checkpointed before undo completes"
   );
 });
+
+test("backup storage transaction applies all values and removes absent optional records",()=>{
+  const values=new Map([["progress","old-progress"],["stats","old-stats"],["round","old-round"]]);
+  const storage={getItem:key=>values.has(key)?values.get(key):null,setItem:(key,value)=>values.set(key,String(value)),removeItem:key=>values.delete(key)};
+  const result=game.applyStorageTransaction(storage,[{key:"progress",value:"new-progress"},{key:"stats",value:"new-stats"},{key:"round",value:null}]);
+  assert.deepEqual(result,{ok:true,rollbackComplete:true});
+  assert.equal(values.get("progress"),"new-progress");
+  assert.equal(values.get("stats"),"new-stats");
+  assert.equal(values.has("round"),false);
+});
+
+test("backup storage transaction rolls back earlier writes after a quota-style failure",()=>{
+  const values=new Map([["progress","old-progress"],["stats","old-stats"],["round","old-round"]]);
+  let failOnce=true;
+  const storage={getItem:key=>values.has(key)?values.get(key):null,setItem:(key,value)=>{if(key==="stats"&&value==="new-stats"&&failOnce){failOnce=false;throw new Error("quota exceeded")}values.set(key,String(value))},removeItem:key=>values.delete(key)};
+  const result=game.applyStorageTransaction(storage,[{key:"progress",value:"new-progress"},{key:"stats",value:"new-stats"},{key:"round",value:null}]);
+  assert.deepEqual(result,{ok:false,rollbackComplete:true});
+  assert.deepEqual(Object.fromEntries(values),{progress:"old-progress",stats:"old-stats",round:"old-round"});
+});
+
+test("backup storage transaction reports when rollback itself cannot restore an earlier key",()=>{
+  const values=new Map([["progress","old-progress"],["stats","old-stats"]]);
+  let progressWasChanged=false;
+  const storage={getItem:key=>values.has(key)?values.get(key):null,setItem:(key,value)=>{if(key==="progress"&&value==="new-progress"){progressWasChanged=true;values.set(key,String(value));return}if(key==="stats"&&value==="new-stats")throw new Error("quota exceeded");if(key==="progress"&&value==="old-progress"&&progressWasChanged)throw new Error("storage unavailable during rollback");values.set(key,String(value))},removeItem:key=>values.delete(key)};
+  const result=game.applyStorageTransaction(storage,[{key:"progress",value:"new-progress"},{key:"stats",value:"new-stats"}]);
+  assert.deepEqual(result,{ok:false,rollbackComplete:false});
+  assert.equal(values.get("progress"),"new-progress");
+  assert.equal(values.get("stats"),"old-stats");
+});
+
+test("backup storage transaction rejects duplicate keys before writing anything",()=>{
+  const values=new Map([["progress","old-progress"]]);
+  let writes=0;
+  const storage={getItem:key=>values.has(key)?values.get(key):null,setItem:(key,value)=>{writes++;values.set(key,String(value))},removeItem:key=>{writes++;values.delete(key)}};
+  const result=game.applyStorageTransaction(storage,[{key:"progress",value:"first"},{key:"progress",value:"second"}]);
+  assert.deepEqual(result,{ok:false,rollbackComplete:true});
+  assert.equal(writes,0);
+  assert.equal(values.get("progress"),"old-progress");
+});
+
+test("backup import routes every save-key update through the rollback-safe transaction",()=>{
+  const source=fs.readFileSync(path.join(__dirname,"..","game.js"),"utf8");
+  const start=source.indexOf("function importSaveBackup(file)");
+  const end=source.indexOf("function showTutorial",start);
+  assert.ok(start>=0&&end>start,"backup import must remain a distinct function");
+  const importer=source.slice(start,end);
+  assert.ok(importer.includes("G.applyStorageTransaction(localStorage,entries)"));
+  assert.ok(!importer.includes("localStorage.setItem(BACKUP_KEYS"),"backup import must not write save keys one by one");
+});
