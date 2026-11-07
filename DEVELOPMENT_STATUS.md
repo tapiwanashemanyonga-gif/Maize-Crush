@@ -4,7 +4,7 @@ Last reviewed: 2026-11-07
 
 ## Current verified baseline
 
-- Default branch: `main`; latest gameplay/Android code commit is `1b8350315dea64270bbd6238d88dece973bcce11`.
+- Default branch: `main`; latest main commit is `8bf9b3d2b6b1074921ad461b7d71a1a47efba84f` (development-log-only update); latest gameplay/Android code commit is `1b8350315dea64270bbd6238d88dece973bcce11`.
 - Android identity: `com.maizecrush.zimbabweharvest`, version `1.0.0` (`versionCode 1`), min SDK 24, target SDK 36.
 - Gameplay is an original 8×8 connect-path puzzle: drag through 3+ matching adjacent crops; diagonal connections count; tiles are never swapped.
 - Six Zimbabwe-harvest illustrations are bundled: maize, tomato, groundnut, banana, orange and sweet potato. The game includes eight objective types, endless level scaling, local progress, boosters, accessibility options and responsive phone/tablet layouts.
@@ -39,6 +39,14 @@ Last reviewed: 2026-11-07
 - Verified post-merge artifacts: debug APK (59,688 bytes), unsigned release candidate bundle (100,033 bytes), compact-phone smoke screenshots/accessibility snapshot (6,914,299 bytes), and tablet smoke screenshots/accessibility snapshot (11,692,511 bytes). See the [mainline workflow runs](https://github.com/tapiwanashemanyonga-gif/Maize-Crush/actions).
 - The existing `feature/backup-import-safety` branch was inspected but not merged or reused because it was stale and diverged (5 commits ahead, 159 behind main).
 
+## Android background checkpoint — in progress
+
+- Verified the exact current main commit `8bf9b3d2b6b1074921ad461b7d71a1a47efba84f`: gameplay checks, Android debug APK, unsigned release candidate (including temporary signing and Android 15 emulator launch), compact-phone/tablet device smoke, and Pages deployment all completed successfully on that SHA. Run IDs: `42377612719`, `42377612691`, `42377612774`, `42377612689`, and `42377612015`. Both phone and tablet runtime jobs passed.
+- The native Activity previously paused WebView rendering and JavaScript timers immediately on `onPause`, without first explicitly asking the game to checkpoint its last stable round.
+- New branch `fix/android-background-checkpoint` adds a JavaScript background-checkpoint hook. Android invokes it from `onPause` and pauses WebView/timers only after the evaluation callback; a foreground-resume guard prevents a late callback from pausing a WebView after the user returns.
+- The same hook is used for browser `pagehide` and `blur`. It deliberately skips a checkpoint while a cascade/round mutation is busy, preserving the last stable checkpoint instead of writing a partial board.
+- Added static regression checks for native lifecycle ordering and browser/Android checkpoint-hook parity. Extended the compact-phone/tablet emulator smoke to background/resume the Activity, force-stop the process, relaunch it, and assert the same 19-move round checkpoint is restored. The new emulator checks are pending CI; physical-device checks remain necessary.
+
 ## Remaining release gates
 
 - Test on physical devices (Android 7/API 24+, current Android, compact phone and tablet); emulator coverage is not a substitute.
@@ -48,8 +56,10 @@ Last reviewed: 2026-11-07
 
 ## Latest increment
 
-- Merged to `main` as `1b8350315dea64270bbd6238d88dece973bcce11` via PR #72.
-- Four project files changed: `game.js`, `android/app/src/main/assets/game.js`, `tests/game.test.js`, and `DEVELOPMENT_STATUS.md`.
-- No Android identity, permissions, artwork, release signing files, credentials or generated build outputs were changed.
-- The exact merged code commit passed 103 automated tests, Android debug/release builds, Android 15 release-emulator verification, compact-phone and tablet runtime smoke, and Pages deployment.
-- Next milestone: audit Android WebView background/resume and process-death recovery, including whether the most recent round checkpoint is flushed before Android pauses or destroys the activity. Keep physical-device testing and release-signing gates open.
+- Branch: `fix/android-background-checkpoint`.
+- Latest branch commit: `fac78421702e180c58d02385a1340350b492c118`; three commits ahead of current main `8bf9b3d2b6b1074921ad461b7d71a1a47efba84f`.
+- Seven-file diff: Android Activity lifecycle, matching browser/Android checkpoint hook, lifecycle tests, compact-phone/tablet process-relaunch smoke, and this status log.
+- The native Activity requests a stable localStorage checkpoint before pausing WebView rendering/timers; a resume guard prevents a late callback from pausing the foreground WebView. The game skips checkpoint writes while a cascade is busy and uses the same hook on browser blur/pagehide.
+- The emulator smoke now backgrounds/resumes the Activity, force-stops the process, relaunches it, and checks that the 19-move stable round is recovered on both compact-phone and tablet profiles.
+- On the previous PR head `3716c9eb328f974215e3e60913a3a65b90ac5653`, gameplay tests passed 105/105, the debug APK built, and the release APK/AAB build, metadata validation, and temporary CI signing smoke passed. The release emulator launch and phone/tablet runtime jobs were still running when the additional process-relaunch check was committed. Fresh workflows for `fac78421702e180c58d02385a1340350b492c118` must pass before merge.
+- No package identity, permissions, art, ads, signing configuration, credentials, or generated build outputs changed. Physical-device and release-signing gates remain open.
