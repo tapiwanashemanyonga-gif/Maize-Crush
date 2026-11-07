@@ -33,8 +33,8 @@ Last reviewed: 2026-11-07
 - The backup importer now routes every save-key change through that helper. It distinguishes a failed restore with successful rollback from a rollback that could not fully complete.
 - Mirrored the updated game engine/importer to Android's bundled WebView asset. Browser and Android copies must remain byte-for-byte identical.
 - Added regression tests for successful apply/removal, rollback after a quota-style write failure, incomplete rollback reporting, duplicate-key rejection, and use of the transaction by the importer.
-- Branch: `fix/transactional-backup-restore`, based on verified main `1123ac7b9e56e422f06a44a9f2a647f7b28ae5d3`. Commits so far: `f988139` (transaction helper/API), `31d461b` (Android helper mirror), `729526f` (transactional importer), `39492ea` (regression tests), `ca312e8` (full Android/browser engine parity).
-- This increment has not yet been validated by CI; do not merge until all required workflows pass.
+- Branch: `fix/transactional-backup-restore`, based on verified main `1123ac7b9e56e422f06a44a9f2a647f7b28ae5d3`. Commits so far: `f988139` (transaction helper/API), `31d461b` (Android helper mirror), `729526f` (transactional importer), `39492ea` and `eb61588` (regression tests and final newline), `ca312e8` (full Android/browser engine parity), `f60e36d` (development log).
+- PR [#72](https://github.com/tapiwanashemanyonga-gif/Maize-Crush/pull/72) is open. CI is queued/running on its latest head; do not merge until all required workflows pass.
 - The existing `feature/backup-import-safety` branch is stale and diverged (5 commits ahead, 159 behind main); it was inspected but not merged or reused.
 
 ## Remaining release gates
