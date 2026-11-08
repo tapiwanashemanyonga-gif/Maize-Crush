@@ -1,10 +1,10 @@
 # Maize Crush development status
 
-Last reviewed: 2026-11-07
+Last reviewed: 2026-11-08
 
 ## Current verified baseline
 
-- Default branch: `main`; latest main commit is `8bf9b3d2b6b1074921ad461b7d71a1a47efba84f` (development-log-only update); latest gameplay/Android code commit is `1b8350315dea64270bbd6238d88dece973bcce11`.
+- Default branch: `main`; latest merged gameplay/Android code commit is `a394c9ecc882e995656f51e83f67ae6e73df5af4`. The current development-log update follows that code commit.
 - Android identity: `com.maizecrush.zimbabweharvest`, version `1.0.0` (`versionCode 1`), min SDK 24, target SDK 36.
 - Gameplay is an original 8×8 connect-path puzzle: drag through 3+ matching adjacent crops; diagonal connections count; tiles are never swapped.
 - Six Zimbabwe-harvest illustrations are bundled: maize, tomato, groundnut, banana, orange and sweet potato. The game includes eight objective types, endless level scaling, local progress, boosters, accessibility options and responsive phone/tablet layouts.
@@ -39,15 +39,17 @@ Last reviewed: 2026-11-07
 - Verified post-merge artifacts: debug APK (59,688 bytes), unsigned release candidate bundle (100,033 bytes), compact-phone smoke screenshots/accessibility snapshot (6,914,299 bytes), and tablet smoke screenshots/accessibility snapshot (11,692,511 bytes). See the [mainline workflow runs](https://github.com/tapiwanashemanyonga-gif/Maize-Crush/actions).
 - The existing `feature/backup-import-safety` branch was inspected but not merged or reused because it was stale and diverged (5 commits ahead, 159 behind main).
 
-## Android background checkpoint — in progress
+## Android background checkpoint and process-death recovery — verified and merged
 
-- Verified the exact current main commit `8bf9b3d2b6b1074921ad461b7d71a1a47efba84f`: gameplay checks, Android debug APK, unsigned release candidate (including temporary signing and Android 15 emulator launch), compact-phone/tablet device smoke, and Pages deployment all completed successfully on that SHA. Run IDs: `42377612719`, `42377612691`, `42377612774`, `42377612689`, and `42377612015`. Both phone and tablet runtime jobs passed.
-- The native Activity previously paused WebView rendering and JavaScript timers immediately on `onPause`, without first explicitly asking the game to checkpoint its last stable round.
-- New branch `fix/android-background-checkpoint` adds a JavaScript background-checkpoint hook. Android invokes it from `onPause` and pauses WebView/timers only after the evaluation callback; a foreground-resume guard prevents a late callback from pausing a WebView after the user returns.
-- The same hook is used for browser `pagehide` and `blur`. It deliberately skips a checkpoint while a cascade/round mutation is busy, preserving the last stable checkpoint instead of writing a partial board.
-- Added static regression checks for native lifecycle ordering and browser/Android checkpoint-hook parity. Extended the compact-phone/tablet emulator smoke to background/resume the Activity, force-stop the process, relaunch it, and assert the same 19-move round checkpoint is restored.
-- First completed PR validation at head `8084ccc4571306fb14024a90c0371b4103dc8ac3`: gameplay checks, debug APK, and unsigned release candidate passed; compact-phone runtime smoke passed; tablet runtime smoke failed after process relaunch during a repeated full geometry scan with zero fully visible accessibility bounds. Earlier tablet checks in the same run had verified the board, diagonal connection, no-swap rule, orientation changes, resume and 19-move checkpoint before force-stop. The failure happened before the post-process-relaunch checkpoint assertion; no app crash or build failure was reported.
-- Corrected the smoke harness rather than changing game code: the post-relaunch check now waits up to 30 seconds for 64 accessible crop cells and the expected move count, without repeating the full geometry scan already performed before process death and after Activity resume. Added tests for a temporarily empty accessibility tree, lost moves, and a missing board. Fresh CI is required to validate this correction; physical-device checks remain necessary.
+- PR [#73](https://github.com/tapiwanashemanyonga-gif/Maize-Crush/pull/73) adds an explicit stable-round checkpoint hook before Android pauses WebView rendering and JavaScript timers. The native `onPause()` requests the checkpoint and only pauses WebView after the evaluation callback; a resume guard prevents a late callback from pausing an active foreground game.
+- Browser `pagehide` and `blur` use the same hook. The game skips a checkpoint while a cascade/round mutation is busy, preserving the last stable round rather than serializing a partially settled board.
+- The emulator matrix now backgrounds and resumes the Activity, force-stops the app process, relaunches it, and verifies that the same 19-move checkpoint is restored. It also checks diagonal connection, the no-swap rule, and portrait/landscape layout.
+- PR #73 passed all four checks on exact head `b77de0fcbaef9b9326f1ac852373df38183b1e52`: gameplay regression checks (105/105; run `42484277667`), Android debug APK (`42484277663`), unsigned release candidate including temporary signing and Android 15 emulator launch (`42484277824`), and compact-phone/tablet process-recovery smoke (`42484277694`). Both device profiles passed.
+- PR #73 was squash-merged to `main` as `a394c9ecc882e995656f51e83f67ae6e73df5af4`.
+- All five post-merge workflows passed on that exact main commit: gameplay checks 105/105 (`42485630248`), Android debug APK (`42485630191`), unsigned release candidate and Android 15 emulator verification (`42485630195`), compact-phone/tablet runtime smoke (`42485630786`), and Pages deployment (`42485629446`).
+- The post-merge phone and tablet logs both explicitly report: `Round checkpoint recovered after process relaunch: 19 moves remain.` Both also confirm the diagonal connect and no-swap behavior. No crash was reported.
+- Verified post-merge artifacts: debug APK 60,126 bytes ([workflow](https://github.com/tapiwanashemanyonga-gif/Maize-Crush/actions/runs/42485630191)); unsigned release-candidate bundle 100,808 bytes ([workflow](https://github.com/tapiwanashemanyonga-gif/Maize-Crush/actions/runs/42485630195)); compact-phone and tablet screenshots/accessibility snapshots ([device workflow](https://github.com/tapiwanashemanyonga-gif/Maize-Crush/actions/runs/42485630786)).
+- The first intermediate PR device run failed on the tablet's repeated post-relaunch geometry scan; this was a test-harness timing/visibility issue. The helper was corrected to wait for the accessible board and expected move counter without repeating geometry already checked earlier. The final PR and post-merge phone/tablet runs both passed.
 
 ## Remaining release gates
 
@@ -58,11 +60,8 @@ Last reviewed: 2026-11-07
 
 ## Latest increment
 
-- Branch: `fix/android-background-checkpoint`.
-- Latest branch commit at this log update: `1cb8d8352e5bddfe9fd3b773613f87e8f2fb707c`; based on current main `8bf9b3d2b6b1074921ad461b7d71a1a47efba84f`.
-- Diff covers the Android Activity lifecycle, matching browser/Android checkpoint hook, lifecycle tests, compact-phone/tablet process-relaunch smoke, and this status log. No app gameplay rules or visual assets were changed.
-- The native Activity requests a stable localStorage checkpoint before pausing WebView rendering/timers; a resume guard prevents a late callback from pausing the foreground WebView. The game skips checkpoint writes while a cascade is busy and uses the same hook on browser blur/pagehide.
-- The emulator smoke backgrounds/resumes the Activity, force-stops the process, relaunches it, and checks that the 19-move stable round is recovered on both compact-phone and tablet profiles. The post-relaunch check now waits for the accessible board/counter without re-running geometry already checked earlier in the same run.
-- PR head `8084ccc4571306fb14024a90c0371b4103dc8ac3` passed gameplay tests, debug APK, and unsigned release candidate; compact-phone runtime smoke passed; tablet runtime smoke failed in the repeated post-relaunch geometry scan. The corrective helper/tests are committed through `1cb8d8352e5bddfe9fd3b773613f87e8f2fb707c`; all fresh workflows must pass before merge.
-- No package identity, permissions, art, ads, signing configuration, credentials, or generated build outputs changed. Physical-device and release-signing gates remain open.
-- No package identity, permissions, art, ads, signing configuration, credentials, or generated build outputs changed. Physical-device and release-signing gates remain open.
+- Merged to `main` as `a394c9ecc882e995656f51e83f67ae6e73df5af4` via PR #73.
+- The increment changed the Android Activity lifecycle, browser and Android WebView game checkpoint hook, lifecycle/security regression tests, compact-phone/tablet process-relaunch smoke helper and this status log.
+- The exact PR head passed 105 gameplay tests, Android debug/release builds, temporary CI signing smoke, Android 15 release-emulator launch, and both phone/tablet process-recovery smoke jobs. All five post-merge workflows passed on the exact merge commit.
+- No game rules, art, ads, Android identity, permissions, release signing credentials, or generated build outputs were changed.
+- Next milestone: audit performance and memory behavior on modest Android devices and during longer play sessions. Physical-device testing, full objective/endless-progression QA, and user-controlled release signing remain open.
