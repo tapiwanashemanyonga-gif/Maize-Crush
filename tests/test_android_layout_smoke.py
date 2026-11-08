@@ -396,7 +396,10 @@ class AndroidLayoutSmokeTests(unittest.TestCase):
         self.assertIn("assert_round_checkpoint_after_relaunch(width, height, 19)", main)
         self.assertNotIn('assert_layout_phase("process-relaunch")', main)
         self.assertLess(main.index('"KEYCODE_HOME"'), main.index('"force-stop"'))
-        self.assertLess(main.index('"force-stop"'), main.index("assert_round_checkpoint_after_relaunch(width, height, 19)"))
+        checkpoint_call = "assert_round_checkpoint_after_relaunch(width, height, 19)"
+        first_checkpoint = main.index(checkpoint_call)
+        second_checkpoint = main.index(checkpoint_call, first_checkpoint + len(checkpoint_call))
+        self.assertLess(main.index('"force-stop"'), second_checkpoint)
 
     def test_optional_screenshot_failure_does_not_fail_the_smoke_test(self):
         with tempfile.TemporaryDirectory() as directory:
