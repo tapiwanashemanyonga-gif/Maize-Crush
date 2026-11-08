@@ -361,7 +361,7 @@ class AndroidLayoutSmokeTests(unittest.TestCase):
         )
         restored = parse_hierarchy(restored_xml)
         with patch.object(smoke, "dump_hierarchy", side_effect=[empty, restored]):
-            with patch.object(smoke.time, "monotonic", side_effect=[0.0, 0.5]):
+            with patch.object(smoke.time, "monotonic", side_effect=[0.0, 0.5, 1.0]):
                 with patch.object(smoke.time, "sleep"):
                     with patch.object(smoke, "validate_visible_geometry") as geometry:
                         smoke.assert_round_checkpoint_after_relaunch(400, 800, 19)
