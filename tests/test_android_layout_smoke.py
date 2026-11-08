@@ -384,7 +384,7 @@ class AndroidLayoutSmokeTests(unittest.TestCase):
             '<hierarchy><node text="MOVES LEFT"><node text="19" /></node></hierarchy>'
         )
         with patch.object(smoke, "dump_hierarchy", return_value=(root, {}, {"19"})):
-            with patch.object(smoke.time, "monotonic", side_effect=[0.0, 1.0]):
+            with patch.object(smoke.time, "monotonic", side_effect=[0.0, 0.2, 1.0]):
                 with patch.object(smoke.time, "sleep"):
                     with self.assertRaisesRegex(AssertionError, "found 0/64 crop cells"):
                         smoke.assert_round_checkpoint_after_relaunch(400, 800, 19, timeout_seconds=0.5)
