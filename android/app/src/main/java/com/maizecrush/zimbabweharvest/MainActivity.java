@@ -32,6 +32,7 @@ public class MainActivity extends Activity {
     private String pendingBackupJson;
     private Object backCallback;
     private boolean handlingBack;
+    private boolean activityResumed;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -236,13 +237,28 @@ public class MainActivity extends Activity {
         handleBackNavigation();
     }
 
+    private void pauseWebViewAfterCheckpoint(WebView target) {
+        if (target == null || target != webView || activityResumed) return;
+        target.onPause();
+        target.pauseTimers();
+    }
+
     @Override
     protected void onPause() {
-        // Stop WebView rendering and JavaScript timers while the game is backgrounded.
-        // This reduces unnecessary battery use without clearing local progress.
-        if (webView != null) {
-            webView.onPause();
-            webView.pauseTimers();
+        activityResumed = false;
+        WebView current = webView;
+        if (current != null) {
+            // Run the synchronous localStorage checkpoint in the WebView before
+            // pausing its renderer and JavaScript timers. The callback also guards
+            // against a quick return to the foreground before it completes.
+            try {
+                current.evaluateJavascript(
+                    "if(typeof window.maizeCrushPrepareForBackground==='function'){window.maizeCrushPrepareForBackground();}true;",
+                    result -> pauseWebViewAfterCheckpoint(current)
+                );
+            } catch (RuntimeException ignored) {
+                pauseWebViewAfterCheckpoint(current);
+            }
         }
         super.onPause();
     }
@@ -250,6 +266,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        activityResumed = true;
         if (webView != null) {
             webView.onResume();
             webView.resumeTimers();

@@ -352,6 +352,55 @@ class AndroidLayoutSmokeTests(unittest.TestCase):
         self.assertEqual(last, 0)
         self.assertIn("Harvest score", found_texts)
 
+    def test_round_checkpoint_relaunch_waits_for_restored_board_and_moves(self):
+        empty = parse_hierarchy("<hierarchy />")
+        restored_xml = fixture_xml()[:-len("</hierarchy>")] + (
+            '<node text="Level 1 · Maize Fields" />'
+            '<node text="MOVES LEFT"><node text="19" bounds="[0,0][20,20]" /></node>'
+            "</hierarchy>"
+        )
+        restored = parse_hierarchy(restored_xml)
+        with patch.object(smoke, "dump_hierarchy", side_effect=[empty, restored]):
+            with patch.object(smoke.time, "monotonic", side_effect=[0.0, 0.5, 1.0]):
+                with patch.object(smoke.time, "sleep"):
+                    with patch.object(smoke, "validate_visible_geometry") as geometry:
+                        smoke.assert_round_checkpoint_after_relaunch(400, 800, 19)
+        geometry.assert_not_called()
+
+    def test_round_checkpoint_relaunch_rejects_lost_moves_after_timeout(self):
+        wrong_xml = fixture_xml()[:-len("</hierarchy>")] + (
+            '<node text="MOVES LEFT"><node text="20" bounds="[0,0][20,20]" /></node>'
+            "</hierarchy>"
+        )
+        wrong = parse_hierarchy(wrong_xml)
+        with patch.object(smoke, "dump_hierarchy", return_value=wrong):
+            with patch.object(smoke.time, "monotonic", side_effect=[0.0, 0.2, 1.0]):
+                with patch.object(smoke.time, "sleep"):
+                    with self.assertRaisesRegex(AssertionError, "did not restore the expected 19 moves"):
+                        smoke.assert_round_checkpoint_after_relaunch(400, 800, 19, timeout_seconds=0.5)
+
+    def test_round_checkpoint_relaunch_rejects_missing_crop_board(self):
+        root, _, _ = parse_hierarchy(
+            '<hierarchy><node text="MOVES LEFT"><node text="19" /></node></hierarchy>'
+        )
+        with patch.object(smoke, "dump_hierarchy", return_value=(root, {}, {"19"})):
+            with patch.object(smoke.time, "monotonic", side_effect=[0.0, 0.2, 1.0]):
+                with patch.object(smoke.time, "sleep"):
+                    with self.assertRaisesRegex(AssertionError, "found 0/64 crop cells"):
+                        smoke.assert_round_checkpoint_after_relaunch(400, 800, 19, timeout_seconds=0.5)
+
+    def test_main_smoke_backgrounds_and_force_stops_before_checkpoint_relaunch_assertion(self):
+        source = Path(smoke.__file__).read_text(encoding="utf-8")
+        main = source[source.index("def main() -> int:"):]
+        self.assertIn('run_adb("shell", "am", "force-stop", PACKAGE)', main)
+        self.assertIn("assert_round_checkpoint_after_relaunch(width, height, 19)", main)
+        self.assertNotIn('assert_layout_phase("process-relaunch")', main)
+        self.assertLess(main.index('"KEYCODE_HOME"'), main.index('"force-stop"'))
+        checkpoint_call = "assert_round_checkpoint_after_relaunch(width, height, 19)"
+        first_checkpoint = main.index(checkpoint_call)
+        second_checkpoint = main.index(checkpoint_call, first_checkpoint + len(checkpoint_call))
+        self.assertLess(main.index('"force-stop"'), second_checkpoint)
+
     def test_optional_screenshot_failure_does_not_fail_the_smoke_test(self):
         with tempfile.TemporaryDirectory() as directory:
             with patch.object(smoke, "ARTIFACTS", Path(directory)):

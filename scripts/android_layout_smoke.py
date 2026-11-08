@@ -657,6 +657,43 @@ def check_crashes() -> None:
         raise AssertionError("Android logcat contains an app-specific fatal exception.")
 
 
+def assert_round_checkpoint_after_relaunch(
+    width: int, height: int, expected_moves: int, timeout_seconds: float = 30.0
+) -> None:
+    # A force-stopped tablet can take longer than a phone to recreate its
+    # WebView accessibility tree. Check the persisted round directly instead
+    # of running the full layout/geometry scan a second time: geometry is
+    # already checked before process death and after Activity resume.
+    deadline = time.monotonic() + timeout_seconds
+    last_cells = 0
+    last_texts: set[str] = set()
+    last_error = ""
+    while time.monotonic() < deadline:
+        try:
+            root, cells, texts = dump_hierarchy()
+        except RuntimeError as error:
+            last_error = str(error)
+        else:
+            last_cells = len(cells)
+            last_texts = texts
+            if last_cells == 64 and has_moves_value(root, expected_moves):
+                print(
+                    f"Round checkpoint recovered after process relaunch: "
+                    f"{expected_moves} moves remain."
+                )
+                return
+        time.sleep(0.5)
+
+    labels = ", ".join(sorted(last_texts)[:12]) or "(no accessible text)"
+    detail = f" Last UIAutomator error: {last_error}" if last_error else ""
+    raise AssertionError(
+        "The saved round checkpoint did not restore the expected "
+        f"{expected_moves} moves after process relaunch within "
+        f"{timeout_seconds:.0f}s; found {last_cells}/64 crop cells. "
+        f"Last accessible labels: {labels}.{detail}"
+    )
+
+
 def main() -> int:
     ARTIFACTS.mkdir(exist_ok=True)
     width, height = screen_size()
@@ -679,10 +716,22 @@ def main() -> int:
     time.sleep(1.0)
     assert_running()
     assert_layout_phase("resume")
+    assert_round_checkpoint_after_relaunch(width, height, 19)
+
+    # Background the Activity first so onPause can synchronously checkpoint the
+    # stable round, then kill the process and verify Android restores that round.
+    run_adb("shell", "input", "keyevent", "KEYCODE_HOME")
+    time.sleep(1.0)
+    run_adb("shell", "am", "force-stop", PACKAGE)
+    time.sleep(0.5)
+    run_adb("shell", "am", "start", "-W", "-n", ACTIVITY)
+    time.sleep(1.0)
+    assert_running()
+    assert_round_checkpoint_after_relaunch(width, height, 19)
     check_crashes()
     print(
-        "PASS: rendered 8×8 board and objective, diagonal matching drag, "
-        "no-swap mismatch, landscape/portrait layout, and app resume."
+        "PASS: 8×8 crop board, diagonal connect, no-swap rule, "
+        "landscape/portrait layout, background resume, and process-death round recovery."
     )
     return 0
 
