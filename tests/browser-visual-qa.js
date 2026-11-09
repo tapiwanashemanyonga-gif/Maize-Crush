@@ -91,11 +91,27 @@ function findMismatchPair(tiles) {
   return null;
 }
 
-async function dragPath(page, tiles) {
+async function dragPath(page, tiles, verifySelection = false) {
   await page.mouse.move(tiles[0].box.x, tiles[0].box.y);
   await page.mouse.down();
-  for (const tile of tiles.slice(1)) {
-    await page.mouse.move(tile.box.x, tile.box.y, { steps: 3 });
+  if (verifySelection) {
+    await page.waitForFunction(
+      () => document.querySelectorAll("#game-board .crop-tile[aria-pressed='true']").length === 1,
+      null,
+      { timeout: 5000 }
+    );
+  }
+  for (let index = 1; index < tiles.length; index++) {
+    const tile = tiles[index];
+    await page.mouse.move(tile.box.x, tile.box.y, { steps: 10 });
+    if (verifySelection) {
+      const expectedLength = index + 1;
+      await page.waitForFunction(
+        expected => document.querySelectorAll("#game-board .crop-tile[aria-pressed='true']").length === expected,
+        expectedLength,
+        { timeout: 5000 }
+      );
+    }
   }
   await page.mouse.up();
 }
@@ -173,7 +189,7 @@ async function runViewport(browser, profile, viewport) {
   if (!diagonal) throw new Error(profile + " could not generate a diagonal matching triple after 10 fresh fields.");
   const scoreBefore = Number((await page.locator("#score-value").innerText()).replace(/,/g, ""));
   const movesBefore = Number(await page.locator("#moves-value").innerText());
-  await dragPath(page, diagonal);
+  await dragPath(page, diagonal, true);
   await page.waitForFunction(
     previous => Number(document.querySelector("#moves-value").textContent) === previous - 1,
     movesBefore,
