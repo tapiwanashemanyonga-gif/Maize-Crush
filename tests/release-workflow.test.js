@@ -50,6 +50,7 @@ test("normal Android release-candidate validation skips emulator startup", () =>
 test("normal layout QA uses browser screenshots and interaction checks without an emulator", () => {
   assert.match(layoutWorkflow, /name: Maize Crush Android Build and Browser Visual QA/);
   assert.match(layoutWorkflow, /browser-visual-qa:/);
+  assert.match(layoutWorkflow, /node --check tests\/browser-visual-qa\.js/);
   assert.match(layoutWorkflow, /playwright@1\.56\.1/);
   assert.match(layoutWorkflow, /playwright install --with-deps chromium/);
   assert.match(layoutWorkflow, /node tests\/browser-visual-qa\.js/);
