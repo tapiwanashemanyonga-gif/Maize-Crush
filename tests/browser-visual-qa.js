@@ -152,8 +152,14 @@ async function runViewport(browser, profile, viewport) {
 
   // Exercise a real diagonal three-crop connection on the rendered game board.
   tiles = await getBoardState(page);
-  const diagonal = findDiagonalTriple(tiles);
-  if (!diagonal) throw new Error(profile + " board did not expose a diagonal matching triple.");
+  let diagonal = findDiagonalTriple(tiles);
+  for (let attempt = 0; !diagonal && attempt < 10; attempt++) {
+    await page.locator("#shuffle-button").click();
+    await page.waitForFunction(() => document.querySelectorAll("#game-board .crop-tile").length === 64);
+    tiles = await getBoardState(page);
+    diagonal = findDiagonalTriple(tiles);
+  }
+  if (!diagonal) throw new Error(profile + " could not generate a diagonal matching triple after 10 fresh fields.");
   const scoreBefore = Number((await page.locator("#score-value").innerText()).replace(/,/g, ""));
   const movesBefore = Number(await page.locator("#moves-value").innerText());
   await dragPath(page, diagonal);
