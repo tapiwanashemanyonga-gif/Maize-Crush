@@ -209,14 +209,15 @@ async function runLongSessionSoak(page, profile) {
   await waitForBoardAnimations(page);
   const baseline = await measureAfterCollection();
 
-  const harvestsPerRound = 4;
-  const rounds = 5;
+  const harvestsPerRound = 2;
+  const maxRounds = 20;
+  let rounds = 0;
   let harvests = 0;
   let restarts = 0;
   let checkpointBytes = 0;
 
-  for (let round = 0; round < rounds; round++) {
-    if (round > 0) {
+  while (harvests < 20 && rounds < maxRounds) {
+    if (rounds > 0) {
       await page.locator("#restart-button").click();
       await page.waitForFunction(() =>
         Number(document.querySelector("#moves-value").textContent) === 20 &&
@@ -227,8 +228,9 @@ async function runLongSessionSoak(page, profile) {
       await waitForBoardAnimations(page);
       restarts++;
     }
+    rounds++;
 
-    for (let move = 0; move < harvestsPerRound; move++) {
+    for (let move = 0; move < harvestsPerRound && harvests < 20; move++) {
       let tiles = await getBoardState(page);
       let chain = findConnectedTriple(tiles);
       for (let attempt = 0; !chain && attempt < 10; attempt++) {
@@ -245,23 +247,61 @@ async function runLongSessionSoak(page, profile) {
       const scoreBefore = Number((await page.locator("#score-value").innerText()).replace(/,/g, ""));
       await dragPath(page, chain, true);
       const expectedMoves = movesBefore - 1;
-      await page.waitForFunction(expected => {
-        const board = document.querySelector("#game-board");
-        const complete = document.querySelector("#level-complete-dialog");
-        const failed = document.querySelector("#level-failed-dialog");
-        const isOpen = dialog => !!dialog && (dialog.open || dialog.hasAttribute("open"));
-        return Number(document.querySelector("#moves-value").textContent) === expected &&
-          board.querySelectorAll(".crop-tile").length === 64 &&
-          board.querySelectorAll(".crop-tile.clearing").length === 0 &&
-          !isOpen(complete) && !isOpen(failed);
-      }, expectedMoves, { timeout: 12000 });
+      try {
+        await page.waitForFunction(expected => {
+          const board = document.querySelector("#game-board");
+          const moves = Number(document.querySelector("#moves-value").textContent);
+          const score = Number(document.querySelector("#score-value").textContent.replace(/,/g, ""));
+          let checkpoint;
+          try {
+            checkpoint = JSON.parse(localStorage.getItem("maize-crush-round") || "null");
+          } catch (_) {
+            return false;
+          }
+          return moves === expected &&
+            board.querySelectorAll(".crop-tile").length === 64 &&
+            board.querySelectorAll(".crop-tile.clearing").length === 0 &&
+            checkpoint && checkpoint.moves === expected && checkpoint.score === score;
+        }, expectedMoves, { timeout: 12000 });
+      } catch (error) {
+        const diagnostic = await page.evaluate(() => {
+          let checkpoint = null;
+          try { checkpoint = JSON.parse(localStorage.getItem("maize-crush-round") || "null"); } catch (_) {}
+          const isOpen = selector => {
+            const dialog = document.querySelector(selector);
+            return !!dialog && (dialog.open || dialog.hasAttribute("open"));
+          };
+          return {
+            moves: Number(document.querySelector("#moves-value").textContent),
+            score: Number(document.querySelector("#score-value").textContent.replace(/,/g, "")),
+            tileCount: document.querySelectorAll("#game-board .crop-tile").length,
+            clearingCount: document.querySelectorAll("#game-board .crop-tile.clearing").length,
+            selectedCount: document.querySelectorAll("#game-board .crop-tile[aria-pressed='true']").length,
+            checkpointMoves: checkpoint && checkpoint.moves,
+            checkpointScore: checkpoint && checkpoint.score,
+            checkpointCompleted: checkpoint && checkpoint.completed,
+            completeDialogOpen: isOpen("#level-complete-dialog"),
+            failedDialogOpen: isOpen("#level-failed-dialog"),
+            message: document.querySelector("#game-message")?.textContent || ""
+          };
+        });
+        throw new Error(profile + " long-session harvest " + (harvests + 1) +
+          " did not settle at " + expectedMoves + " moves: " + JSON.stringify(diagnostic) +
+          ". " + error.message);
+      }
 
       const state = await page.evaluate(() => {
         const checkpoint = JSON.parse(localStorage.getItem("maize-crush-round") || "null");
+        const complete = document.querySelector("#level-complete-dialog");
+        const failed = document.querySelector("#level-failed-dialog");
+        const isOpen = dialog => !!dialog && (dialog.open || dialog.hasAttribute("open"));
         return {
           score: Number(document.querySelector("#score-value").textContent.replace(/,/g, "")),
           checkpoint,
-          checkpointBytes: new Blob([localStorage.getItem("maize-crush-round") || ""]).size
+          checkpointBytes: new Blob([localStorage.getItem("maize-crush-round") || ""]).size,
+          completeDialogOpen: isOpen(complete),
+          failedDialogOpen: isOpen(failed),
+          terminal: !!(checkpoint && checkpoint.completed) || isOpen(complete) || isOpen(failed)
         };
       });
       if (state.score <= scoreBefore) {
@@ -276,7 +316,17 @@ async function runLongSessionSoak(page, profile) {
       checkpointBytes = state.checkpointBytes;
       harvests++;
       await waitForBoardAnimations(page);
+
+      // A random cascade can legitimately finish the score objective. Close
+      // the result dialog and start a fresh round rather than treating success
+      // as a failed soak or trying to move on a completed board.
+      if (state.completeDialogOpen) await page.locator("#level-complete-close").click();
+      if (state.failedDialogOpen) await page.locator("#level-failed-close").click();
+      if (state.terminal) break;
     }
+  }
+  if (harvests !== 20) {
+    throw new Error(profile + " long-session soak completed only " + harvests + " of 20 harvests in " + rounds + " rounds.");
   }
 
   const after = await measureAfterCollection();
