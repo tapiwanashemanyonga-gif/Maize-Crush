@@ -67,3 +67,11 @@ test("browser QA exercises both compact mobile and tablet layouts and gameplay",
   assert.match(script, /did not increase the score/);
   assert.ok(script.includes('profile + "-initial.png"'));
 });
+
+test("browser visual QA measures board layout work during real crop gestures", () => {
+  const script = fs.readFileSync(path.join(root, "tests", "browser-visual-qa.js"), "utf8");
+  assert.match(script, /installLayoutProbe/);
+  assert.match(script, /tileRectReads > 24/);
+  assert.match(script, /boardRectReads > 10/);
+  assert.match(script, /boardSelectorCalls !== 0/);
+});
