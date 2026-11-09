@@ -116,6 +116,36 @@ async function dragPath(page, tiles, verifySelection = false) {
   await page.mouse.up();
 }
 
+async function installLayoutProbe(page) {
+  await page.evaluate(() => {
+    const probe = {
+      active: false,
+      tileRectReads: 0,
+      boardRectReads: 0,
+      boardSelectorCalls: 0
+    };
+    window.__maizeCrushLayoutProbe = probe;
+    const originalRect = Element.prototype.getBoundingClientRect;
+    Element.prototype.getBoundingClientRect = function (...args) {
+      if (probe.active) {
+        if (this.classList && this.classList.contains("crop-tile")) probe.tileRectReads++;
+        else if (this.id === "game-board") probe.boardRectReads++;
+      }
+      return originalRect.apply(this, args);
+    };
+    const originalQuery = Element.prototype.querySelector;
+    Element.prototype.querySelector = function (selector) {
+      if (probe.active && this.id === "game-board") probe.boardSelectorCalls++;
+      return originalQuery.call(this, selector);
+    };
+    const originalQueryAll = Element.prototype.querySelectorAll;
+    Element.prototype.querySelectorAll = function (selector) {
+      if (probe.active && this.id === "game-board") probe.boardSelectorCalls++;
+      return originalQueryAll.call(this, selector);
+    };
+  });
+}
+
 async function runViewport(browser, profile, viewport) {
   const context = await browser.newContext({
     viewport,
@@ -189,7 +219,21 @@ async function runViewport(browser, profile, viewport) {
   if (!diagonal) throw new Error(profile + " could not generate a diagonal matching triple after 10 fresh fields.");
   const scoreBefore = Number((await page.locator("#score-value").innerText()).replace(/,/g, ""));
   const movesBefore = Number(await page.locator("#moves-value").innerText());
+  await installLayoutProbe(page);
+  await page.evaluate(() => { window.__maizeCrushLayoutProbe.active = true; });
   await dragPath(page, diagonal, true);
+  const layoutWork = await page.evaluate(() => {
+    const probe = window.__maizeCrushLayoutProbe;
+    probe.active = false;
+    return {
+      tileRectReads: probe.tileRectReads,
+      boardRectReads: probe.boardRectReads,
+      boardSelectorCalls: probe.boardSelectorCalls
+    };
+  });
+  if (layoutWork.tileRectReads > 24) throw new Error(profile + " pointer gesture performed too many crop layout reads: " + JSON.stringify(layoutWork));
+  if (layoutWork.boardRectReads > 10) throw new Error(profile + " pointer gesture performed too many board layout reads: " + JSON.stringify(layoutWork));
+  if (layoutWork.boardSelectorCalls !== 0) throw new Error(profile + " pointer gesture performed a board-wide DOM selector: " + JSON.stringify(layoutWork));
   await page.waitForFunction(
     previous => Number(document.querySelector("#moves-value").textContent) === previous - 1,
     movesBefore,
@@ -214,7 +258,7 @@ async function runViewport(browser, profile, viewport) {
   });
 
   await context.close();
-  return { profile, ...dimensions, mismatchRejected: true, diagonalConnection: true, scoreBefore, scoreAfter };
+  return { profile, ...dimensions, mismatchRejected: true, diagonalConnection: true, scoreBefore, scoreAfter, layoutWork };
 }
 
 (async () => {

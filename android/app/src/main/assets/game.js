@@ -58,6 +58,7 @@ function normalizeBackupEnvelope(input){if(!input||typeof input!=="object"||Arra
 const api={SIZE,MIN_CHAIN,CASCADE_LIMIT,MAX_LEVEL,CROPS,WORLDS,missionForLevel,normalizeMissionState,advanceMission,objectiveForLevel,objectiveIconForLevel,normalizeObjectiveState,advanceObjective,worldChapterForLevel,worldThemeForLevel,canAdvanceLevel,normalizeCropJournal,recordCropJournal,totalJournalCrops,makeBoard,makePlayableBoard,makeSeededBoard,seededRandom,shouldContinueCascade,validateBoard,cloneBoard,countCrops,boardSummary,hasLineMatches,comboBonus,cascadePointsForMatches,starsForScore,normalizeLevelStars,recordLevelStars,totalLevelStars,recordDailyCompletion,dailyStreakForDates,normalizeSaveData,normalizeBackupEnvelope,applyStorageTransaction,normalizeRoundCheckpoint,isAdjacent,isValidChain,refillBoard,cropAt,scoreForChain,findMatches,specialClearCells,fertilizerCells,rainShowerCells,marketCartCells,findHintChain,hasAvailableChain,dailyChallengeForDate,goalForLevel,movesForLevel,worldForLevel};if(typeof module!=="undefined"&&module.exports)module.exports=api;root.MaizeCrush=api
 })(typeof globalThis!=="undefined"?globalThis:this);
 (function(){"use strict";if(typeof document==="undefined")return;const G=window.MaizeCrush,boardEl=document.getElementById("game-board");if(!boardEl)return;const $=id=>document.getElementById(id);
+const tileElements=new Map();let renderedPathKeys=new Set(),renderedHintKeys=new Set(),renderedLastPathKey=null,connectionLine=null,connectionEndpoint=null;
 let board,path,score,moves,level,busy,completed,soundOn,pointerDown,activePointerId,lastMessage,cascadeCount,audioContext,bestScore,dailyMode,dailyChallenge,fertilizerUsed,rainUsed,hintPath,gameStats,levelBests,levelStars,undoSnapshot,vibrationOn,contrastMode,largeText,lightTheme,marketUsed,missionState,objectiveState,cropJournal;const saved=readProgress();level=saved.level;missionState=G.normalizeMissionState(null,level);objectiveState=G.normalizeObjectiveState(null,level);bestScore=saved.best;dailyMode=false;dailyChallenge=G.dailyChallengeForDate(todayKey());fertilizerUsed=false;rainUsed=false;marketUsed=false;hintPath=[];gameStats=readStats();cropJournal=readCropJournal();levelBests=readLevelBests();levelStars=readLevelStars();soundOn=readPreference("maize-crush-sound",false);vibrationOn=readPreference("maize-crush-vibration",true);contrastMode=readPreference("maize-crush-contrast",false);largeText=readPreference("maize-crush-large-text",false);lightTheme=readPreference("maize-crush-light-theme",false);score=0;moves=G.movesForLevel(level);busy=false;completed=false;path=[];pointerDown=false;activePointerId=null;lastMessage="";cascadeCount=0;board=G.makePlayableBoard(Math.random);
 function todayKey(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
 function readRoundCheckpoint(){try{return G.normalizeRoundCheckpoint(JSON.parse(localStorage.getItem("maize-crush-round")||"null"))}catch(_){return null}}
@@ -95,9 +96,64 @@ function saveProgress(){try{const old=readProgress();bestScore=Math.max(bestScor
 function announce(msg,kind){lastMessage=msg;$("game-message").textContent=msg;$("game-message").className="game-message"+(kind?" "+kind:"")}
 function cellKey(x){return x.r+","+x.c}
 function locateTile(target){const tile=target&&target.closest?target.closest(".crop-tile"):null;if(!tile||!boardEl.contains(tile))return null;return{r:Number(tile.dataset.row),c:Number(tile.dataset.col)}}
-function locateTileAtPoint(x,y){if(!Number.isFinite(x)||!Number.isFinite(y))return null;for(const tile of boardEl.querySelectorAll(".crop-tile")){const rect=tile.getBoundingClientRect();if(x>=rect.left&&x<=rect.right&&y>=rect.top&&y<=rect.bottom)return{r:Number(tile.dataset.row),c:Number(tile.dataset.col)}}return null}
-function renderBoard(){boardEl.innerHTML="";const svgNS="http://www.w3.org/2000/svg",trail=document.createElementNS(svgNS,"svg");trail.setAttribute("class","connection-trail");trail.setAttribute("aria-hidden","true");const line=document.createElementNS(svgNS,"polyline"),marker=document.createElementNS(svgNS,"circle");line.setAttribute("class","connection-line");marker.setAttribute("class","connection-endpoint");trail.append(line,marker);boardEl.appendChild(trail);const frag=document.createDocumentFragment();for(let r=0;r<G.SIZE;r++)for(let c=0;c<G.SIZE;c++){const crop=G.CROPS[board[r][c]],tile=document.createElement("button");tile.type="button";tile.className="crop-tile crop-"+crop.id+" tile-arrive";tile.style.animationDelay=(((G.SIZE-1-r)*9)+(c*5))+"ms";tile.dataset.row=r;tile.dataset.col=c;const artwork=document.createElementNS(svgNS,"svg");artwork.setAttribute("class","crop-art");artwork.setAttribute("viewBox","0 0 100 100");artwork.setAttribute("aria-hidden","true");const symbol=document.getElementById("crop-"+crop.id);if(symbol){Array.from(symbol.childNodes).forEach(node=>{if(node.nodeType===1)artwork.appendChild(node.cloneNode(true))})}else{tile.textContent=crop.emoji}tile.appendChild(artwork);tile.setAttribute("aria-label",crop.name+", row "+(r+1)+", column "+(c+1));tile.setAttribute("aria-pressed","false");frag.appendChild(tile)}boardEl.appendChild(frag);renderPath()}
-function renderPath(){boardEl.querySelectorAll(".crop-tile").forEach(tile=>{const selected=path.some(x=>x.r===+tile.dataset.row&&x.c===+tile.dataset.col),hinted=hintPath.some(x=>x.r===+tile.dataset.row&&x.c===+tile.dataset.col);tile.classList.toggle("hinted",hinted);tile.classList.toggle("selected",selected);tile.classList.toggle("last-selected",selected&&path.length>0&&cellKey(path[path.length-1])===tile.dataset.row+","+tile.dataset.col);tile.setAttribute("aria-pressed",selected?"true":"false")});const trail=boardEl.querySelector(".connection-trail"),line=trail&&trail.querySelector(".connection-line"),marker=trail&&trail.querySelector(".connection-endpoint"),visiblePath=path.length?path:hintPath;if(trail&&line&&marker){const bounds=boardEl.getBoundingClientRect(),width=Math.max(1,bounds.width),height=Math.max(1,bounds.height);trail.setAttribute("viewBox","0 0 "+width+" "+height);const points=visiblePath.map(cell=>{const tile=boardEl.querySelector('[data-row="'+cell.r+'"][data-col="'+cell.c+'"]');if(!tile)return null;const rect=tile.getBoundingClientRect();return{x:rect.left-bounds.left+rect.width/2,y:rect.top-bounds.top+rect.height/2}}).filter(Boolean);line.setAttribute("points",points.map(point=>point.x+","+point.y).join(" "));line.style.opacity=points.length>1?"1":"0";if(points.length){marker.setAttribute("cx",String(points[points.length-1].x));marker.setAttribute("cy",String(points[points.length-1].y));marker.style.opacity="1"}else marker.style.opacity="0"}$("chain-hint").textContent=path.length?path.length+" crop"+(path.length===1?"":"s")+" connected":"Drag to connect 3+"}
+function locateTileAtPoint(x,y){if(!Number.isFinite(x)||!Number.isFinite(y)||typeof document.elementFromPoint!=="function")return null;return locateTile(document.elementFromPoint(x,y))}
+function renderBoard(){
+boardEl.innerHTML="";
+tileElements.clear();renderedPathKeys.clear();renderedHintKeys.clear();renderedLastPathKey=null;connectionLine=null;connectionEndpoint=null;
+const svgNS="http://www.w3.org/2000/svg",trail=document.createElementNS(svgNS,"svg");
+trail.setAttribute("class","connection-trail");trail.setAttribute("aria-hidden","true");
+const line=document.createElementNS(svgNS,"polyline"),marker=document.createElementNS(svgNS,"circle");
+line.setAttribute("class","connection-line");marker.setAttribute("class","connection-endpoint");
+trail.append(line,marker);boardEl.appendChild(trail);connectionLine=line;connectionEndpoint=marker;
+const frag=document.createDocumentFragment();
+for(let r=0;r<G.SIZE;r++)for(let c=0;c<G.SIZE;c++){
+const crop=G.CROPS[board[r][c]],tile=document.createElement("button");tile.type="button";
+tile.className="crop-tile crop-"+crop.id+" tile-arrive";
+tile.style.animationDelay=(((G.SIZE-1-r)*9)+(c*5))+"ms";
+tile.dataset.row=r;tile.dataset.col=c;
+const artwork=document.createElementNS(svgNS,"svg");artwork.setAttribute("class","crop-art");
+artwork.setAttribute("viewBox","0 0 100 100");artwork.setAttribute("aria-hidden","true");
+const symbol=document.getElementById("crop-"+crop.id);
+if(symbol){Array.from(symbol.childNodes).forEach(node=>{if(node.nodeType===1)artwork.appendChild(node.cloneNode(true))})}
+else{tile.textContent=crop.emoji}
+tile.appendChild(artwork);tile.setAttribute("aria-label",crop.name+", row "+(r+1)+", column "+(c+1));
+tile.setAttribute("aria-pressed","false");tileElements.set(r+","+c,tile);frag.appendChild(tile)
+}
+boardEl.appendChild(frag);renderPath()
+}
+function renderPath(){
+const nextPathKeys=new Set(path.map(cellKey)),nextHintKeys=new Set(hintPath.map(cellKey));
+const nextLastPathKey=path.length?cellKey(path[path.length-1]):null,changedKeys=new Set();
+for(const key of renderedPathKeys)if(!nextPathKeys.has(key))changedKeys.add(key);
+for(const key of nextPathKeys)if(!renderedPathKeys.has(key))changedKeys.add(key);
+for(const key of renderedHintKeys)if(!nextHintKeys.has(key))changedKeys.add(key);
+for(const key of nextHintKeys)if(!renderedHintKeys.has(key))changedKeys.add(key);
+if(renderedLastPathKey)changedKeys.add(renderedLastPathKey);
+if(nextLastPathKey)changedKeys.add(nextLastPathKey);
+for(const key of changedKeys){
+const tile=tileElements.get(key);if(!tile)continue;
+const selected=nextPathKeys.has(key),hinted=nextHintKeys.has(key);
+tile.classList.toggle("hinted",hinted);tile.classList.toggle("selected",selected);
+tile.classList.toggle("last-selected",selected&&key===nextLastPathKey);
+tile.setAttribute("aria-pressed",selected?"true":"false")
+}
+renderedPathKeys=nextPathKeys;renderedHintKeys=nextHintKeys;renderedLastPathKey=nextLastPathKey;
+const line=connectionLine,marker=connectionEndpoint,visiblePath=path.length?path:hintPath;
+if(line&&marker){
+const bounds=boardEl.getBoundingClientRect(),width=Math.max(1,bounds.width),height=Math.max(1,bounds.height);
+line.parentElement.setAttribute("viewBox","0 0 "+width+" "+height);
+const points=visiblePath.map(cell=>{
+const tile=tileElements.get(cellKey(cell));if(!tile)return null;
+const rect=tile.getBoundingClientRect();
+return{x:rect.left-bounds.left+rect.width/2,y:rect.top-bounds.top+rect.height/2}
+}).filter(Boolean);
+line.setAttribute("points",points.map(point=>point.x+","+point.y).join(" "));
+line.style.opacity=points.length>1?"1":"0";
+if(points.length){marker.setAttribute("cx",String(points[points.length-1].x));marker.setAttribute("cy",String(points[points.length-1].y));marker.style.opacity="1"}
+else marker.style.opacity="0"
+}
+const hint=$("chain-hint");if(hint)hint.textContent=path.length?path.length+" crop"+(path.length===1?"":"s")+" connected":"Drag to connect 3+"
+}
 function beginPath(cell){if(busy||completed||moves<=0||!cell)return;hintPath=[];pointerDown=true;path=[cell];renderPath();announce("Keep dragging through matching "+G.CROPS[G.cropAt(board,cell)].name.toLowerCase()+" crops.")}
 function extendPath(cell){if(!pointerDown||busy||!cell||!path.length)return;const last=path[path.length-1];if(cellKey(cell)===cellKey(last))return;const existing=path.findIndex(x=>cellKey(x)===cellKey(cell));if(existing>=0){if(existing===path.length-2)path.pop();renderPath();return}const dr=cell.r-last.r,dc=cell.c-last.c,steps=Math.max(Math.abs(dr),Math.abs(dc));if(!G.isAdjacent(last,cell)){if(!steps||!(dr===0||dc===0||Math.abs(dr)===Math.abs(dc)))return;const stepR=Math.sign(dr),stepC=Math.sign(dc),crop=G.cropAt(board,path[0]),intermediate=[];for(let i=1;i<=steps;i++){const next={r:last.r+stepR*i,c:last.c+stepC*i};if(G.cropAt(board,next)!==crop||path.some(item=>cellKey(item)===cellKey(next)))return;intermediate.push(next)}if(intermediate.length!==steps)return;path.push(...intermediate);renderPath();return}if(G.cropAt(board,cell)!==G.cropAt(board,path[0]))return;path.push(cell);renderPath()}
 function releasePath(){if(!pointerDown)return;pointerDown=false;const chosen=path.slice();path=[];renderPath();if(!G.isValidChain(board,chosen)){announce("Connect at least 3 matching neighbouring crops. Diagonals count.");return}harvest(chosen)}

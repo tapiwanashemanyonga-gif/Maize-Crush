@@ -214,3 +214,22 @@ test("backup import routes every save-key update through the rollback-safe trans
   assert.ok(importer.includes("G.applyStorageTransaction(localStorage,entries)"));
   assert.ok(!importer.includes("localStorage.setItem(BACKUP_KEYS"),"backup import must not write save keys one by one");
 });
+
+test("board gesture hit-testing and path rendering avoid full-grid DOM scans", () => {
+  const source = fs.readFileSync(path.join(__dirname, "..", "game.js"), "utf8");
+  const hitTestStart = source.indexOf("function locateTileAtPoint(");
+  const boardRenderStart = source.indexOf("function renderBoard(", hitTestStart);
+  assert.ok(hitTestStart >= 0 && boardRenderStart > hitTestStart);
+  const hitTest = source.slice(hitTestStart, boardRenderStart);
+  assert.ok(hitTest.includes("document.elementFromPoint(x,y)"));
+  assert.ok(!hitTest.includes("querySelectorAll"));
+
+  const pathRenderStart = source.indexOf("function renderPath(");
+  const beginPathStart = source.indexOf("function beginPath(", pathRenderStart);
+  assert.ok(pathRenderStart >= 0 && beginPathStart > pathRenderStart);
+  const pathRenderer = source.slice(pathRenderStart, beginPathStart);
+  assert.ok(pathRenderer.includes("tileElements.get(key)"));
+  assert.ok(!pathRenderer.includes("querySelectorAll"));
+  assert.ok(!pathRenderer.includes("boardEl.querySelector("));
+  assert.ok(source.includes('tileElements.set(r+","+c,tile)'));
+});
