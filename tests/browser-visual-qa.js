@@ -59,6 +59,14 @@ async function getBoardState(page) {
   );
 }
 
+async function waitForBoardAnimations(page) {
+  await page.waitForFunction(() => {
+    const tiles = Array.from(document.querySelectorAll("#game-board .crop-tile"));
+    return tiles.length === 64 &&
+      tiles.every(tile => tile.getAnimations().every(animation => animation.playState !== "running"));
+  }, null, { timeout: 8000 });
+}
+
 function cropName(label) {
   return label.replace(/, row \d+, column \d+$/i, "").trim();
 }
@@ -198,7 +206,7 @@ async function runLongSessionSoak(page, profile) {
     document.querySelectorAll("#game-board .crop-tile").length === 64
   );
   await page.locator("#game-board").scrollIntoViewIfNeeded();
-  await wait(180);
+  await waitForBoardAnimations(page);
   const baseline = await measureAfterCollection();
 
   const harvestsPerRound = 4;
@@ -216,6 +224,7 @@ async function runLongSessionSoak(page, profile) {
         document.querySelectorAll("#game-board .crop-tile").length === 64
       );
       await page.locator("#game-board").scrollIntoViewIfNeeded();
+      await waitForBoardAnimations(page);
       restarts++;
     }
 
@@ -226,7 +235,7 @@ async function runLongSessionSoak(page, profile) {
         await page.locator("#shuffle-button").click();
         await page.waitForFunction(() => document.querySelectorAll("#game-board .crop-tile").length === 64);
         await page.locator("#game-board").scrollIntoViewIfNeeded();
-        await wait(100);
+        await waitForBoardAnimations(page);
         tiles = await getBoardState(page);
         chain = findConnectedTriple(tiles);
       }
@@ -234,7 +243,7 @@ async function runLongSessionSoak(page, profile) {
 
       const movesBefore = Number(await page.locator("#moves-value").innerText());
       const scoreBefore = Number((await page.locator("#score-value").innerText()).replace(/,/g, ""));
-      await dragPath(page, chain);
+      await dragPath(page, chain, true);
       const expectedMoves = movesBefore - 1;
       await page.waitForFunction(expected => {
         const board = document.querySelector("#game-board");
@@ -266,7 +275,7 @@ async function runLongSessionSoak(page, profile) {
       }
       checkpointBytes = state.checkpointBytes;
       harvests++;
-      await wait(100);
+      await waitForBoardAnimations(page);
     }
   }
 
@@ -336,7 +345,7 @@ async function runViewport(browser, profile, viewport) {
   // Put the board in the viewport before sending pointer gestures. On tablet
   // layouts the complete page is taller than the browser viewport.
   await page.locator("#game-board").scrollIntoViewIfNeeded();
-  await wait(100);
+  await waitForBoardAnimations(page);
 
   // Verify a mismatched drag never swaps crops or consumes a move.
   let tiles = await getBoardState(page);
@@ -361,6 +370,7 @@ async function runViewport(browser, profile, viewport) {
   for (let attempt = 0; !diagonal && attempt < 10; attempt++) {
     await page.locator("#shuffle-button").click();
     await page.waitForFunction(() => document.querySelectorAll("#game-board .crop-tile").length === 64);
+    await waitForBoardAnimations(page);
     tiles = await getBoardState(page);
     diagonal = findDiagonalTriple(tiles);
   }
