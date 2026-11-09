@@ -65,6 +65,5 @@ test("browser QA exercises both compact mobile and tablet layouts and gameplay",
   assert.match(script, /findDiagonalTriple/);
   assert.match(script, /mismatched drag incorrectly consumed a move/);
   assert.match(script, /did not increase the score/);
-  assert.match(script, /mobile-initial\.png/);
-  assert.match(script, /tablet-initial\.png/);
+  assert.ok(script.includes('profile + "-initial.png"'));
 });
