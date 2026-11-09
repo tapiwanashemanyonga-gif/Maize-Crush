@@ -4,7 +4,7 @@ Last reviewed: 2026-11-09
 
 ## Current verified baseline
 
-- Default branch: `main`; latest commit is `bfdccd1ca9d4f0eb507c359ce54aa23b3cb44e04` (verification-log update). Latest gameplay/Android code commit remains `5bc9b586539ad07ba99074be6047c1c8d2e00abf`.
+- Default branch: `main`; latest merged commit is `2dcb697b357e63fd6bf8810c130f4fb9cb0e4412` (stable-round soak hardening). Latest gameplay/Android code commit remains `5bc9b586539ad07ba99074be6047c1c8d2e00abf`.
 - Android identity: `com.maizecrush.zimbabweharvest`, version `1.0.0` (`versionCode 1`), min SDK 24, target SDK 36.
 - Gameplay is an original 8×8 connect-path puzzle: drag through 3+ matching adjacent crops; diagonal connections count; tiles are never swapped.
 - Six Zimbabwe-harvest illustrations are bundled: maize, tomato, groundnut, banana, orange and sweet potato. The game includes eight objective types, endless level scaling, local progress, boosters, accessibility options and responsive phone/tablet layouts.
@@ -107,12 +107,16 @@ Last reviewed: 2026-11-09
 - Verified post-merge artifacts: [debug APK](https://github.com/tapiwanashemanyonga-gif/Maize-Crush/actions/runs/42630167663) (`60,366` bytes), [unsigned release APK/AAB candidate](https://github.com/tapiwanashemanyonga-gif/Maize-Crush/actions/runs/42630167696) (`101,237` bytes), and [mobile/tablet screenshots plus soak results](https://github.com/tapiwanashemanyonga-gif/Maize-Crush/actions/runs/42630167671) (artifact `13680701917`, `4,532,358` bytes).
 - No game rules, crop art, Android identity, permissions, signing credentials, ads or paid services changed. The release candidate remains unsigned.
 
-## Follow-up: stable-round soak edge case — in progress
+## Follow-up: stable-round soak edge case — verified and merged
 
-- The code merge `31a0385c0f641c3ded68a1da943d0cc50eede751` passed all five main workflows, including 20-harvest browser soak on both viewports. A subsequent documentation-only commit `bfdccd1ca9d4f0eb507c359ce54aa23b3cb44e04` triggered another mainline run; its gameplay tests passed 107/107 and Pages deployment passed, but browser QA timed out while waiting for a harvest to settle.
-- The earlier soak wait required the result dialogs to remain closed and only checked board/move UI. That could misclassify a legitimate level-complete/failed result or miss whether the stable checkpoint had actually been written. The timeout log did not expose the round state, so this is being hardened rather than reported as a confirmed gameplay defect.
-- New branch `fix/soak-round-completion-handling` is based on the latest main commit. The soak now waits for the persisted checkpoint to match the expected move count and score, records diagnostic state on timeout, uses two harvests per fresh round, and closes legitimate terminal-result dialogs before restarting. It continues until 20 stable harvests are verified.
-- Added source regression assertions for stable checkpoint matching and both terminal dialog close paths. New CI is pending; no pass is claimed for this follow-up yet.
+- PR [#77](https://github.com/tapiwanashemanyonga-gif/Maize-Crush/pull/77) was squash-merged into `main` on 2026-11-09 as `2dcb697b357e63fd6bf8810c130f4fb9cb0e4412`.
+- The previous browser wait could time out when a legitimate level-complete/failed state appeared. The soak now waits for the saved checkpoint to match the expected moves and score, includes diagnostic state if it times out, uses two harvests per round, and closes legitimate result dialogs before restarting.
+- Exact PR-head validation passed on `6a2a325faa6043b24fb96cbd05e6efc79924796f`: gameplay checks **107/107**, Android debug APK, unsigned release candidate/package metadata/temporary signing smoke, and browser visual QA. PR-head browser results artifact `13680379278` was downloaded and inspected.
+- The hardened soak completed **20 harvests and 20 stable checkpoints on each viewport**. Mobile: 10 rounds, 9 restarts, DOM nodes 916→906 (−10), JS heap 2,288,640→2,465,644 bytes (+177,004). Tablet: 10 rounds, 9 restarts, DOM nodes 901→916 (+15), JS heap 2,247,720→2,422,044 bytes (+174,324). Both stayed below the +160-node and +8 MiB browser guardrails.
+- Both profiles continued to reject mismatched drags without consuming a move, accept a diagonal connection, and preserve 8×8 checkpoints. Board widths remained 374px on mobile and 930.8px on tablet with no document overflow. Gesture instrumentation remained 6 tile bounds reads, 3 board bounds reads and 0 board-wide selector calls.
+- Verified PR-head artifacts: [debug APK](https://github.com/tapiwanashemanyonga-gif/Maize-Crush/actions/runs/42631089705) (`60,372` bytes), [unsigned release candidate](https://github.com/tapiwanashemanyonga-gif/Maize-Crush/actions/runs/42631089556) (`101,237` bytes), and [browser screenshots/results](https://github.com/tapiwanashemanyonga-gif/Maize-Crush/actions/runs/42631090121) (artifact `13680379278`, `4,551,625` bytes).
+- Post-merge mainline verification on `2dcb697b357e63fd6bf8810c130f4fb9cb0e4412`: gameplay tests passed **107/107** (run `42631442561`); Android debug APK passed (run `42631442776`); unsigned release candidate and temporary signing smoke passed (run `42631442570`). Browser visual QA (run `42631442798`) and Pages deployment (run `42631441325`) were still running when this log entry was written; check their final conclusions before relying on post-merge browser/deployment status.
+- Browser heap figures are Chromium metrics only, not proof of Android native/WebView performance. No physical device was connected or tested. Release candidate remains unsigned; no signing credentials, ads or paid services were added.
 
 ## Next milestone
 
