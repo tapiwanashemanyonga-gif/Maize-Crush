@@ -1,6 +1,6 @@
 # Maize Crush development status
 
-Last reviewed: 2026-11-08
+Last reviewed: 2026-11-09
 
 ## Current verified baseline
 
@@ -65,3 +65,14 @@ Last reviewed: 2026-11-08
 - The exact PR head passed 105 gameplay tests, Android debug/release builds, temporary CI signing smoke, Android 15 release-emulator launch, and both phone/tablet process-recovery smoke jobs. All five post-merge workflows passed on the exact merge commit.
 - No game rules, art, ads, Android identity, permissions, release signing credentials, or generated build outputs were changed.
 - Next milestone: audit performance and memory behavior on modest Android devices and during longer play sessions. Physical-device testing, full objective/endless-progression QA, and user-controlled release signing remain open.
+
+
+## Emulator-free visual QA transition — in progress
+
+- Branch: `test/no-emulator-visual-qa`, based on the verified `main` baseline at `1dbc8327f9f13cbdae718eff63df8e00bca1aa36`.
+- Normal pull-request and push validation is being moved away from mandatory Android emulator startup. Android debug/release builds and package/signature checks remain in GitHub Actions.
+- Added Playwright Chromium browser QA for the same HTML/CSS/JavaScript game assets bundled into Android WebView. It exercises compact mobile (390×844) and tablet (1024×768) layouts, captures initial and post-interaction screenshots, checks horizontal overflow and browser errors, verifies that a mismatched drag does not swap crops or consume a move, and verifies a valid diagonal three-crop connection, score increase, hint and settings interactions.
+- Browser screenshots and structured results are uploaded even when the browser QA fails. Playwright is installed only in the workflow; no paid service, API key, analytics, ads or persistent package dependency is introduced.
+- The Android emulator runtime matrix and release-candidate emulator launch remain available only through manual workflow dispatch as optional diagnostics; they no longer gate normal push/PR checks.
+- Important limitation: browser QA validates the shared game UI and gameplay code, not Android WebView rendering, native Activity lifecycle, hardware codecs or device-specific behavior. Physical Android testing remains a release gate. The existing Android build, gameplay regression tests, asset-parity checks and package metadata checks are retained.
+- Next verification: run the new PR workflows, inspect mobile/tablet screenshot artifacts and fix any genuine layout/gameplay regressions before merging. Do not claim emulator or physical-device equivalence.
