@@ -4,7 +4,7 @@ Last reviewed: 2026-11-09
 
 ## Current verified baseline
 
-- Default branch: `main`; latest merged gameplay/Android code commit is `a394c9ecc882e995656f51e83f67ae6e73df5af4`. The current development-log update follows that code commit.
+- Default branch: `main`; latest commit at the start of this increment is `38edae14c61d582e21f00addbc6b5a4031fc9ba8` (development log). Latest gameplay/Android code commit is `5bc9b586539ad07ba99074be6047c1c8d2e00abf`.
 - Android identity: `com.maizecrush.zimbabweharvest`, version `1.0.0` (`versionCode 1`), min SDK 24, target SDK 36.
 - Gameplay is an original 8×8 connect-path puzzle: drag through 3+ matching adjacent crops; diagonal connections count; tiles are never swapped.
 - Six Zimbabwe-harvest illustrations are bundled: maize, tomato, groundnut, banana, orange and sweet potato. The game includes eight objective types, endless level scaling, local progress, boosters, accessibility options and responsive phone/tablet layouts.
@@ -94,6 +94,16 @@ Last reviewed: 2026-11-09
 - The Android release candidate's package metadata, browser/Android asset parity, release outputs and temporary CI signing smoke all passed. The candidate remains unsigned with the user's own credentials; the temporary CI key is not a production signing key.
 - Real Android emulator diagnostics were skipped on normal push/PR runs, and no physical-device, low-memory, long-session or frame-rate result is claimed. Physical-device testing remains a release gate.
 
+## Long-session browser soak — in progress
+
+- Verified repository access, default branch `main`, recent commits, tests and workflows before starting this increment.
+- Baseline commit: `38edae14c61d582e21f00addbc6b5a4031fc9ba8`. All four latest main workflows completed successfully on this exact SHA: gameplay checks `42627477866`, Android debug APK `42627478089`, unsigned Android release candidate `42627478034`, browser visual QA/debug build `42627477892`, plus Pages deployment `42627477171`. All conclusions were `success`.
+- Latest verified artifacts: debug APK `60,368` bytes (artifact `13679795761`); unsigned release candidate bundle `101,237` bytes (artifact `13680145153`); browser screenshots/results artifact `13679415964` (3,002,472 bytes). Emulator-only diagnostics were skipped in normal CI and are not physical-device evidence.
+- New branch: `qa/long-session-memory-soak`, based directly on the verified main SHA.
+- Added a Playwright long-session soak to the existing mobile (390×844) and tablet (1024×768) browser QA. Each profile performs 20 valid three-crop connections over five fresh rounds, checks every stable 8×8 checkpoint and move/score update, and collects Chromium DOM-node and JavaScript-heap metrics after garbage collection.
+- The soak fails if live DOM nodes grow by more than 160 or retained JS heap grows by more than 8 MiB after 20 harvests. These are browser regression guardrails, not claims about Android hardware performance.
+- Code commit: `3d7bb72a4c4d1a95facf160ada43ba1e32912354`. New CI results are pending; no soak pass or performance improvement is claimed until the PR workflow completes and its metrics/artifacts are inspected.
+
 ## Next milestone
 
-Profile long gameplay sessions and memory behavior on modest Android hardware, including repeated cascades, repeated board rebuilds, background/resume and process recovery. Keep browser automation for repeatable interaction coverage, but do not treat it as proof of physical-device performance. After that, complete physical-device testing and final release identity, permission, privacy and store-package review before declaring the unsigned APK/AAB ready for the user's signing credentials.
+Verify the long-session soak on both browser viewports, inspect retained-heap and DOM-node metrics, and correct any failure before merging. Browser soak is repeatable shared-WebView-asset coverage only; it does not replace physical Android testing, low-memory hardware profiling, long-session testing on a real device, or final identity/permission/privacy/store-package review.
