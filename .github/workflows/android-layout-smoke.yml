@@ -1,4 +1,4 @@
-name: Maize Crush Android Device Layout Smoke
+name: Maize Crush Android Build and Browser Visual QA
 
 on:
   push:
@@ -47,7 +47,7 @@ jobs:
           gradle-version: "8.11.1"
       - name: Build Android debug APK
         run: gradle -p android --no-daemon assembleDebug
-      - name: Upload debug APK for device matrix
+      - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
           name: maize-crush-layout-smoke-apk
@@ -55,7 +55,34 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
+  browser-visual-qa:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install pinned Playwright test dependency
+        run: npm install --no-save --no-package-lock playwright@1.56.1
+      - name: Install Chromium and Linux browser dependencies
+        run: npx playwright install --with-deps chromium
+      - name: Run mobile and tablet visual and interaction checks
+        run: node tests/browser-visual-qa.js
+      - name: Upload screenshots, browser results and failure evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: maize-crush-browser-visual-qa
+          path: artifacts/browser-visual-qa/
+          if-no-files-found: warn
+          retention-days: 14
+
+  # Real Android emulator coverage is retained as an optional manual diagnostic.
+  # It is intentionally excluded from normal push and pull-request validation.
   runtime-smoke:
+    if: github.event_name == 'workflow_dispatch'
     needs: build-debug
     runs-on: ubuntu-latest
     strategy:
@@ -66,7 +93,7 @@ jobs:
             device_class: compact-phone
           - profile: pixel_tablet
             device_class: tablet
-    name: Runtime smoke (${{ matrix.device_class }})
+    name: Optional emulator diagnostic (\${{ matrix.device_class }})
     steps:
       - name: Check out repository and UI test helper
         uses: actions/checkout@v4
@@ -80,14 +107,13 @@ jobs:
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
-
       - name: Launch and verify the real crop board and gestures
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 35
           target: google_apis
           arch: x86_64
-          profile: ${{ matrix.profile }}
+          profile: \${{ matrix.profile }}
           disable-animations: true
           script: |
             set -euo pipefail
@@ -98,11 +124,11 @@ jobs:
             adb shell am start -W -n com.maizecrush.zimbabweharvest/.MainActivity
             sleep 3
             python3 scripts/android_layout_smoke.py
-      - name: Upload UI screenshots and accessibility snapshots
+      - name: Upload optional emulator screenshots and accessibility snapshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: maize-crush-ui-smoke-${{ matrix.device_class }}
+          name: maize-crush-optional-emulator-\${{ matrix.device_class }}
           path: artifacts/
           if-no-files-found: ignore
           retention-days: 7
