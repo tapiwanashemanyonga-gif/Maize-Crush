@@ -48,6 +48,12 @@ async function getBoardState(page) {
       box: (() => {
         const rect = tile.getBoundingClientRect();
         return { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 };
+      })(),
+      visible: (() => {
+        const rect = tile.getBoundingClientRect();
+        const x = rect.x + rect.width / 2;
+        const y = rect.y + rect.height / 2;
+        return x >= 0 && x <= window.innerWidth && y >= 0 && y <= window.innerHeight;
       })()
     }))
   );
@@ -66,7 +72,7 @@ function findDiagonalTriple(tiles) {
         byPosition.get((tile.row + 1) + "," + (tile.col + dc)),
         byPosition.get((tile.row + 2) + "," + (tile.col + 2 * dc))
       ];
-      if (path.every(Boolean) &&
+      if (path.every(tile => tile && tile.visible) &&
           cropName(path[0].label) === cropName(path[1].label) &&
           cropName(path[1].label) === cropName(path[2].label)) return path;
     }
@@ -79,7 +85,7 @@ function findMismatchPair(tiles) {
   for (const tile of tiles) {
     for (const [dr, dc] of [[0, 1], [1, 0]]) {
       const other = byPosition.get((tile.row + dr) + "," + (tile.col + dc));
-      if (other && cropName(tile.label) !== cropName(other.label)) return [tile, other];
+      if (other && tile.visible && other.visible && cropName(tile.label) !== cropName(other.label)) return [tile, other];
     }
   }
   return null;
@@ -132,6 +138,11 @@ async function runViewport(browser, profile, viewport) {
     fullPage: true,
     animations: "disabled"
   });
+
+  // Put the board in the viewport before sending pointer gestures. On tablet
+  // layouts the complete page is taller than the browser viewport.
+  await page.locator("#game-board").scrollIntoViewIfNeeded();
+  await wait(100);
 
   // Verify a mismatched drag never swaps crops or consumes a move.
   let tiles = await getBoardState(page);
