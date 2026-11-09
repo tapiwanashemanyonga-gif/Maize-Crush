@@ -4,7 +4,7 @@ Last reviewed: 2026-11-09
 
 ## Current verified baseline
 
-- Default branch: `main`; latest merged commit is `31a0385c0f641c3ded68a1da943d0cc50eede751` (long-session browser QA). Latest gameplay/Android code commit remains `5bc9b586539ad07ba99074be6047c1c8d2e00abf`.
+- Default branch: `main`; latest commit is `bfdccd1ca9d4f0eb507c359ce54aa23b3cb44e04` (verification-log update). Latest gameplay/Android code commit remains `5bc9b586539ad07ba99074be6047c1c8d2e00abf`.
 - Android identity: `com.maizecrush.zimbabweharvest`, version `1.0.0` (`versionCode 1`), min SDK 24, target SDK 36.
 - Gameplay is an original 8×8 connect-path puzzle: drag through 3+ matching adjacent crops; diagonal connections count; tiles are never swapped.
 - Six Zimbabwe-harvest illustrations are bundled: maize, tomato, groundnut, banana, orange and sweet potato. The game includes eight objective types, endless level scaling, local progress, boosters, accessibility options and responsive phone/tablet layouts.
@@ -106,6 +106,13 @@ Last reviewed: 2026-11-09
 - All five post-merge main workflows passed on exact merge commit `31a0385c0f641c3ded68a1da943d0cc50eede751`: gameplay checks run `42630167736` (**107/107**), Android debug APK run `42630167663`, unsigned release candidate run `42630167696`, browser visual QA run `42630167671`, and Pages deployment run `42630166547`.
 - Verified post-merge artifacts: [debug APK](https://github.com/tapiwanashemanyonga-gif/Maize-Crush/actions/runs/42630167663) (`60,366` bytes), [unsigned release APK/AAB candidate](https://github.com/tapiwanashemanyonga-gif/Maize-Crush/actions/runs/42630167696) (`101,237` bytes), and [mobile/tablet screenshots plus soak results](https://github.com/tapiwanashemanyonga-gif/Maize-Crush/actions/runs/42630167671) (artifact `13680701917`, `4,532,358` bytes).
 - No game rules, crop art, Android identity, permissions, signing credentials, ads or paid services changed. The release candidate remains unsigned.
+
+## Follow-up: stable-round soak edge case — in progress
+
+- The code merge `31a0385c0f641c3ded68a1da943d0cc50eede751` passed all five main workflows, including 20-harvest browser soak on both viewports. A subsequent documentation-only commit `bfdccd1ca9d4f0eb507c359ce54aa23b3cb44e04` triggered another mainline run; its gameplay tests passed 107/107 and Pages deployment passed, but browser QA timed out while waiting for a harvest to settle.
+- The earlier soak wait required the result dialogs to remain closed and only checked board/move UI. That could misclassify a legitimate level-complete/failed result or miss whether the stable checkpoint had actually been written. The timeout log did not expose the round state, so this is being hardened rather than reported as a confirmed gameplay defect.
+- New branch `fix/soak-round-completion-handling` is based on the latest main commit. The soak now waits for the persisted checkpoint to match the expected move count and score, records diagnostic state on timeout, uses two harvests per fresh round, and closes legitimate terminal-result dialogs before restarting. It continues until 20 stable harvests are verified.
+- Added source regression assertions for stable checkpoint matching and both terminal dialog close paths. New CI is pending; no pass is claimed for this follow-up yet.
 
 ## Next milestone
 
