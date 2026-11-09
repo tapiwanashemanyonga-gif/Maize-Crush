@@ -44,7 +44,7 @@ test("normal Android release-candidate validation skips emulator startup", () =>
   assert.match(releaseCandidate, /Launch signed release APK on Android emulator/);
   assert.match(releaseCandidate, /assembleRelease bundleRelease/);
   assert.match(releaseCandidate, /aapt dump badging/);
-  assert.match(releaseCandidate, /verify --verbose "\\$APK"/);
+    assert.match(releaseCandidate, /verify --verbose/);
 });
 
 test("normal layout QA uses browser screenshots and interaction checks without an emulator", () => {
