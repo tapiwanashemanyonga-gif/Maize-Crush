@@ -102,7 +102,9 @@ Last reviewed: 2026-11-09
 - New branch: `qa/long-session-memory-soak`, based directly on the verified main SHA.
 - Added a Playwright long-session soak to the existing mobile (390×844) and tablet (1024×768) browser QA. Each profile performs 20 valid three-crop connections over five fresh rounds, checks every stable 8×8 checkpoint and move/score update, and collects Chromium DOM-node and JavaScript-heap metrics after garbage collection.
 - The soak fails if live DOM nodes grow by more than 160 or retained JS heap grows by more than 8 MiB after 20 harvests. These are browser regression guardrails, not claims about Android hardware performance.
-- Code commit: `3d7bb72a4c4d1a95facf160ada43ba1e32912354`. New CI results are pending; no soak pass or performance improvement is claimed until the PR workflow completes and its metrics/artifacts are inspected.
+- Initial PR CI exposed a JavaScript syntax error in the browser harness: an insertion retained the `async` prefix on the synchronous path finder and removed it from `installLayoutProbe`. This failed before Chromium launched; it is a test-harness defect, not a gameplay failure. Corrected both declarations in commit `02895930387c3fec46d73ed4556aa6b527bfb809`.
+- Added an early `node --check tests/browser-visual-qa.js` workflow step and a regression assertion in commits `4ce7bea5cf2f6f5fe96794ee55334d3b6f7bbbbf` and `e07c67ee66331fd84a788e4d820f4e09af5a77ec`, so malformed browser QA scripts fail before Chromium is downloaded.
+- PR #76's initial gameplay check passed **107/107**; the first browser run failed at syntax parsing. Corrected CI reruns are pending. No soak pass or performance improvement is claimed until the new browser run completes and its metrics/artifacts are inspected.
 
 ## Next milestone
 
