@@ -54,7 +54,7 @@ async function getBoardState(page) {
 }
 
 function cropName(label) {
-  return label.replace(/, row \\d+, column \\d+$/i, "").trim();
+  return label.replace(/, row \d+, column \d+$/i, "").trim();
 }
 
 function findDiagonalTriple(tiles) {
@@ -193,9 +193,9 @@ async function runViewport(browser, profile, viewport) {
     browser = await chromium.launch({ headless: true });
     results.push(await runViewport(browser, "mobile", { width: 390, height: 844 }));
     results.push(await runViewport(browser, "tablet", { width: 1024, height: 768 }));
-    if (errors.length) throw new Error("Browser console errors detected:\\n" + errors.join("\\n"));
+    if (errors.length) throw new Error("Browser console errors detected:\n" + errors.join("\n"));
     fs.writeFileSync(path.join(OUTPUT, "results.json"), JSON.stringify({ passed: true, results, errors }, null, 2));
-    process.stdout.write(JSON.stringify({ passed: true, results }, null, 2) + "\\n");
+    process.stdout.write(JSON.stringify({ passed: true, results }, null, 2) + "\n");
   } catch (error) {
     fs.writeFileSync(path.join(OUTPUT, "results.json"), JSON.stringify({
       passed: false, results, errors, failure: error.stack || error.message
