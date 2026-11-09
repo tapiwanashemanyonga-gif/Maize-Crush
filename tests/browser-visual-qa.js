@@ -91,7 +91,7 @@ function findMismatchPair(tiles) {
   return null;
 }
 
-async function dragPath(page, tiles, verifySelection = false) {
+async function dragPath(page, tiles, verifySelection = false, release = true) {
   await page.mouse.move(tiles[0].box.x, tiles[0].box.y);
   await page.mouse.down();
   if (verifySelection) {
@@ -113,7 +113,7 @@ async function dragPath(page, tiles, verifySelection = false) {
       );
     }
   }
-  await page.mouse.up();
+  if (release) await page.mouse.up();
 }
 
 async function installLayoutProbe(page) {
@@ -221,7 +221,7 @@ async function runViewport(browser, profile, viewport) {
   const movesBefore = Number(await page.locator("#moves-value").innerText());
   await installLayoutProbe(page);
   await page.evaluate(() => { window.__maizeCrushLayoutProbe.active = true; });
-  await dragPath(page, diagonal, true);
+  await dragPath(page, diagonal, true, false);
   const layoutWork = await page.evaluate(() => {
     const probe = window.__maizeCrushLayoutProbe;
     probe.active = false;
@@ -234,6 +234,7 @@ async function runViewport(browser, profile, viewport) {
   if (layoutWork.tileRectReads > 24) throw new Error(profile + " pointer gesture performed too many crop layout reads: " + JSON.stringify(layoutWork));
   if (layoutWork.boardRectReads > 10) throw new Error(profile + " pointer gesture performed too many board layout reads: " + JSON.stringify(layoutWork));
   if (layoutWork.boardSelectorCalls !== 0) throw new Error(profile + " pointer gesture performed a board-wide DOM selector: " + JSON.stringify(layoutWork));
+  await page.mouse.up();
   await page.waitForFunction(
     previous => Number(document.querySelector("#moves-value").textContent) === previous - 1,
     movesBefore,

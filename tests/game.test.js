@@ -233,3 +233,13 @@ test("board gesture hit-testing and path rendering avoid full-grid DOM scans", (
   assert.ok(!pathRenderer.includes("boardEl.querySelector("));
   assert.ok(source.includes('tileElements.set(r+","+c,tile)'));
 });
+
+test("pointer handlers use one hit-test result without a redundant fallback", () => {
+  const source = fs.readFileSync(path.join(__dirname, "..", "game.js"), "utf8");
+  const pointerStart = source.indexOf('boardEl.addEventListener("pointermove"');
+  const pointerEnd = source.indexOf('boardEl.addEventListener("pointercancel"', pointerStart);
+  assert.ok(pointerStart >= 0 && pointerEnd > pointerStart);
+  const handlers = source.slice(pointerStart, pointerEnd);
+  assert.ok(handlers.includes("extendPath(locateTileAtPoint(e.clientX,e.clientY))"));
+  assert.ok(!handlers.includes("||locateTile(document.elementFromPoint"));
+});
