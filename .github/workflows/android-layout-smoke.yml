@@ -93,7 +93,7 @@ jobs:
             device_class: compact-phone
           - profile: pixel_tablet
             device_class: tablet
-    name: Optional emulator diagnostic (\${{ matrix.device_class }})
+    name: Optional emulator diagnostic (${{ matrix.device_class }})
     steps:
       - name: Check out repository and UI test helper
         uses: actions/checkout@v4
@@ -113,7 +113,7 @@ jobs:
           api-level: 35
           target: google_apis
           arch: x86_64
-          profile: \${{ matrix.profile }}
+          profile: ${{ matrix.profile }}
           disable-animations: true
           script: |
             set -euo pipefail
@@ -128,7 +128,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: maize-crush-optional-emulator-\${{ matrix.device_class }}
+          name: maize-crush-optional-emulator-${{ matrix.device_class }}
           path: artifacts/
           if-no-files-found: ignore
           retention-days: 7
