@@ -116,7 +116,32 @@ async function dragPath(page, tiles, verifySelection = false, release = true) {
   if (release) await page.mouse.up();
 }
 
-async function installLayoutProbe(page) {
+async function findConnectedTriple(tiles) {
+  const byPosition = new Map(tiles.map(tile => [tile.row + "," + tile.col, tile]));
+  for (const start of tiles) {
+    if (!start.visible) continue;
+    const crop = cropName(start.label);
+    const visit = (current, path) => {
+      if (path.length === 3) return path;
+      for (let dr = -1; dr <= 1; dr++) {
+        for (let dc = -1; dc <= 1; dc++) {
+          if (!dr && !dc) continue;
+          const next = byPosition.get((current.row + dr) + "," + (current.col + dc));
+          if (!next || !next.visible || cropName(next.label) !== crop ||
+              path.some(item => item.row === next.row && item.col === next.col)) continue;
+          const found = visit(next, path.concat(next));
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+    const found = visit(start, [start]);
+    if (found) return found;
+  }
+  return null;
+}
+
+function installLayoutProbe(page) {
   await page.evaluate(() => {
     const probe = {
       active: false,
@@ -144,6 +169,129 @@ async function installLayoutProbe(page) {
       return originalQueryAll.call(this, selector);
     };
   });
+}
+
+async function runLongSessionSoak(page, profile) {
+  const client = await page.context().newCDPSession(page);
+  await client.send("Performance.enable");
+  await client.send("HeapProfiler.enable");
+
+  async function measureAfterCollection() {
+    await client.send("HeapProfiler.collectGarbage");
+    const response = await client.send("Performance.getMetrics");
+    const metrics = Object.fromEntries(response.metrics.map(metric => [metric.name, metric.value]));
+    return {
+      nodes: Math.round(metrics.Nodes || 0),
+      jsHeapUsedBytes: Math.round(metrics.JSHeapUsedSize || 0),
+      layoutCount: Math.round(metrics.LayoutCount || 0),
+      recalcStyleCount: Math.round(metrics.RecalcStyleCount || 0)
+    };
+  }
+
+  // Start from a known fresh round, then exercise five short rounds. Restarting
+  // between sessions checks that board replacement and checkpoint writes stay
+  // bounded instead of measuring only one untouched board.
+  await page.locator("#restart-button").click();
+  await page.waitForFunction(() =>
+    Number(document.querySelector("#moves-value").textContent) === 20 &&
+    Number(document.querySelector("#score-value").textContent.replace(/,/g, "")) === 0 &&
+    document.querySelectorAll("#game-board .crop-tile").length === 64
+  );
+  await page.locator("#game-board").scrollIntoViewIfNeeded();
+  await wait(180);
+  const baseline = await measureAfterCollection();
+
+  const harvestsPerRound = 4;
+  const rounds = 5;
+  let harvests = 0;
+  let restarts = 0;
+  let checkpointBytes = 0;
+
+  for (let round = 0; round < rounds; round++) {
+    if (round > 0) {
+      await page.locator("#restart-button").click();
+      await page.waitForFunction(() =>
+        Number(document.querySelector("#moves-value").textContent) === 20 &&
+        Number(document.querySelector("#score-value").textContent.replace(/,/g, "")) === 0 &&
+        document.querySelectorAll("#game-board .crop-tile").length === 64
+      );
+      await page.locator("#game-board").scrollIntoViewIfNeeded();
+      restarts++;
+    }
+
+    for (let move = 0; move < harvestsPerRound; move++) {
+      let tiles = await getBoardState(page);
+      let chain = findConnectedTriple(tiles);
+      for (let attempt = 0; !chain && attempt < 10; attempt++) {
+        await page.locator("#shuffle-button").click();
+        await page.waitForFunction(() => document.querySelectorAll("#game-board .crop-tile").length === 64);
+        await page.locator("#game-board").scrollIntoViewIfNeeded();
+        await wait(100);
+        tiles = await getBoardState(page);
+        chain = findConnectedTriple(tiles);
+      }
+      if (!chain) throw new Error(profile + " long-session soak could not find a visible matching three-crop path.");
+
+      const movesBefore = Number(await page.locator("#moves-value").innerText());
+      const scoreBefore = Number((await page.locator("#score-value").innerText()).replace(/,/g, ""));
+      await dragPath(page, chain);
+      const expectedMoves = movesBefore - 1;
+      await page.waitForFunction(expected => {
+        const board = document.querySelector("#game-board");
+        const complete = document.querySelector("#level-complete-dialog");
+        const failed = document.querySelector("#level-failed-dialog");
+        const isOpen = dialog => !!dialog && (dialog.open || dialog.hasAttribute("open"));
+        return Number(document.querySelector("#moves-value").textContent) === expected &&
+          board.querySelectorAll(".crop-tile").length === 64 &&
+          board.querySelectorAll(".crop-tile.clearing").length === 0 &&
+          !isOpen(complete) && !isOpen(failed);
+      }, expectedMoves, { timeout: 12000 });
+
+      const state = await page.evaluate(() => {
+        const checkpoint = JSON.parse(localStorage.getItem("maize-crush-round") || "null");
+        return {
+          score: Number(document.querySelector("#score-value").textContent.replace(/,/g, "")),
+          checkpoint,
+          checkpointBytes: new Blob([localStorage.getItem("maize-crush-round") || ""]).size
+        };
+      });
+      if (state.score <= scoreBefore) {
+        throw new Error(profile + " long-session harvest " + (harvests + 1) + " did not increase the score.");
+      }
+      if (!state.checkpoint || !Array.isArray(state.checkpoint.board) ||
+          state.checkpoint.board.length !== 8 ||
+          !state.checkpoint.board.every(row => Array.isArray(row) && row.length === 8) ||
+          state.checkpoint.moves !== expectedMoves || state.checkpoint.score !== state.score) {
+        throw new Error(profile + " long-session harvest " + (harvests + 1) + " did not persist a valid stable round checkpoint.");
+      }
+      checkpointBytes = state.checkpointBytes;
+      harvests++;
+      await wait(100);
+    }
+  }
+
+  const after = await measureAfterCollection();
+  const nodeGrowth = after.nodes - baseline.nodes;
+  const heapGrowthBytes = after.jsHeapUsedBytes - baseline.jsHeapUsedBytes;
+  if (nodeGrowth > 160) {
+    throw new Error(profile + " long-session DOM node count grew by " + nodeGrowth + " after garbage collection.");
+  }
+  if (heapGrowthBytes > 8 * 1024 * 1024) {
+    throw new Error(profile + " long-session JavaScript heap grew by " + heapGrowthBytes + " bytes after garbage collection.");
+  }
+
+  await client.detach();
+  return {
+    rounds,
+    harvests,
+    restarts,
+    stableCheckpointVerified: harvests,
+    checkpointBytes,
+    baseline,
+    after,
+    nodeGrowth,
+    heapGrowthBytes
+  };
 }
 
 async function runViewport(browser, profile, viewport) {
@@ -258,8 +406,15 @@ async function runViewport(browser, profile, viewport) {
     animations: "disabled"
   });
 
+  const longSession = await runLongSessionSoak(page, profile);
+  await page.screenshot({
+    path: path.join(OUTPUT, profile + "-after-long-session.png"),
+    fullPage: true,
+    animations: "disabled"
+  });
+
   await context.close();
-  return { profile, ...dimensions, mismatchRejected: true, diagonalConnection: true, scoreBefore, scoreAfter, layoutWork };
+  return { profile, ...dimensions, mismatchRejected: true, diagonalConnection: true, scoreBefore, scoreAfter, layoutWork, longSession };
 }
 
 (async () => {
