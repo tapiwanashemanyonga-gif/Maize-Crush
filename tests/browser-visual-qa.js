@@ -116,7 +116,7 @@ async function dragPath(page, tiles, verifySelection = false, release = true) {
   if (release) await page.mouse.up();
 }
 
-async function findConnectedTriple(tiles) {
+function findConnectedTriple(tiles) {
   const byPosition = new Map(tiles.map(tile => [tile.row + "," + tile.col, tile]));
   for (const start of tiles) {
     if (!start.visible) continue;
@@ -141,7 +141,7 @@ async function findConnectedTriple(tiles) {
   return null;
 }
 
-function installLayoutProbe(page) {
+async function installLayoutProbe(page) {
   await page.evaluate(() => {
     const probe = {
       active: false,
