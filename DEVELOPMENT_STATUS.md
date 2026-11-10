@@ -1,10 +1,10 @@
 # Maize Crush development status
 
-Last reviewed: 2026-11-09
+Last reviewed: 2026-11-10
 
 ## Current verified baseline
 
-- Default branch: `main`; latest merged commit is `2dcb697b357e63fd6bf8810c130f4fb9cb0e4412` (stable-round soak hardening). Latest gameplay/Android code commit remains `5bc9b586539ad07ba99074be6047c1c8d2e00abf`.
+- Default branch: `main`; latest commit at this review is `0b2a65af1334f06723d8dd57f88adce4872741a0` (development log after the merged long-session soak work). Latest gameplay/Android code commit remains `5bc9b586539ad07ba99074be6047c1c8d2e00abf`.
 - Android identity: `com.maizecrush.zimbabweharvest`, version `1.0.0` (`versionCode 1`), min SDK 24, target SDK 36.
 - Gameplay is an original 8×8 connect-path puzzle: drag through 3+ matching adjacent crops; diagonal connections count; tiles are never swapped.
 - Six Zimbabwe-harvest illustrations are bundled: maize, tomato, groundnut, banana, orange and sweet potato. The game includes eight objective types, endless level scaling, local progress, boosters, accessibility options and responsive phone/tablet layouts.
@@ -121,3 +121,17 @@ Last reviewed: 2026-11-09
 ## Next milestone
 
 Complete real-device Android WebView validation on at least one modest/older phone and one current phone or tablet, covering 20+ harvest sessions, repeated cascades, process/background recovery, rotation, all objective types, and low-memory behavior. Browser soak is repeatable shared-asset QA only and cannot establish physical Android performance. Then complete final app identity, permission, privacy and store-package review before declaring the unsigned APK/AAB ready for the user's signing credentials.
+
+
+## Android system backup privacy disclosure — in review
+
+- The Android manifest explicitly sets `android:allowBackup="true"`. Android's Auto Backup documentation says eligible app data can be backed up and restored by the operating system, subject to Android version, device and backup settings. This was not explained by the previous policy, which described local storage and user-created JSON exports but omitted OS-managed backup/device migration.
+- Branch `docs/android-system-backup-disclosure` updates both identical privacy-policy copies to disclose Android-managed backups and device-to-device transfers, distinguish them from the optional JSON export and Maize Crush-operated services, and explain that existing system backups/exported files may outlive the local app copy.
+- Added a security regression test that checks the manifest setting, required disclosure, and exact parity between the browser and Android policy copies. Updated the release checklist to require a backup/privacy review.
+- No game runtime, gameplay rules, app identity, permissions, signing configuration, or ads changed.
+- Baseline main commit `0b2a65af1334f06723d8dd57f88adce4872741a0` has successful mainline CI, Android debug, unsigned release-candidate and browser QA workflows. The latest scheduled Android APK workflow run `42796443083` also succeeded on that exact SHA and uploaded debug APK artifact `13754715568` (60,370 bytes).
+- Initial PR #78 CI on head `71a1601d7cbfac165030454ee1e8ac6ec7b451ef` exposed one over-strict wording assertion: gameplay/security tests reported 107 passed and 1 failed because the test expected `disable cloud-based app backup`, while the policy correctly says `do not want cloud-based app backup`. The Android build and release steps were skipped by the test gate; no product-code failure was reported. Corrected the test to assert the actual policy wording and am rerunning CI on the next PR commit. This disclosure is based on the manifest setting; it is not a claim that a physical Android backup/restore test has been performed.
+
+## Next milestone
+
+Verify the privacy/security PR workflows and merge only if they pass. Continue the outstanding real-device Android WebView validation when a physical device is available; browser/CI checks do not prove physical-device, low-memory or manufacturer-specific backup behavior. Then finish the signed-build identity, permissions, privacy and store-package review.
