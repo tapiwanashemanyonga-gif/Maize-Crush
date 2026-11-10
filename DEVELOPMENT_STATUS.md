@@ -136,3 +136,17 @@ Complete real-device Android WebView validation on at least one modest/older pho
 ## Next milestone
 
 Complete physical Android WebView and system-backup/device-transfer validation on a modest/older phone and a current phone or tablet, including 20+ harvest sessions, repeated cascades, process/background recovery, rotation, all objective types, low-memory behavior, and backup/restore settings. Browser/CI checks do not prove physical-device, low-memory or manufacturer-specific behavior. Then finish the signed-build identity, permissions, privacy and store-package review before declaring the unsigned APK/AAB ready for the user's signing credentials.
+
+
+## Vibrant fantasy-farming redesign — foundation
+
+- Started the approved redesign on dedicated branch `redesign/vibrant-fantasy-foundation`, based on main commit `e9a314ab4858d2ee44c8a6218e07667917d94334`.
+- Added semantic design tokens for the fantasy-farming world palette, crop colors, card surfaces, typography colors, spacing, radii, shadows, and motion timing.
+- Kept all existing rendered colors and gameplay styles unchanged in this foundation increment; the tokens prepare the upcoming background, journey-map, and adaptive-layout work without changing game behavior.
+- Updated browser and Android WebView stylesheets together. They must remain byte-for-byte identical and are checked by the Android release-candidate workflow.
+- No game rules, saved progress format, Android identity, permissions, privacy behavior, ads, signing configuration, or release artifacts changed.
+- Validation pending: gameplay regression tests and browser/Android asset-parity/build workflows on this branch. No physical-device result is claimed.
+
+## Next milestone
+
+Use the approved vibrant fantasy-farming tokens to introduce original world scenery and the visual identity, then build the winding journey map while preserving saved level progress.
