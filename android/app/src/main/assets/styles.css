@@ -240,3 +240,117 @@ body[data-world-theme] .crop-tile.selected{border-color:var(--world-accent);box-
  .focus-play .action-row button,.focus-play .meta-actions button{min-height:29px;padding:5px 7px;font-size:9px}
 }
 @media(prefers-reduced-motion:reduce){.crop-tile,.crop-tile .crop-art{transition:none!important}}
+
+
+/* Stage 2 — vibrant fantasy-farming world scenery and warm harvest surfaces */
+:root{
+ color-scheme:light;
+ --bg:#bfe9f5;--panel:#fff8e8;--panel2:#f5e9c8;--green:#398b45;--lime:#77b94e;--cream:#29462d;--muted:#607c61;--line:rgba(54,91,49,.2);--gold:#e9a82c;
+}
+html{background:#bfe9f5}
+body{
+ color:var(--cream);
+ background:
+  radial-gradient(ellipse at 82% 6%,rgba(255,224,115,.95) 0 4.2rem,transparent 4.3rem),
+  radial-gradient(ellipse at 12% 18%,rgba(255,255,255,.82) 0 7rem,transparent 7.1rem),
+  radial-gradient(ellipse at 93% 27%,rgba(255,255,255,.68) 0 5rem,transparent 5.1rem),
+  linear-gradient(180deg,#76d0f1 0%,#c6eff4 38%,#b3df8b 38.2%,#7fc65d 100%);
+ background-attachment:fixed;
+}
+.app-shell{position:relative;isolation:isolate}
+.topbar{position:relative;z-index:2}
+.brand{color:#234b30}
+.brand-mark{background:linear-gradient(145deg,#ffe27c,#f6b93f);box-shadow:0 5px 0 #b87a27,0 9px 20px #315b3230}
+.brand small{color:#47744c}
+.status-pill{background:#fff9e8;color:#367b42;border-color:#ffffffa8}
+.icon-button,.quiet-button,.secondary-button{background:#fff9e8;color:#365b39;border-color:#c6d9a9;box-shadow:0 3px 0 #9ebd82}
+.icon-button span{color:#66836a}
+.hero{
+ min-height:230px;margin:8px 0 15px;padding:30px 22px 26px;
+ border:2px solid #ffffffa8;border-radius:28px;
+ background:
+  radial-gradient(ellipse at 82% 100%,#7ac65d 0 18%,transparent 18.5%),
+  radial-gradient(ellipse at 62% 105%,#9bd66b 0 26%,transparent 26.5%),
+  linear-gradient(180deg,#8bd9f2 0%,#d5f3f2 70%,#a7d978 71%,#7ebd53 100%);
+ box-shadow:0 12px 0 #4f9c5540,0 18px 35px #315b3220;
+}
+.hero:before,.hero:after{content:"";position:absolute;pointer-events:none;z-index:0}
+.hero:before{
+ width:210px;height:92px;right:20%;bottom:-26px;border-radius:55% 55% 0 0;
+ background:linear-gradient(180deg,#65b957,#348b4a);
+ box-shadow:150px 15px 0 -12px #4ca34f,-170px 22px 0 -20px #80c85d;
+}
+.hero:after{
+ width:170px;height:42px;right:3%;bottom:0;
+ background:repeating-linear-gradient(174deg,transparent 0 8px,#f6d77b 9px 12px,transparent 13px 20px);
+ opacity:.8;transform:skewX(-18deg);
+}
+.hero-copy{z-index:1}
+.eyebrow{color:#397e43}
+h1{color:#254c31;text-shadow:0 2px 0 #ffffff55}
+h1 em{color:#d18a1c}
+.hero-copy>p:last-child{color:#456c4a}
+.hero-art{z-index:1}
+.sun{background:#ffdf70;box-shadow:0 0 0 12px #ffdf7033,0 0 50px #fff5b6}
+.crop{background:linear-gradient(145deg,#fff9dc,#e8f3bd);border:2px solid #fff;box-shadow:0 6px 0 #5c934b55,0 13px 24px #315b3233}
+.game-panel{
+ background:linear-gradient(145deg,#fffdf3,#f5edcf);
+ color:#29462d;border:2px solid #ffffffc9;border-radius:28px;
+ box-shadow:0 10px 0 #729d4e55,0 22px 50px #315b3225;
+}
+.level-row h2{color:#315c37}
+.level-row h2 span{color:#8db06b}
+.stat{background:linear-gradient(145deg,#fffef5,#f0e8c9);border:1px solid #d9dfb5;box-shadow:inset 0 1px #fff}
+.stat>span,.stat>small{color:#668065}
+.stat strong{color:#315c37}
+.target-stat strong{color:#b4771e}
+.score-extra{color:#678064}
+.score-extra strong{color:#b4771e}
+.progress-track,.mission-track{background:#dfe8c8}
+.progress-fill{background:linear-gradient(90deg,#67b94f,#f5c34f)}
+.objective-card,.mission-card{background:linear-gradient(110deg,#fff8df,#eef5d6);border-color:#d8dfa9;color:#365b39}
+.objective-copy span,.mission-copy span{color:#668065}
+.objective-copy strong,.mission-copy strong{color:#9a6b1b}
+.objective-status,.mission-status{color:#315c37}
+.board-heading{color:#668065}
+.board-heading strong{color:#315c37}
+.game-board{
+ background:linear-gradient(145deg,#4c9b4c,#327b43);
+ border:3px solid #d9efb2;box-shadow:inset 0 0 0 2px #ffffff45,0 6px 0 #28643c;
+}
+.crop-tile{border:2px solid #fff8dc;box-shadow:inset 0 2px #ffffff85,0 3px 0 #476b37}
+.crop-tile.selected{background:linear-gradient(145deg,#f8f6a1,#8ccf62);border-color:#fff;box-shadow:0 0 0 3px #ffe77a,0 0 20px #fff4a9}
+.board-help{color:#627d5d}
+.help-dot{background:#e3ad37;box-shadow:0 0 12px #e3ad37}
+.game-message{background:#edf3dc;color:#426344;border:1px solid #dbe6c4}
+.game-message.success{color:#327b43;background:#e2f4d6}
+.game-message.warning{color:#98671c;background:#fff0c9}
+.primary-button{background:linear-gradient(180deg,#ffdb72,#f4b83e);color:#60431a;box-shadow:0 4px 0 #bd812b}
+.primary-button:active,.secondary-button:active,.quiet-button:active{transform:translateY(2px);box-shadow:0 1px 0 #9ebd82}
+.crop-guide h2{color:#315c37}
+.crop-list>span{background:#fff9e8;border-color:#d2dfb8;box-shadow:0 3px 0 #9ebd8255}
+.crop-list small{color:#668065}
+footer{color:#527452;border-color:#ffffffa8}
+footer .privacy-link{color:#426b46}
+.level-map{background:linear-gradient(145deg,#fffdf2,#f3edcf);color:#29462d;border-color:#fff}
+.level-map::backdrop{background:#183b28aa}
+.map-head p,.privacy-note,.tutorial-steps{color:#668065}
+.map-level{background:#e7efd4;color:#365b39;border-color:#cbdcae}
+.map-level:not(:disabled){background:linear-gradient(180deg,#ffdc73,#f2b83d);color:#60431a;box-shadow:0 3px 0 #bd812b}
+.achievement,.journal-crop,.statistics-row{background:#ffffff80;border-color:#dbe3c5}
+.achievement strong,.statistics-row strong,.journal-copy strong{color:#315c37}
+.achievement p,.statistics-row span,.journal-copy p{color:#668065}
+.settings-options label{border-color:#dbe3c5}
+#rain-button{background:linear-gradient(135deg,#e4f6fb,#c8e9f0);color:#326b7d;border-color:#a8d8e6}
+#hint-button{background:#fff4d6;color:#8b651d;border-color:#ead18b}
+#fertilizer-button{background:linear-gradient(135deg,#e3f4d8,#c8e8b5);color:#347341;border-color:#acd19a}
+#market-cart-button{background:linear-gradient(135deg,#fff0ce,#f4d99b);color:#76501d;border-color:#e6c47d}
+@media(max-width:600px){
+ .hero{min-height:195px;padding:22px 15px}
+ .hero-art{opacity:.72}
+ .game-panel{border-radius:22px}
+}
+@media(min-width:900px){
+ .hero{min-height:255px;padding-left:34px}
+ .hero-art{right:7%;transform:scale(1.18)}
+}
