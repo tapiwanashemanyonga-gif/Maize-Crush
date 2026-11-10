@@ -130,7 +130,7 @@ Complete real-device Android WebView validation on at least one modest/older pho
 - Added a security regression test that checks the manifest setting, required disclosure, and exact parity between the browser and Android policy copies. Updated the release checklist to require a backup/privacy review.
 - No game runtime, gameplay rules, app identity, permissions, signing configuration, or ads changed.
 - Baseline main commit `0b2a65af1334f06723d8dd57f88adce4872741a0` has successful mainline CI, Android debug, unsigned release-candidate and browser QA workflows. The latest scheduled Android APK workflow run `42796443083` also succeeded on that exact SHA and uploaded debug APK artifact `13754715568` (60,370 bytes).
-- PR validation for this documentation/security-test increment is pending. This disclosure is based on the app's current manifest setting; it is not a claim that a physical Android backup/restore test has been performed.
+- Initial PR #78 CI on head `71a1601d7cbfac165030454ee1e8ac6ec7b451ef` exposed one over-strict wording assertion: gameplay/security tests reported 107 passed and 1 failed because the test expected `disable cloud-based app backup`, while the policy correctly says `do not want cloud-based app backup`. The Android build and release steps were skipped by the test gate; no product-code failure was reported. Corrected the test to assert the actual policy wording and am rerunning CI on the next PR commit. This disclosure is based on the manifest setting; it is not a claim that a physical Android backup/restore test has been performed.
 
 ## Next milestone
 
