@@ -159,3 +159,13 @@ Use the approved vibrant fantasy-farming tokens to introduce original world scen
 - Stage 1 CI passed: gameplay checks (run `42897189426`), browser/mobile/tablet visual and interaction QA (run `42897190437`), Android debug APK (run `42897189503`), and release-candidate build plus browser/Android asset parity (run `42897189484`). Optional emulator launch was skipped.
 - Stage 2 applies a bright sky, sunlit hills, field rows, warm harvest surfaces, clearer controls and colourful crop-field styling. Browser and Android WebView stylesheets are updated together.
 - Next: inspect browser screenshots at compact-phone and tablet sizes, then continue with the winding journey-map presentation. Do not claim physical-device verification from browser QA.
+
+
+## Vibrant fantasy-farming redesign — stage 3 in progress
+
+- Stage 2 branch `redesign/vibrant-fantasy-foundation` was merged into `main` via PR #79 after gameplay tests, browser/mobile/tablet visual QA, Android APK, and release-candidate workflows passed. Merge commit: `24ab0b3190ea01300a2807c716b23e3cfeb949e0`.
+- Stage 3 branch: `redesign/winding-harvest-journey-map`.
+- Reworked the existing level browser into a bright countryside journey: winding dotted farm trail, chapter scenery, objective icons, unlocked/current/locked level treatments, and responsive map sizing.
+- Kept the existing level data, paging, unlock rules, replay selection, and saved progression logic intact. The route and scenery are decorative only.
+- Browser and Android WebView CSS are updated together and must remain byte-for-byte identical.
+- Validation pending: gameplay tests, browser/mobile/tablet visual QA, Android builds and release-candidate parity. No physical-device result is claimed.
