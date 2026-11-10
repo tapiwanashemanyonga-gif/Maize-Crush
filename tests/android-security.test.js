@@ -62,3 +62,17 @@ test("game exposes one stable-round checkpoint hook for Android backgrounding an
   assert.match(source, /window\.addEventListener\("pagehide",window\.maizeCrushPrepareForBackground\)/);
   assert.match(source, /window\.addEventListener\("blur",window\.maizeCrushPrepareForBackground\)/);
 });
+
+
+test("Android system backup and device transfers are disclosed separately from game-operated services", () => {
+  const manifest = read("android/app/src/main/AndroidManifest.xml");
+  const policy = read("privacy-policy.html");
+  const androidPolicy = read("android/app/src/main/assets/privacy-policy.html");
+  assert.match(manifest, /android:allowBackup="true"/);
+  assert.equal(policy, androidPolicy, "browser and Android privacy policies must stay identical");
+  assert.match(policy, /Android system backup and device transfers/);
+  assert.match(policy, /eligible app data/);
+  assert.match(policy, /device-to-device transfer/);
+  assert.match(policy, /does not receive those backups/);
+  assert.match(policy, /disable cloud-based app backup/);
+});
