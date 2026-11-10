@@ -150,3 +150,12 @@ Complete physical Android WebView and system-backup/device-transfer validation o
 ## Next milestone
 
 Use the approved vibrant fantasy-farming tokens to introduce original world scenery and the visual identity, then build the winding journey map while preserving saved level progress.
+
+
+## Vibrant fantasy-farming redesign — stage 2 in progress
+
+- Created draft PR [#79](https://github.com/tapiwanashemanyonga-gif/Maize-Crush/pull/79) from `redesign/vibrant-fantasy-foundation`; it remains unmerged.
+- Stage 1 added shared design tokens for the fantasy farming world, crop colours, surfaces, spacing, shadows and motion.
+- Stage 1 CI passed: gameplay checks (run `42897189426`), browser/mobile/tablet visual and interaction QA (run `42897190437`), Android debug APK (run `42897189503`), and release-candidate build plus browser/Android asset parity (run `42897189484`). Optional emulator launch was skipped.
+- Stage 2 applies a bright sky, sunlit hills, field rows, warm harvest surfaces, clearer controls and colourful crop-field styling. Browser and Android WebView stylesheets are updated together.
+- Next: inspect browser screenshots at compact-phone and tablet sizes, then continue with the winding journey-map presentation. Do not claim physical-device verification from browser QA.
