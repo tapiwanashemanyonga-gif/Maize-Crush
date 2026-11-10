@@ -354,3 +354,73 @@ footer .privacy-link{color:#426b46}
  .hero{min-height:255px;padding-left:34px}
  .hero-art{right:7%;transform:scale(1.18)}
 }
+
+
+/* Stage 3 — winding harvest journey map */
+.level-map{
+ width:min(94vw,560px);max-height:min(88dvh,820px);padding:clamp(14px,3vw,22px);
+ background:linear-gradient(180deg,#e9f8e6 0%,#d7efc9 48%,#c4e3a8 100%);
+ border:3px solid #fff;border-radius:26px;color:#294b30;
+ box-shadow:0 22px 70px #183d2c55,inset 0 0 0 1px #8dbd7a;
+}
+.level-map::backdrop{background:#163d2ebd;backdrop-filter:blur(7px)}
+.level-map .map-head h2{color:#285b35;font-size:clamp(22px,5vw,28px)}
+.level-map .map-head p{color:#527b55}
+.level-map .eyebrow{color:#4a934b}
+.level-map-status{color:#527b55}
+.level-map-list{gap:14px}
+.map-world-group{
+ position:relative;overflow:hidden;padding:13px 12px 11px;border:2px solid #fff;
+ border-radius:20px;background:
+  radial-gradient(ellipse at 5% 100%,#86c96c 0 18%,transparent 18.5%),
+  radial-gradient(ellipse at 96% 100%,#91cf70 0 21%,transparent 21.5%),
+  linear-gradient(180deg,#bfe9f5 0%,#e7f5d6 52%,#c4e5a2 100%);
+ box-shadow:0 5px 0 #82b36b,0 9px 18px #315b3220;
+}
+.map-world-group:before,.map-world-group:after{content:"";position:absolute;pointer-events:none;z-index:0;border-radius:50%}
+.map-world-group:before{width:110px;height:40px;left:-20px;bottom:-18px;background:#78bd60;box-shadow:105px 7px 0 -8px #a4d77c,220px -2px 0 -4px #72b85a}
+.map-world-group:after{width:48px;height:48px;right:12px;top:12px;background:#ffdc70;opacity:.8;box-shadow:0 0 0 8px #ffdc7028}
+.map-world-header,.map-world-levels{position:relative;z-index:2}
+.map-world-header{border-bottom:1px solid #7fae7555}
+.map-world-header strong{color:#2d703d;font-size:14px}
+.map-world-header span{color:#4e754d}
+.map-world-levels{
+ min-height:184px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ grid-template-rows:repeat(2,minmax(76px,auto));gap:12px 38px;padding:10px 16px;
+}
+.map-world-levels:before{content:none}
+.map-world-levels .map-route{position:absolute;inset:0;width:100%;height:100%;z-index:0;overflow:visible;pointer-events:none}
+.map-route-shadow{fill:none;stroke:#9a713c;stroke-width:8;stroke-linecap:round;stroke-linejoin:round;opacity:.28}
+.map-route-line{fill:none;stroke:#fff4c7;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:2.2 2.2;filter:drop-shadow(0 1px 1px #47733c66)}
+.map-scenery{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:1;white-space:nowrap;font-size:clamp(12px,2.8vw,20px);opacity:.72;filter:drop-shadow(0 2px 1px #fff)}
+.map-world-levels .map-level{
+ display:flex;position:relative;z-index:3;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+ min-height:76px;border:2px solid #fff;border-radius:22px;
+ background:linear-gradient(145deg,#fff9dc,#e9efc7);color:#50734b;
+ box-shadow:0 5px 0 #9ab77a,0 8px 13px #315b3228;font-size:13px;
+}
+.map-world-levels .map-level:nth-child(1){grid-column:1;grid-row:1}
+.map-world-levels .map-level:nth-child(2){grid-column:2;grid-row:1}
+.map-world-levels .map-level:nth-child(3){grid-column:2;grid-row:2}
+.map-world-levels .map-level:nth-child(4){grid-column:1;grid-row:2}
+.map-world-levels .map-level .map-level-objective{font-size:23px;line-height:1.1;filter:drop-shadow(0 2px 1px #fff)}
+.map-world-levels .map-level .map-level-number{font-size:11px;font-weight:900}
+.map-world-levels .map-level:not(:disabled){background:linear-gradient(145deg,#ffe58b,#f5b83e);color:#69471a;border-color:#fff9d8;box-shadow:0 5px 0 #bf842d,0 8px 14px #8e682e35}
+.map-world-levels .map-level.current-level{outline:3px solid #fff;outline-offset:3px;box-shadow:0 0 0 7px #f2b83e65,0 6px 0 #a56b23,0 10px 20px #8e682e55;transform:scale(1.06);animation:journey-current 1.8s ease-in-out infinite alternate}
+.map-world-levels .map-level:disabled{background:linear-gradient(145deg,#edf0df,#d8e2c8);color:#8c9b7e;opacity:.9;border-color:#f7fae9;box-shadow:0 4px 0 #a8b899}
+.map-world-levels .map-level:focus-visible{outline:3px solid #397d45;outline-offset:4px}
+.level-map-navigation{border-color:#9bc48b;color:#527b55}
+.level-map-navigation .secondary-button{background:#fff9e8;color:#365b39;border-color:#c6d9a9;box-shadow:0 3px 0 #9ebd82}
+@keyframes journey-current{from{filter:brightness(1)}to{filter:brightness(1.08) drop-shadow(0 0 8px #fff2a4)}}
+@media(max-width:390px){
+ .level-map{padding:12px;width:96vw}
+ .map-world-group{padding:10px 8px 8px}
+ .map-world-levels{min-height:166px;gap:9px 20px;padding:8px 10px}
+ .map-world-levels .map-level{min-height:68px;border-radius:17px}
+ .map-scenery{font-size:12px;opacity:.58}
+}
+@media(min-width:700px){
+ .map-world-levels{min-height:210px;gap:14px 58px;padding:12px 28px}
+ .map-world-levels .map-level{min-height:86px}
+}
+@media(prefers-reduced-motion:reduce){.map-world-levels .map-level.current-level{animation:none}}
