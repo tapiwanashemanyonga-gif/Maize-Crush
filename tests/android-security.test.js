@@ -74,5 +74,5 @@ test("Android system backup and device transfers are disclosed separately from g
   assert.match(policy, /eligible app data/);
   assert.match(policy, /device-to-device transfer/);
   assert.match(policy, /does not receive those backups/);
-  assert.match(policy, /disable cloud-based app backup/);
+  assert.match(policy, /do not want cloud-based app backup/);
 });
