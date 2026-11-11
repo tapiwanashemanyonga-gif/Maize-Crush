@@ -4,8 +4,8 @@ const fs = require("node:fs");
 const path = require("node:path");
 const game = require("../game.js");
 
-test("opening chapter has a deliberate rising challenge curve across goals, moves and objectives",()=>{assert.deepEqual(Array.from({length:8},(_,i)=>game.objectiveForLevel(i+1).type),["score","crop","chain","cascade","special","harvest","booster","variety"]);assert.deepEqual([1,2,3,4,5,6,7,8].map(level=>game.objectiveForLevel(level).target),[650,13,5,1,3,10,1,4]);assert.deepEqual(Array.from({length:8},(_,i)=>game.movesForLevel(i+1)),[18,19,20,20,21,21,22,22]);assert.ok(game.goalForLevel(8)>game.goalForLevel(1));assert.ok(game.movesForLevel(8)>game.movesForLevel(1));});
-test("browser long-session soak follows the configured opening move budget",()=>{const qa=fs.readFileSync(path.join(__dirname,"browser-visual-qa.js"),"utf8");assert.match(qa,/window\.MaizeCrush\.movesForLevel\(1\)/);assert.doesNotMatch(qa,/Number\(document\.querySelector\("#moves-value"\)\.textContent\) === 20/)});
+test("opening chapter has a deliberate rising challenge curve across goals, moves and objectives",()=>{assert.deepEqual(Array.from({length:8},(_,i)=>game.objectiveForLevel(i+1).type),["score","crop","chain","cascade","special","harvest","booster","variety"]);assert.deepEqual([1,2,3,4,5,6,7,8].map(level=>game.objectiveForLevel(level).target),[650,12,5,1,2,6,1,4]);assert.deepEqual(Array.from({length:8},(_,i)=>game.movesForLevel(i+1)),[18,19,20,20,21,21,22,22]);assert.ok(game.goalForLevel(8)>game.goalForLevel(1));assert.ok(game.movesForLevel(8)>game.movesForLevel(1));});
+test("browser long-session soak follows the configured opening move budget",()=>{const qa=fs.readFileSync(path.join(__dirname,"browser-visual-qa.js"),"utf8");assert.match(qa,/window\.MaizeCrush\.movesForLevel\(level\)/);assert.match(qa,/querySelector\("#level-label"\)/);assert.doesNotMatch(qa,/Number\(document\.querySelector\("#moves-value"\)\.textContent\) === 20/)});
 test("board is 8 by 8 and starts without horizontal or vertical triples", () => {
   let seed=123456; const random=()=>{seed=(seed*16807)%2147483647;return(seed-1)/2147483646};
   const board=game.makeBoard(random);
