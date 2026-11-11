@@ -430,3 +430,86 @@ footer .privacy-link{color:#426b46}
 .map-world-levels .map-level:nth-of-type(2){grid-column:2;grid-row:1}
 .map-world-levels .map-level:nth-of-type(3){grid-column:2;grid-row:2}
 .map-world-levels .map-level:nth-of-type(4){grid-column:1;grid-row:2}
+
+
+/* Stage 4 — fantasy harvest playfield */
+.game-panel{position:relative;isolation:isolate;background:linear-gradient(155deg,#fffdf2 0%,#fff5d8 54%,#f4e6bd 100%);border:2px solid #d9bd79;border-radius:30px;color:#294b31;box-shadow:0 18px 0 #744c2a24,0 28px 60px #142d1c38}
+.game-panel:before{content:"";position:absolute;inset:8px;border:1px solid #e8d8ad;border-radius:22px;pointer-events:none;z-index:-1}
+.game-panel .eyebrow{color:#648b43}
+.level-row h2{color:#294b31}
+.level-row h2 span{color:#b28a45}
+.level-actions .quiet-button{background:#e8f1d7;border-color:#c9dcae;color:#355b36;box-shadow:0 3px 0 #b7c99b}
+.level-actions .quiet-button:hover{background:#dcebc5}
+.stats{gap:10px;margin-top:18px}
+.stat{position:relative;overflow:hidden;padding:13px 14px;border:1px solid #dfd0a8;border-radius:17px;background:linear-gradient(145deg,#fffef7,#f5edda);box-shadow:inset 0 1px #fff}
+.stat:after{content:"";position:absolute;right:-12px;top:-17px;width:54px;height:54px;border-radius:50%;background:#e6d69b55}
+.stat>span,.stat>small{position:relative;z-index:1;color:#71806a}
+.stat strong{position:relative;z-index:1;color:#345b36}
+.target-stat{background:linear-gradient(145deg,#f1f8dc,#e1efbd);border-color:#c5d89a}
+.target-stat strong{color:#4f852f}
+.score-extra{display:flex;justify-content:space-between;gap:10px;margin:0 2px 12px;color:#71806a;font-size:10px}
+.score-extra strong{color:#4f753b}
+.objective-card,.mission-card{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;margin:10px 0;padding:13px 14px 12px;border:1px solid #d8d5a0;border-radius:17px;background:linear-gradient(120deg,#f0f7d9,#fff9df);color:#345b36;box-shadow:0 4px 0 #8eaa5b24}
+.objective-copy,.mission-copy{display:grid;gap:4px;min-width:0}
+.objective-copy .eyebrow{font-size:9px}
+.objective-copy strong,.mission-copy strong{font-size:13px;color:#315b36}
+.objective-copy>span:last-child,.mission-copy>span{font-size:10px;line-height:1.4;color:#708064}
+.objective-status,.mission-status{align-self:center;color:#507d36;font-size:12px;font-variant-numeric:tabular-nums}
+.objective-track,.mission-track{grid-column:1/-1;height:7px;overflow:hidden;border-radius:99px;background:#d9e2bd}
+.objective-fill,.mission-fill{height:100%;border-radius:inherit;background:linear-gradient(90deg,#68ad4c,#d0d95c);transition:width .25s}
+.mission-card{background:linear-gradient(120deg,#fff0d1,#fffae8);border-color:#e8c78c}
+.mission-card .eyebrow{color:#ad7c36}
+.mission-status{color:#a36d2c}
+.mission-track{background:#f0dfbf}
+.mission-fill{background:linear-gradient(90deg,#e5a642,#f2d36c)}
+.progress-track{height:6px;margin-top:8px;background:#e4d9bd}
+.progress-fill{background:linear-gradient(90deg,#5cae55,#c5d95c)}
+.board-heading{color:#657e55;margin-top:18px}
+.board-heading strong{color:#345b36}
+#chain-hint{padding:5px 9px;border-radius:99px;background:#e4efcf;color:#54783f;font-weight:700}
+.game-board{position:relative;gap:clamp(4px,.85vw,8px);padding:clamp(7px,1.6vw,12px);border:3px solid #a4c66c;border-radius:21px;background:linear-gradient(145deg,#6eaa4d,#397b3e 58%,#2d6939);box-shadow:inset 0 2px 0 #ffffff70,0 7px 0 #285c32,0 12px 24px #315c3033}
+.crop-tile{border:1px solid #ffffff9c;border-radius:clamp(7px,1.5vw,13px);box-shadow:inset 0 2px 0 #ffffffb8,0 3px 0 #244e2c66,0 5px 8px #183d2638}
+.crop-tile.selected{border:3px solid #fff7b5;background:linear-gradient(145deg,#83b84e,#477e39);box-shadow:0 0 0 3px #fff4a855,0 0 20px #fff2a7aa;transform:scale(.9)}
+.crop-tile.last-selected:after{inset:3px;border-color:#fff}
+.crop-tile:focus-visible{outline:3px solid #fff7a6;outline-offset:2px}
+.board-help{color:#718064;font-size:11px}
+.help-dot{background:#70ad4d;box-shadow:0 0 10px #70ad4d88}
+.game-message{background:#e9f1d8;border:1px solid #d4e2b7;color:#45653e}
+.game-message.success{color:#376d2f;background:#e4f4d7}
+.game-message.warning{color:#94651f;background:#fff1d3}
+.action-row,.meta-actions{gap:9px}
+.primary-button{background:linear-gradient(180deg,#ffd66d,#f0ad38);color:#543817;border:1px solid #d49a35;box-shadow:0 4px 0 #b77b27,0 7px 12px #80531e24}
+.primary-button:hover{filter:brightness(1.04);transform:translateY(-1px)}
+.secondary-button{background:linear-gradient(180deg,#fffdf4,#f0e7ce);border:1px solid #d9c99f;color:#4c6945;box-shadow:0 3px 0 #c9b88f}
+.secondary-button:hover:not(:disabled){background:#f5f0dc}
+#hint-button{background:#fff3d1;border-color:#e6c66f;color:#936b28}
+#rain-button{background:#e0f3f7;border-color:#a4d4df;color:#36748a}
+#fertilizer-button{background:#e8f3d9;border-color:#bfd6a4;color:#527c3b}
+#market-cart-button{background:#f9e9d9;border-color:#e8c6a1;color:#956139}
+.meta-actions{margin-top:9px}
+.meta-actions .secondary-button{font-size:11px;min-height:38px;padding:9px 12px}
+.game-panel button:disabled{opacity:.48}
+@media(max-width:480px){
+ .game-panel{border-radius:22px;padding:12px 9px}
+ .game-panel:before{inset:5px;border-radius:16px}
+ .level-row{align-items:flex-start}
+ .level-actions{gap:5px;flex-wrap:wrap;justify-content:flex-end}
+ .level-actions .quiet-button{padding:8px 9px;font-size:10px}
+ .stats{gap:5px}
+ .stat{padding:10px 7px}
+ .stat>span{font-size:7px}
+ .stat strong{font-size:clamp(18px,5.5vw,22px)}
+ .score-extra{font-size:9px}
+ .objective-card,.mission-card{padding:10px 11px;gap:5px 8px}
+ .objective-copy strong,.mission-copy strong{font-size:12px}
+ .objective-copy>span:last-child,.mission-copy>span{font-size:9px}
+ .game-board{gap:3px;padding:5px;border-radius:15px}
+ .crop-tile{font-size:clamp(16px,5.1vw,26px);border-radius:6px}
+ .board-help{font-size:9px}
+ .action-row,.meta-actions{flex-wrap:wrap}
+ .action-row button,.meta-actions button{flex:1 1 42%;min-width:0}
+}
+@media(min-width:760px){
+ .game-panel{max-width:790px}
+ .game-board{max-width:620px}
+}
