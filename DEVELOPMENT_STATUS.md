@@ -179,3 +179,13 @@ Use the approved vibrant fantasy-farming tokens to introduce original world scen
 - Preserved the existing game markup, game engine, connect-path rules, objective logic, save format, and Android identity. This increment is CSS-only apart from the offline cache version update.
 - Browser and Android WebView stylesheets and service workers are mirrored byte-for-byte; cache advanced to v5 so returning players refresh the new presentation.
 - Validation pending: gameplay regression tests, browser/mobile/tablet visual QA, Android builds, and release-candidate parity. No physical-device result is claimed.
+
+
+## Immersive farm-world backdrop — stage 5 in progress
+
+- Stage 4 fantasy harvest gameplay screen was merged through PR #81; merge commit: `63e01852627871faad9a8e044bf14fbc3431eb36`.
+- Stage 5 branch: `redesign/immersive-farm-world-backdrop`.
+- Added layered sky glow, rolling green hills and subtle field-row textures behind the game, with a glassy framed top bar and crop guide.
+- Added gentle floating crop-card motion with reduced-motion support; existing puzzle UI and game logic are untouched.
+- Browser and Android WebView stylesheets and service workers are mirrored byte-for-byte; offline shell cache advanced to v6.
+- Validation pending: gameplay regression checks, browser visual QA, Android builds and release-candidate parity. No physical-device result is claimed.
