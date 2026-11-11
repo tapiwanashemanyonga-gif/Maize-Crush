@@ -28,6 +28,7 @@ test("Android package identity and SDK metadata agree with the release checklist
   const targetSdk = Number(requiredMatch(gradle, /targetSdk\s+(\d+)/, "targetSdk"));
   const compileSdk = Number(requiredMatch(gradle, /compileSdk\s+(\d+)/, "compileSdk"));
   const appName = requiredMatch(strings, /<string name="app_name">([^<]+)<\/string>/, "app_name");
+  const tick = String.fromCharCode(96);
 
   assert.equal(namespace, applicationId, "Android namespace and installed package ID must match");
   assert.ok(versionCode > 0, "versionCode must be a positive integer");
@@ -36,8 +37,8 @@ test("Android package identity and SDK metadata agree with the release checklist
   assert.equal(targetSdk, 36, "the release must target Android 16 / API 36");
   assert.equal(compileSdk, 36, "the release must compile against API 36");
 
-  assert.ok(checklist.includes("Application ID: \`" + applicationId + "\`"), "release checklist package ID is stale");
-  assert.ok(checklist.includes("Current version: \`" + versionName + "\` (\`versionCode " + versionCode + "\`)"), "release checklist version is stale");
+  assert.ok(checklist.includes("Application ID: " + tick + applicationId + tick), "release checklist package ID is stale");
+  assert.ok(checklist.includes("Current version: " + tick + versionName + tick + " (" + tick + "versionCode " + versionCode + tick + ")"), "release checklist version is stale");
   assert.ok(checklist.includes("Minimum Android version: Android 7.0 / API " + minSdk), "release checklist minimum SDK is stale");
   assert.ok(checklist.includes("Target SDK: API " + targetSdk + " (Android 16)"), "release checklist target SDK is stale");
 
