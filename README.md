@@ -88,3 +88,12 @@ Cascade chains are capped at ten consecutive cascade resolutions. If another aut
 ## Opening chapter challenge curve
 
 The first 20 levels now build difficulty more deliberately: score goals rise from 650 to 6,500 points, move budgets progress from 18 to 28, while retaining the existing eight-objective sequence and its established scaling rules. The connect-path rules stay the same; the challenge grows without introducing tile swapping or requiring an online connection.
+
+
+## Research-led adaptive gameplay screen
+
+- Active play launches directly into a viewport-locked screen. Phones use a compact HUD, a square 8×8 board in the remaining flexible area and a fixed touch-control dock. Secondary tools remain in the More overlay.
+- Tablets and wider windows use an anchored two-pane layout: the crop board receives the main left-hand area while score, objective, feedback and actions sit in a right-hand HUD.
+- The visual treatment uses a bright Zimbabwean countryside backdrop, a warm harvest-card panel, a forest-green field frame and distinct crop tiles. The objective and move count remain visible while playing.
+- The layout follows Apple game-interface guidance on anchored zones, safe areas, readable controls and aspect-ratio adaptation; Android adaptive-layout guidance on reflow and pane-based composition; and Roblox adaptive-design guidance on responsive rearrangement and collapsible secondary controls.
+- Chromium checks cover 360×640 and 390×844 phones, 800×1280 tablet portrait, 1024×768 tablet landscape and 1280×720 wide landscape. Automated browser checks are not physical-device tests.

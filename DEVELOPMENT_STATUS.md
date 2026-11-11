@@ -210,3 +210,13 @@ Use the approved vibrant fantasy-farming tokens to introduce original world scen
 - Corrective branch restores the established objective scaling formula while retaining the new opening score goals and move budgets.
 - Browser long-session QA now derives the expected restart move count from the currently displayed level, rather than assuming the player is still on level 1 after earlier gameplay interactions.
 - Browser and Android WebView game engines remain byte-identical. Corrective PR and fresh CI validation are required before Stage 6 can be considered complete.
+
+
+## Stage 8 — research-led viewport-fitted gameplay HUD (in review)
+
+- Audit found the previous focus-play layout could still allow the 8×8 board or action dock to extend beyond the visible phone viewport. The game had no reliable compact-phone fit assertion.
+- Research applied: Apple WWDC24 game UI advice to anchor interface zones and respect safe areas; Android adaptive-layout guidance to reflow and use panes; Roblox adaptive-design guidance to move secondary actions into collapsible menus. The resulting play screen prioritises the board, persistent score/goal/moves, the primary objective and a fixed touch dock.
+- Phones use a bounded one-column HUD; tablets/wider screens use a two-pane board + side-HUD composition. The visual refresh uses a sunny Zimbabwe countryside palette and warm harvest card while preserving the crop tile artwork.
+- Secondary features remain in More; the optional bonus mission continues tracking but does not consume permanent active-play space.
+- Browser and Android WebView CSS/HTML/service-worker assets remain byte-identical; gameplay engine and save format are unchanged. Offline cache is v9.
+- Browser QA now includes compact phone, standard phone, tablet portrait, tablet landscape and wide landscape viewport checks for no document scrolling, full board visibility and visible action controls. These are browser tests, not physical-device tests.
