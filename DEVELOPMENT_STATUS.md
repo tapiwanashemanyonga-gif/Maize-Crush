@@ -169,3 +169,13 @@ Use the approved vibrant fantasy-farming tokens to introduce original world scen
 - Kept the existing level data, paging, unlock rules, replay selection, and saved progression logic intact. The route and scenery are decorative only.
 - Browser and Android WebView CSS are updated together and must remain byte-for-byte identical.
 - Validation pending: gameplay tests, browser/mobile/tablet visual QA, Android builds and release-candidate parity. No physical-device result is claimed.
+
+
+## Fantasy harvest gameplay screen — stage 4 in progress
+
+- Stage 3 winding Harvest Trail map was merged through PR #80; merge commit: `fdd643ae3fb3907bb5ad62a404271863ebe6a113`.
+- Stage 4 branch: `redesign/fantasy-harvest-gameplay`.
+- Reworked the play panel with warm harvest-card surfaces, clearer score/goal/move panels, objective and mission progress cards, a grassy framed crop field, and distinct harvest controls.
+- Preserved the existing game markup, game engine, connect-path rules, objective logic, save format, and Android identity. This increment is CSS-only apart from the offline cache version update.
+- Browser and Android WebView stylesheets and service workers are mirrored byte-for-byte; cache advanced to v5 so returning players refresh the new presentation.
+- Validation pending: gameplay regression tests, browser/mobile/tablet visual QA, Android builds, and release-candidate parity. No physical-device result is claimed.
