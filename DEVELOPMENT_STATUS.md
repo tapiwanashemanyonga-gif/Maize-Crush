@@ -210,3 +210,12 @@ Use the approved vibrant fantasy-farming tokens to introduce original world scen
 - Corrective branch restores the established objective scaling formula while retaining the new opening score goals and move budgets.
 - Browser long-session QA now derives the expected restart move count from the currently displayed level, rather than assuming the player is still on level 1 after earlier gameplay interactions.
 - Browser and Android WebView game engines remain byte-identical. Corrective PR and fresh CI validation are required before Stage 6 can be considered complete.
+
+
+## Stage 8 — viewport-fitted gameplay HUD (in review)
+
+- Research basis: Apple’s game UI guidance recommends anchoring interface sections to screen edges rather than globally shrinking the UI, respecting safe areas, and maintaining legible controls. Android adaptive-layout guidance recommends reflow/reveal/presentation changes across compact and expanded widths. Roblox adaptive-design guidance similarly recommends moving secondary controls into collapsible menus on small screens.
+- Audit finding: the previous play view used a single stacked column and a board width derived from a fixed viewport-height subtraction. The browser QA only exercised one phone and one landscape tablet profile. The old decorative hero, multiple information cards, and tool rows competed with the crop field.
+- Proposed implementation: a board-first compact phone HUD plus a two-pane tablet/wide layout, viewport-height containment using dynamic viewport units, safe-area padding, compact action controls, and a warm harvest-card visual treatment. The optional mission remains tracked; secondary features remain accessible from More.
+- Browser and Android WebView CSS, HTML, and service-worker assets are kept byte-identical. Offline cache advances to v9.
+- Expanded Chromium layout checks cover 360×640 phone, 390×844 phone, 800×1280 tablet portrait, 1024×768 tablet landscape and 1280×720 wide landscape. These are automated browser checks, not physical-device tests.
