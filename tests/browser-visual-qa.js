@@ -490,6 +490,44 @@ async function runViewport(browser, profile, viewport) {
   return { profile, ...dimensions, mismatchRejected: true, diagonalConnection: true, scoreBefore, scoreAfter, layoutWork, longSession };
 }
 
+
+async function verifyCompactViewport(browser) {
+  const viewport = { width: 360, height: 640 };
+  const context = await browser.newContext({ viewport, deviceScaleFactor: 1, isMobile: true, hasTouch: true });
+  const page = await context.newPage();
+  await page.addInitScript(() => localStorage.setItem("maize-crush-tutorial-seen", "true"));
+  await page.goto(BASE_URL, { waitUntil: "networkidle", timeout: 30000 });
+  await page.locator("#game-board .crop-tile").first().waitFor({ state: "visible", timeout: 15000 });
+  const layout = await page.evaluate(() => {
+    const rect = selector => {
+      const r = document.querySelector(selector).getBoundingClientRect();
+      return { top: r.top, right: r.right, bottom: r.bottom, width: r.width, height: r.height };
+    };
+    return {
+      viewport: { width: innerWidth, height: innerHeight },
+      document: { width: document.documentElement.scrollWidth, height: document.documentElement.scrollHeight },
+      shell: rect(".app-shell"),
+      panel: rect(".game-panel"),
+      board: rect("#game-board"),
+      actions: rect(".action-row"),
+      tileCount: document.querySelectorAll("#game-board .crop-tile").length,
+      focusMode: document.body.classList.contains("focus-play")
+    };
+  });
+  if (!layout.focusMode || layout.tileCount !== 64 ||
+      layout.document.width > layout.viewport.width + 2 ||
+      layout.document.height > layout.viewport.height + 2 ||
+      layout.shell.top < -1 || layout.shell.bottom > layout.viewport.height + 1 ||
+      layout.panel.bottom > layout.viewport.height + 1 ||
+      layout.board.top < layout.panel.top || layout.board.bottom > layout.panel.bottom + 1 ||
+      layout.actions.bottom > layout.viewport.height + 1) {
+    throw new Error("compact-phone gameplay is not fully visible without scrolling: " + JSON.stringify(layout));
+  }
+  await page.screenshot({ path: path.join(OUTPUT, "compact-phone-viewport-fit.png"), animations: "disabled" });
+  await context.close();
+  return layout;
+}
+
 (async () => {
   fs.mkdirSync(OUTPUT, { recursive: true });
   const results = [];
@@ -499,6 +537,7 @@ async function runViewport(browser, profile, viewport) {
     browser = await chromium.launch({ headless: true });
     results.push(await runViewport(browser, "mobile", { width: 390, height: 844 }));
     results.push(await runViewport(browser, "tablet", { width: 1024, height: 768 }));
+    results.push({ profile: "compact-phone-viewport-fit", ...(await verifyCompactViewport(browser)) });
     if (errors.length) throw new Error("Browser console errors detected:\n" + errors.join("\n"));
     fs.writeFileSync(path.join(OUTPUT, "results.json"), JSON.stringify({ passed: true, results, errors }, null, 2));
     process.stdout.write(JSON.stringify({ passed: true, results }, null, 2) + "\n");
