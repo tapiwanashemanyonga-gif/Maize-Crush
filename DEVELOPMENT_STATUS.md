@@ -220,3 +220,13 @@ Use the approved vibrant fantasy-farming tokens to introduce original world scen
 - Secondary features remain in More; the optional bonus mission continues tracking but does not consume permanent active-play space.
 - Browser and Android WebView CSS/HTML/service-worker assets remain byte-identical; gameplay engine and save format are unchanged. Offline cache is v9.
 - Browser QA now includes compact phone, standard phone, tablet portrait, tablet landscape and wide landscape viewport checks for no document scrolling, full board visibility and visible action controls. These are browser tests, not physical-device tests.
+
+
+## Stage 9 — portrait-tablet board fit and primary action dock
+
+- Follow-up to merged research-led PR #90 (`ab1006320cb8c9eff4f1d0567ab7088122bad443`). Review of its actual Chromium screenshots showed the tablet portrait and landscape HUDs left too much unused space around a 496px / 408px board, while phone play still used a five-action two-row dock.
+- Portrait phones and portrait tablets now use a board-first single-column layout. On the 800×1280 tablet profile the square field can use nearly the full available width; the bonus mission remains visible in the expanded portrait-tablet HUD.
+- Landscape tablets keep a side-HUD composition and get a larger square field. Four frequently used actions stay in the primary dock; Fresh Field and Focus Play move into More.
+- Browser and Android WebView markup/styles/service workers remain byte-identical. Offline cache advances from v9 to v10.
+- Browser QA checks 360×640, 390×844, 800×1280, 1024×768, 1280×720 and 844×390. It asserts no document scrolling, zero scroll offset, square board geometry, full board visibility, a single portrait action row and touch targets of at least 40px. Long-session QA no longer scrolls the board into view.
+- Automated validation pending. Browser tests are not physical Samsung-device tests; Pages deployment is not yet verified.

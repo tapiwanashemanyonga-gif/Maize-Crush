@@ -179,6 +179,13 @@ async function installLayoutProbe(page) {
   });
 }
 
+async function useFreshField(page) {
+  const open = await page.locator("body").evaluate(body => body.classList.contains("tools-open"));
+  if (!open) await page.locator("#tools-toggle-button").click();
+  await page.locator("#shuffle-button").click();
+  if (await page.locator("body").evaluate(body => body.classList.contains("tools-open"))) await page.locator("#tools-toggle-button").click();
+}
+
 async function runLongSessionSoak(page, profile) {
   const client = await page.context().newCDPSession(page);
   await client.send("Performance.enable");
@@ -226,7 +233,7 @@ async function runLongSessionSoak(page, profile) {
         document.querySelectorAll("#game-board .crop-tile").length === 64,
         openingMoves
       );
-      await page.locator("#game-board").scrollIntoViewIfNeeded();
+      
       await waitForBoardAnimations(page);
       restarts++;
     }
@@ -236,9 +243,9 @@ async function runLongSessionSoak(page, profile) {
       let tiles = await getBoardState(page);
       let chain = findConnectedTriple(tiles);
       for (let attempt = 0; !chain && attempt < 10; attempt++) {
-        await page.locator("#shuffle-button").click();
+        await useFreshField(page);
         await page.waitForFunction(() => document.querySelectorAll("#game-board .crop-tile").length === 64);
-        await page.locator("#game-board").scrollIntoViewIfNeeded();
+        
         await waitForBoardAnimations(page);
         tiles = await getBoardState(page);
         chain = findConnectedTriple(tiles);
@@ -357,20 +364,30 @@ async function runLongSessionSoak(page, profile) {
 
 
 async function verifyResponsiveFit(browser, profile, viewport) {
-  const context = await browser.newContext({viewport,deviceScaleFactor:1});
+  const mobile = profile === "short-landscape";
+  const context = await browser.newContext({viewport,deviceScaleFactor:1,isMobile:mobile,hasTouch:mobile});
   const page = await context.newPage();
   await page.addInitScript(() => localStorage.setItem("maize-crush-tutorial-seen","true"));
   await page.goto(BASE_URL,{waitUntil:"networkidle",timeout:30000});
   await page.waitForFunction(() => document.querySelectorAll("#game-board .crop-tile").length===64);
   const layout=await page.evaluate(()=>{
-    const rect=selector=>{const r=document.querySelector(selector).getBoundingClientRect();return {top:r.top,bottom:r.bottom,width:r.width,height:r.height}};
-    const buttons=Array.from(document.querySelectorAll(".action-row button:not([hidden])"));
-    return {viewport:{width:innerWidth,height:innerHeight},document:{width:document.documentElement.scrollWidth,height:document.documentElement.scrollHeight},focusPlay:document.body.classList.contains("focus-play"),board:rect("#game-board"),actions:rect(".action-row"),buttons:buttons.map(b=>{const r=b.getBoundingClientRect();return {top:r.top,bottom:r.bottom,width:r.width,height:r.height}}),tileCount:document.querySelectorAll("#game-board .crop-tile").length};
+    const b=document.querySelector("#game-board").getBoundingClientRect(),a=document.querySelector(".action-row");
+    const buttons=Array.from(a.querySelectorAll("button:not([hidden])")).map(x=>x.getBoundingClientRect());
+    return {viewport:{width:innerWidth,height:innerHeight},document:{width:document.documentElement.scrollWidth,height:document.documentElement.scrollHeight},
+      scrollY,focusPlay:document.body.classList.contains("focus-play"),board:{top:b.top,bottom:b.bottom,width:b.width,height:b.height},
+      actions:{top:a.getBoundingClientRect().top,bottom:a.getBoundingClientRect().bottom},
+      actionRows:[...new Set(buttons.map(x=>Math.round(x.top)))],buttonHeights:buttons.map(x=>x.height),tileCount:document.querySelectorAll("#game-board .crop-tile").length};
   });
-  const failed=!layout.focusPlay||layout.tileCount!==64||layout.document.width>layout.viewport.width+2||layout.document.height>layout.viewport.height+2||layout.board.top<0||layout.board.bottom>layout.viewport.height+1||layout.actions.bottom>layout.viewport.height+1||layout.buttons.some(b=>b.top<0||b.bottom>layout.viewport.height+1||b.width<30||b.height<26);
+  const maxRows=profile.includes("landscape")?2:1;
+  const failed=!layout.focusPlay||layout.tileCount!==64||layout.document.width>layout.viewport.width+2||
+    layout.document.height>layout.viewport.height+2||layout.scrollY!==0||layout.board.top<0||
+    layout.board.bottom>layout.viewport.height+1||layout.actions.bottom>layout.viewport.height+1||
+    Math.abs(layout.board.width-layout.board.height)>2||layout.actionRows.length>maxRows||
+    layout.buttonHeights.some(h=>h<40);
+  await page.screenshot({path:path.join(OUTPUT,profile+"-viewport-fit.png"),fullPage:true,animations:"disabled"});
   await context.close();
   if(failed)throw new Error(profile+" viewport-fit failure: "+JSON.stringify(layout));
-  return {profile,...layout};
+  return {profile,...layout,fit:true,squareBoard:true};
 }
 
 async function runViewport(browser, profile, viewport) {
@@ -402,7 +419,10 @@ async function runViewport(browser, profile, viewport) {
     boardHeight: document.querySelector("#game-board").getBoundingClientRect().height,
     boardTop: document.querySelector("#game-board").getBoundingClientRect().top,
     boardBottom: document.querySelector("#game-board").getBoundingClientRect().bottom,
-    actionsBottom: document.querySelector(".action-row").getBoundingClientRect().bottom
+    actionsBottom: document.querySelector(".action-row").getBoundingClientRect().bottom,
+    boardRatio: document.querySelector("#game-board").getBoundingClientRect().width / document.querySelector("#game-board").getBoundingClientRect().height,
+    actionButtonRows: Array.from(new Set(Array.from(document.querySelectorAll(".action-row button:not([hidden])")).map(button => Math.round(button.getBoundingClientRect().top)))),
+    actionButtonHeights: Array.from(document.querySelectorAll(".action-row button:not([hidden])")).map(button => button.getBoundingClientRect().height)
   }));
   if (dimensions.documentWidth > dimensions.viewportWidth + 2) {
     throw new Error(profile + " layout overflows horizontally: " + JSON.stringify(dimensions));
@@ -413,6 +433,8 @@ async function runViewport(browser, profile, viewport) {
       dimensions.actionsBottom > dimensions.viewportHeight + 1) {
     throw new Error(profile + " active gameplay does not fit one viewport without vertical scrolling: " + JSON.stringify(dimensions));
   }
+  if (Math.abs(dimensions.boardRatio - 1) > 0.015) throw new Error(profile + " board is not square: " + JSON.stringify(dimensions));
+  if (dimensions.actionButtonRows.length > (profile === "tablet" ? 2 : 1) || dimensions.actionButtonHeights.some(height => height < 40)) throw new Error(profile + " primary action dock does not fit: " + JSON.stringify(dimensions));
   if (!(dimensions.boardWidth > 0 && dimensions.boardHeight > 0)) {
     throw new Error(profile + " crop board has no visible dimensions.");
   }
@@ -447,7 +469,7 @@ async function runViewport(browser, profile, viewport) {
   tiles = await getBoardState(page);
   let diagonal = findDiagonalTriple(tiles);
   for (let attempt = 0; !diagonal && attempt < 10; attempt++) {
-    await page.locator("#shuffle-button").click();
+    await useFreshField(page);
     await page.waitForFunction(() => document.querySelectorAll("#game-board .crop-tile").length === 64);
     await waitForBoardAnimations(page);
     tiles = await getBoardState(page);
@@ -510,40 +532,27 @@ async function runViewport(browser, profile, viewport) {
 
 
 async function verifyCompactViewport(browser) {
-  const viewport = { width: 360, height: 640 };
-  const context = await browser.newContext({ viewport, deviceScaleFactor: 1, isMobile: true, hasTouch: true });
-  const page = await context.newPage();
-  await page.addInitScript(() => localStorage.setItem("maize-crush-tutorial-seen", "true"));
-  await page.goto(BASE_URL, { waitUntil: "networkidle", timeout: 30000 });
-  await page.locator("#game-board .crop-tile").first().waitFor({ state: "visible", timeout: 15000 });
-  const layout = await page.evaluate(() => {
-    const rect = selector => {
-      const r = document.querySelector(selector).getBoundingClientRect();
-      return { top: r.top, right: r.right, bottom: r.bottom, width: r.width, height: r.height };
-    };
-    return {
-      viewport: { width: innerWidth, height: innerHeight },
-      document: { width: document.documentElement.scrollWidth, height: document.documentElement.scrollHeight },
-      shell: rect(".app-shell"),
-      panel: rect(".game-panel"),
-      board: rect("#game-board"),
-      actions: rect(".action-row"),
-      tileCount: document.querySelectorAll("#game-board .crop-tile").length,
-      focusMode: document.body.classList.contains("focus-play")
-    };
+  const viewport={width:360,height:640};
+  const context=await browser.newContext({viewport,deviceScaleFactor:1,isMobile:true,hasTouch:true});
+  const page=await context.newPage();
+  await page.addInitScript(()=>localStorage.setItem("maize-crush-tutorial-seen","true"));
+  await page.goto(BASE_URL,{waitUntil:"networkidle",timeout:30000});
+  await page.locator("#game-board .crop-tile").first().waitFor({state:"visible",timeout:15000});
+  const layout=await page.evaluate(()=>{
+    const rect=selector=>{const r=document.querySelector(selector).getBoundingClientRect();return{top:r.top,bottom:r.bottom,width:r.width,height:r.height}};
+    const buttons=Array.from(document.querySelectorAll(".action-row button:not([hidden])")).map(x=>x.getBoundingClientRect());
+    return{viewport:{width:innerWidth,height:innerHeight},document:{width:document.documentElement.scrollWidth,height:document.documentElement.scrollHeight},
+      scrollY,focusMode:document.body.classList.contains("focus-play"),board:rect("#game-board"),actions:rect(".action-row"),
+      actionRows:[...new Set(buttons.map(x=>Math.round(x.top)))],buttonHeights:buttons.map(x=>x.height),tileCount:document.querySelectorAll("#game-board .crop-tile").length};
   });
-  if (!layout.focusMode || layout.tileCount !== 64 ||
-      layout.document.width > layout.viewport.width + 2 ||
-      layout.document.height > layout.viewport.height + 2 ||
-      layout.shell.top < -1 || layout.shell.bottom > layout.viewport.height + 1 ||
-      layout.panel.bottom > layout.viewport.height + 1 ||
-      layout.board.top < layout.panel.top || layout.board.bottom > layout.panel.bottom + 1 ||
-      layout.actions.bottom > layout.viewport.height + 1) {
-    throw new Error("compact-phone gameplay is not fully visible without scrolling: " + JSON.stringify(layout));
+  if(!layout.focusMode||layout.tileCount!==64||layout.document.width>layout.viewport.width+2||layout.document.height>layout.viewport.height+2||
+    layout.scrollY!==0||layout.board.top<0||layout.board.bottom>layout.viewport.height+1||
+    Math.abs(layout.board.width-layout.board.height)>2||layout.actions.bottom>layout.viewport.height+1||
+    layout.actionRows.length!==1||layout.buttonHeights.some(h=>h<40)){
+    throw new Error("compact-phone gameplay is not fully visible without scrolling: "+JSON.stringify(layout));
   }
-  await page.screenshot({ path: path.join(OUTPUT, "compact-phone-viewport-fit.png"), animations: "disabled" });
-  await context.close();
-  return layout;
+  await page.screenshot({path:path.join(OUTPUT,"compact-phone-viewport-fit.png"),animations:"disabled"});
+  await context.close();return layout;
 }
 
 (async () => {
@@ -558,6 +567,7 @@ async function verifyCompactViewport(browser) {
     results.push({ profile: "compact-phone-viewport-fit", ...(await verifyCompactViewport(browser)) });
     results.push(await verifyResponsiveFit(browser,"tablet-portrait",{width:800,height:1280}));
     results.push(await verifyResponsiveFit(browser,"wide-landscape",{width:1280,height:720}));
+    results.push(await verifyResponsiveFit(browser,"short-landscape",{width:844,height:390}));
     if (errors.length) throw new Error("Browser console errors detected:\n" + errors.join("\n"));
     fs.writeFileSync(path.join(OUTPUT, "results.json"), JSON.stringify({ passed: true, results, errors }, null, 2));
     process.stdout.write(JSON.stringify({ passed: true, results }, null, 2) + "\n");
