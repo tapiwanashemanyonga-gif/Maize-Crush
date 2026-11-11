@@ -512,6 +512,8 @@ async function runCompactViewportCheck(browser, name, viewport) {
       bodyHeight: document.body.scrollHeight,
       shell: rect(".app-shell"), board,
       actions: rect(".action-row"),
+      objective: rect("#objective-card"),
+      mission: rect("#mission-card"),
       visibleActions: Array.from(document.querySelectorAll(".action-row button:not([hidden])")).map(button => {
         const r = button.getBoundingClientRect();
         return { label: button.id, top: r.top, bottom: r.bottom, left: r.left, right: r.right, height: r.height };
@@ -520,6 +522,9 @@ async function runCompactViewportCheck(browser, name, viewport) {
   });
   if (layout.scrollY !== 0 || layout.htmlHeight > layout.height + 2 || layout.bodyHeight > layout.height + 2 ||
       layout.shell.bottom > layout.height + 1 || layout.board.top < -1 || layout.board.bottom > layout.height + 1 ||
+      Math.abs(layout.board.width - layout.board.height) > 2 ||
+      layout.objective.top < -1 || layout.objective.bottom > layout.height + 1 ||
+      layout.mission.top < -1 || layout.mission.bottom > layout.height + 1 ||
       layout.actions.bottom > layout.height + 1 ||
       layout.visibleActions.some(button => button.top < -1 || button.bottom > layout.height + 1 || button.height < 36)) {
     throw new Error(name + " compact viewport does not fit the complete active HUD: " + JSON.stringify(layout));
