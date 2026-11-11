@@ -198,7 +198,7 @@ async function installLayoutProbe(page) {
 async function useFreshField(page) {
  const open=await page.locator("body").evaluate(body=>body.classList.contains("tools-open"));
  if(!open) await page.locator("#tools-toggle-button").click();
- await useFreshField(page);
+ await page.locator("#shuffle-button").click();
  if(await page.locator("body").evaluate(body=>body.classList.contains("tools-open"))) await page.locator("#tools-toggle-button").click();
 }
 
