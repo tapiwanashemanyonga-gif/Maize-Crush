@@ -88,3 +88,11 @@ Cascade chains are capped at ten consecutive cascade resolutions. If another aut
 ## Opening chapter challenge curve
 
 The first 20 levels now build difficulty more deliberately: score goals rise from 650 to 6,500 points, move budgets progress from 18 to 28, while retaining the existing eight-objective sequence and its established scaling rules. The connect-path rules stay the same; the challenge grows without introducing tile swapping or requiring an online connection.
+
+
+## Adaptive one-screen gameplay layout
+
+- Active play opens directly into a screen-fitted gameplay view. The phone layout anchors a compact status bar, score/goal HUD, primary objective, 8×8 crop field and action controls inside the usable viewport.
+- Wider screens use a two-pane layout: the crop board remains the main focus while scores, objective feedback and controls occupy a compact side panel. Short landscape windows receive a denser side-by-side arrangement.
+- Secondary tools remain available from **More**; the optional mission continues to track without taking permanent space from the main board.
+- The responsive layout is checked in Chromium at compact phone (360×640), standard phone (390×844), tablet portrait (800×1280), tablet landscape (1024×768) and wide landscape (1280×720). Browser QA checks that the document does not scroll vertically, the full 8×8 board is visible, and primary controls remain inside the viewport.
