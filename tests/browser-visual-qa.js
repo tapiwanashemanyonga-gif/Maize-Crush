@@ -26,7 +26,43 @@ function startServer() {
     cwd: ROOT,
     stdio: "ignore"
   });
-  return (async () => {
+  return 
+async function runCompactViewportCheck(browser, name, viewport) {
+  const context = await browser.newContext({ viewport, deviceScaleFactor: 1, isMobile: true, hasTouch: true });
+  const page = await context.newPage();
+  await page.addInitScript(() => localStorage.setItem("maize-crush-tutorial-seen", "true"));
+  await page.goto(BASE_URL, { waitUntil: "networkidle", timeout: 30000 });
+  await page.locator("#game-board .crop-tile").first().waitFor({ state: "visible", timeout: 15000 });
+  const layout = await page.evaluate(() => {
+    const rect = selector => {
+      const r = document.querySelector(selector).getBoundingClientRect();
+      return { top: r.top, right: r.right, bottom: r.bottom, left: r.left, width: r.width, height: r.height };
+    };
+    const board = rect("#game-board");
+    return {
+      width: innerWidth, height: innerHeight, scrollY,
+      htmlHeight: document.documentElement.scrollHeight,
+      bodyHeight: document.body.scrollHeight,
+      shell: rect(".app-shell"), board,
+      actions: rect(".action-row"),
+      visibleActions: Array.from(document.querySelectorAll(".action-row button:not([hidden])")).map(button => {
+        const r = button.getBoundingClientRect();
+        return { label: button.id, top: r.top, bottom: r.bottom, left: r.left, right: r.right, height: r.height };
+      })
+    };
+  });
+  if (layout.scrollY !== 0 || layout.htmlHeight > layout.height + 2 || layout.bodyHeight > layout.height + 2 ||
+      layout.shell.bottom > layout.height + 1 || layout.board.top < -1 || layout.board.bottom > layout.height + 1 ||
+      layout.actions.bottom > layout.height + 1 ||
+      layout.visibleActions.some(button => button.top < -1 || button.bottom > layout.height + 1 || button.height < 36)) {
+    throw new Error(name + " compact viewport does not fit the complete active HUD: " + JSON.stringify(layout));
+  }
+  await page.screenshot({ path: path.join(OUTPUT, name + "-viewport-fit.png"), fullPage: false, animations: "disabled" });
+  await context.close();
+  return { name, ...layout };
+}
+
+\n(async () => {
     for (let attempt = 0; attempt < 40; attempt++) {
       try {
         const response = await fetch(BASE_URL);
@@ -380,6 +416,8 @@ async function runViewport(browser, profile, viewport) {
     viewportHeight: window.innerHeight,
     documentWidth: document.documentElement.scrollWidth,
     documentHeight: document.documentElement.scrollHeight,
+    bodyHeight: document.body.scrollHeight,
+    shellBottom: document.querySelector(".app-shell").getBoundingClientRect().bottom,
     boardWidth: document.querySelector("#game-board").getBoundingClientRect().width,
     boardHeight: document.querySelector("#game-board").getBoundingClientRect().height,
     boardTop: document.querySelector("#game-board").getBoundingClientRect().top,
@@ -390,6 +428,8 @@ async function runViewport(browser, profile, viewport) {
     throw new Error(profile + " layout overflows horizontally: " + JSON.stringify(dimensions));
   }
   if (dimensions.documentHeight > dimensions.viewportHeight + 2 ||
+      dimensions.bodyHeight > dimensions.viewportHeight + 2 ||
+      dimensions.shellBottom > dimensions.viewportHeight + 1 ||
       dimensions.boardTop < -1 ||
       dimensions.boardBottom > dimensions.viewportHeight + 1 ||
       dimensions.actionsBottom > dimensions.viewportHeight + 1) {
@@ -401,7 +441,7 @@ async function runViewport(browser, profile, viewport) {
 
   await page.screenshot({
     path: path.join(OUTPUT, profile + "-initial.png"),
-    fullPage: true,
+    fullPage: false,
     animations: "disabled"
   });
 
@@ -475,14 +515,14 @@ async function runViewport(browser, profile, viewport) {
 
   await page.screenshot({
     path: path.join(OUTPUT, profile + "-after-interactions.png"),
-    fullPage: true,
+    fullPage: false,
     animations: "disabled"
   });
 
   const longSession = await runLongSessionSoak(page, profile);
   await page.screenshot({
     path: path.join(OUTPUT, profile + "-after-long-session.png"),
-    fullPage: true,
+    fullPage: false,
     animations: "disabled"
   });
 
@@ -499,6 +539,10 @@ async function runViewport(browser, profile, viewport) {
     browser = await chromium.launch({ headless: true });
     results.push(await runViewport(browser, "mobile", { width: 390, height: 844 }));
     results.push(await runViewport(browser, "tablet", { width: 1024, height: 768 }));
+    results.push(await runCompactViewportCheck(browser, "small-phone", { width: 320, height: 568 }));
+    results.push(await runCompactViewportCheck(browser, "standard-phone", { width: 360, height: 640 }));
+    results.push(await runCompactViewportCheck(browser, "tablet-portrait", { width: 800, height: 1280 }));
+    results.push(await runCompactViewportCheck(browser, "phone-landscape", { width: 844, height: 390 }));
     if (errors.length) throw new Error("Browser console errors detected:\n" + errors.join("\n"));
     fs.writeFileSync(path.join(OUTPUT, "results.json"), JSON.stringify({ passed: true, results, errors }, null, 2));
     process.stdout.write(JSON.stringify({ passed: true, results }, null, 2) + "\n");
