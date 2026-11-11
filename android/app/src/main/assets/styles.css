@@ -780,13 +780,13 @@ body.focus-play.tools-open .level-actions #tools-toggle-button{border-color:#b77
 @media(prefers-reduced-motion:reduce){body.focus-play .game-board,body.focus-play .crop-tile{transition:none!important}}
 
 /* Keep the board mathematically square: one shared edge is constrained by both viewport axes. */
-body.focus-play{--board-edge:min(92vw,calc(100dvh - 300px),560px)}
+body.focus-play{--board-edge:min(92vw,calc(100dvh - 320px),560px)}
 body.focus-play .game-board{width:min(100%,var(--board-edge));height:var(--board-edge);max-height:100%;aspect-ratio:1}
 @media(max-height:560px) and (orientation:landscape){
-  body.focus-play{--board-edge:min(calc(100dvh - 170px),320px)}
+  body.focus-play{--board-edge:min(calc(100dvh - 190px),300px)}
   body.focus-play .game-board{width:min(100%,var(--board-edge));height:var(--board-edge);max-height:100%}
 }
 @media(max-width:380px) and (orientation:portrait){
-  body.focus-play{--board-edge:min(92vw,calc(100dvh - 280px),560px)}
+  body.focus-play{--board-edge:min(92vw,calc(100dvh - 300px),560px)}
   body.focus-play .game-board{width:min(100%,var(--board-edge));height:var(--board-edge);max-height:100%}
 }
