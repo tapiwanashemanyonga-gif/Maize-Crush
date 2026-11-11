@@ -1,10 +1,10 @@
 # Maize Crush development status
 
-Last reviewed: 2026-11-10
+Last reviewed: 2026-11-11
 
 ## Current verified baseline
 
-- Default branch: `main`; latest merge is `b08622f2428e74fee7a4a4a8fd1ee8307eee5ae8` (Android-managed backup privacy disclosure). Latest gameplay/Android code commit remains `5bc9b586539ad07ba99074be6047c1c8d2e00abf`.
+- Default branch: `main`; latest verified merge is `5b02a8c38d33b6f1bfff89d0b4f0d9a7b3510578` (portrait-tablet board-first gameplay HUD). This is the current browser and Android WebView baseline.
 - Android identity: `com.maizecrush.zimbabweharvest`, version `1.0.0` (`versionCode 1`), min SDK 24, target SDK 36.
 - Gameplay is an original 8×8 connect-path puzzle: drag through 3+ matching adjacent crops; diagonal connections count; tiles are never swapped.
 - Six Zimbabwe-harvest illustrations are bundled: maize, tomato, groundnut, banana, orange and sweet potato. The game includes eight objective types, endless level scaling, local progress, boosters, accessibility options and responsive phone/tablet layouts.
@@ -229,4 +229,12 @@ Use the approved vibrant fantasy-farming tokens to introduce original world scen
 - Landscape tablets keep a side-HUD composition and get a larger square field. Four frequently used actions stay in the primary dock; Fresh Field and Focus Play move into More.
 - Browser and Android WebView markup/styles/service workers remain byte-identical. Offline cache advances from v9 to v10.
 - Browser QA checks 360×640, 390×844, 800×1280, 1024×768, 1280×720 and 844×390. It asserts no document scrolling, zero scroll offset, square board geometry, full board visibility, a single portrait action row and touch targets of at least 40px. Long-session QA no longer scrolls the board into view.
-- Automated validation pending. Browser tests are not physical Samsung-device tests; Pages deployment is not yet verified.
+- Verified on the latest main commit `5b02a8c38d33b6f1bfff89d0b4f0d9a7b3510578`: gameplay checks (112/112), Android debug APK, unsigned release APK/AAB candidate, browser visual QA and GitHub Pages deployment all passed (runs `42980311176`, `42980311520`, `42980311256`, `42980311210`, `42980310796`). The release workflow confirmed package `com.maizecrush.zimbabweharvest`, version `1.0.0` / code 1, min SDK 24, target SDK 36 and label `Maize Crush`. The temporary CI key smoke test verified APK/AAB signing; it is not the user's release key. Browser QA is not a physical-device test, and the optional emulator diagnostic was skipped.
+
+
+## Stage 10 — Android release metadata and launcher asset regression guards (in progress)
+
+- Base commit: `5b02a8c38d33b6f1bfff89d0b4f0d9a7b3510578` on `main`.
+- Added `tests/android-release-metadata.test.js` to protect namespace/application ID, positive version code and semantic version name, min/target/compile SDK levels, release-checklist consistency, release workflow metadata assertions, adaptive and legacy launcher icon references, and the current offline-only permission surface.
+- This is a test-only increment: no gameplay behavior, Android identity, manifest permission, art, saved data, signing credentials or release outputs are changed.
+- CI validation is pending on the pull request. Merge only after gameplay, browser QA, Android debug and unsigned release-candidate workflows pass on the same head SHA.
