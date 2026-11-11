@@ -88,3 +88,8 @@ Cascade chains are capped at ten consecutive cascade resolutions. If another aut
 ## Opening chapter challenge curve
 
 The first 20 levels now build difficulty more deliberately: score goals rise from 650 to 6,500 points, move budgets progress from 18 to 28, while retaining the existing eight-objective sequence and its established scaling rules. The connect-path rules stay the same; the challenge grows without introducing tile swapping or requiring an online connection.
+
+
+## One-screen gameplay layout
+
+The active puzzle uses a board-first, viewport-fitted HUD: level and controls at the top, score/goal/moves and both objectives directly below, the 8×8 field in the centre, and primary actions at the bottom. The welcome scenery, crop guide and footer stay out of the active-play viewport; optional tools remain available through **More**. Phone portrait, compact-phone and tablet layouts are checked without scrolling, with a side-by-side HUD for short landscape screens. The connect-path rules, diagonal connections, scoring, boosters, progression and saved-game data are unchanged.
