@@ -83,3 +83,8 @@ New rounds retry random board generation to avoid pre-existing line matches and 
 ## Cascade safety
 
 Cascade chains are capped at ten consecutive cascade resolutions. If another automatic match would exceed the cap, the board is refreshed to a valid playable layout rather than leaving unresolved automatic matches on the board. This prevents an unstable board state while preserving normal scoring and move rules for ordinary play.
+
+
+## Opening chapter challenge curve
+
+The first 20 levels now build difficulty more deliberately: score goals rise from 650 to 6,500 points, move budgets progress from 18 to 28, and the eight opening objective types gradually ask for stronger crop collections, longer chains, special harvests and more successful connections. The objective sequence and connect-path rules stay the same; the challenge grows without introducing tile swapping or requiring an online connection.
