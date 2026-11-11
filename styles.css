@@ -654,3 +654,248 @@ body.focus-play.tools-open .level-actions #tools-toggle-button{border-color:#b77
  body.focus-play .action-row button{font-size:8px}
 }
 @media(prefers-reduced-motion:reduce){body.focus-play .game-board,body.focus-play .crop-tile{transition:none!important}}
+
+
+/* Stage 8 — board-first, viewport-anchored play screen.
+   Phone: compact vertical HUD. Tablet/wide: board + side HUD panes.
+   The active play surface is a fixed viewport, not a scrolling document. */
+html:has(body.focus-play),body.focus-play{
+  width:100%;height:100%;min-height:0;overflow:hidden;overscroll-behavior:none;
+}
+body.focus-play{
+  height:100svh;height:100dvh;min-height:0;margin:0;
+  background:
+    radial-gradient(ellipse 70% 45% at 50% 0%,#ffe28c55,transparent 72%),
+    linear-gradient(160deg,#70c9e8 0%,#a9df9b 44%,#6caa50 100%);
+  color:#263f2b;
+}
+body.focus-play:before{
+  content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.65;
+  background:
+    radial-gradient(ellipse 75% 28% at 4% 100%,#2f874b 0 48%,transparent 49%),
+    radial-gradient(ellipse 75% 28% at 98% 100%,#3b9651 0 48%,transparent 49%),
+    repeating-linear-gradient(165deg,transparent 0 42px,#fff9 43px 44px,transparent 45px 82px);
+}
+body.focus-play .app-shell{
+  position:relative;z-index:1;width:100%;max-width:1440px;height:100svh;height:100dvh;
+  max-height:100dvh;min-height:0;margin:0 auto;overflow:hidden;
+  display:flex;flex-direction:column;gap:6px;
+  padding:max(4px,env(safe-area-inset-top)) max(7px,env(safe-area-inset-right))
+    max(5px,env(safe-area-inset-bottom)) max(7px,env(safe-area-inset-left));
+}
+body.focus-play .topbar{
+  flex:0 0 auto;min-height:34px;padding:3px 9px;border:1px solid #ffffff70;
+  border-radius:12px;background:linear-gradient(110deg,#174b31f2,#276d3ff2);
+  box-shadow:0 4px 14px #17412635;backdrop-filter:blur(10px);
+}
+body.focus-play .brand{gap:7px}
+body.focus-play .brand-mark{width:27px;height:27px;border-radius:8px;font-size:17px;box-shadow:none}
+body.focus-play .brand strong{font-size:11px;letter-spacing:.09em}
+body.focus-play .brand small{display:none}
+body.focus-play .topbar-actions{gap:5px}
+body.focus-play .status-pill{padding:3px 7px;font-size:8px;border-color:#ffffff40;color:#f8e8ae}
+body.focus-play .icon-button{padding:4px 7px;border-color:#ffffff35;font-size:12px}
+body.focus-play .icon-button span{font-size:9px;color:#e6f1d9}
+body.focus-play .hero,body.focus-play .crop-guide,body.focus-play footer{display:none!important}
+body.focus-play .game-panel{
+  position:relative;isolation:isolate;flex:1 1 0;min-height:0;min-width:0;
+  width:100%;max-width:none;margin:0;padding:8px;
+  display:grid;grid-template-columns:minmax(0,1fr);
+  grid-template-rows:auto auto auto auto minmax(0,1fr) auto auto;
+  align-content:stretch;gap:4px;overflow:hidden;
+  border:2px solid #e4b94e;border-radius:19px;
+  background:linear-gradient(145deg,#fff9e9 0%,#f4edce 58%,#e8e4b9 100%);
+  color:#2b4930;box-shadow:0 12px 28px #17412635,inset 0 1px #fff;
+  backdrop-filter:none;
+}
+body.focus-play .game-panel:before{display:none}
+body.focus-play .level-row{
+  grid-column:1;grid-row:1;min-width:0;min-height:28px;
+  display:flex;align-items:center;justify-content:space-between;gap:5px;
+}
+body.focus-play .level-row .eyebrow{font-size:7px;letter-spacing:.12em;color:#66813f}
+body.focus-play .level-row h2{margin:1px 0 0;font-size:clamp(12px,2.6vw,17px);line-height:1.1;color:#25472c;white-space:nowrap}
+body.focus-play .level-row h2 span{color:#c18a2b}
+body.focus-play .level-actions{display:flex;flex-wrap:nowrap;align-items:center;gap:4px}
+body.focus-play .level-actions .quiet-button{
+  min-height:28px;padding:4px 7px;border-radius:8px;border-color:#9ab17c;
+  background:#f9f4df;color:#355b35;font-size:9px;
+}
+body.focus-play .level-actions .focus-play-toggle{display:none}
+body.focus-play .stats{
+  grid-column:1;grid-row:2;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:5px;margin:0;
+}
+body.focus-play .stat{
+  min-width:0;padding:5px 7px;border:1px solid #c5d5a8;border-radius:10px;
+  background:linear-gradient(145deg,#e8f1d7,#dce9c7);box-shadow:inset 0 1px #fff;
+}
+body.focus-play .stat>span{font-size:7px;letter-spacing:.06em;color:#61784c}
+body.focus-play .stat strong{margin-top:1px;font-size:clamp(17px,4.6vw,23px);line-height:1.05;color:#274d30}
+body.focus-play .target-stat strong{color:#b47a14}
+body.focus-play .stat>small{margin-top:1px;font-size:8px;color:#71815b}
+body.focus-play .score-extra,body.focus-play .mission-card,
+body.focus-play .progress-track,body.focus-play .board-help{display:none!important}
+body.focus-play .objective-card{
+  grid-column:1;grid-row:3;display:grid;grid-template-columns:minmax(0,1fr) auto;
+  align-items:center;gap:2px 7px;margin:0;padding:6px 9px;
+  border:1px solid #e3bf62;border-radius:10px;background:#fff4cf;
+  box-shadow:inset 3px 0 #d9a735;
+}
+body.focus-play .objective-copy{display:flex;align-items:center;gap:7px;min-width:0}
+body.focus-play .objective-copy .eyebrow{display:none}
+body.focus-play .objective-copy strong{font-size:11px;color:#72501d;white-space:nowrap}
+body.focus-play .objective-copy>span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:9px;line-height:1.2;color:#756849}
+body.focus-play .objective-status{align-self:center;font-size:10px;color:#5c4928}
+body.focus-play .objective-track{height:3px;background:#e6d7a8}
+body.focus-play .objective-fill{background:linear-gradient(90deg,#66ad49,#f2bd42)}
+body.focus-play .board-heading{
+  grid-column:1;grid-row:4;display:flex;align-items:center;justify-content:space-between;
+  margin:0 2px;font-size:9px;color:#67814a;
+}
+body.focus-play .board-heading strong{color:#385f36;letter-spacing:.1em}
+body.focus-play #chain-hint{padding:3px 7px;border-radius:999px;background:#e3edce;color:#557544;font-size:8px}
+body.focus-play .game-board{
+  grid-column:1;grid-row:5;align-self:center;justify-self:center;
+  width:min(100%,calc(100dvh - 320px));height:auto;max-width:100%;max-height:100%;
+  aspect-ratio:1;margin:0;padding:clamp(4px,.8vw,8px);
+  gap:clamp(2px,.6vw,6px);border:2px solid #6c9c51;border-radius:15px;
+  background:linear-gradient(145deg,#244f32,#173d29);
+  box-shadow:inset 0 2px 8px #071d12a8,0 5px 0 #9c7336;
+}
+body.focus-play .crop-tile{
+  min-width:0;border:1px solid #ffffff35;border-radius:clamp(4px,1vw,9px);
+  font-size:clamp(17px,5.2vw,37px);box-shadow:inset 0 1px #ffffff70,0 2px 0 #071b1740;
+}
+body.focus-play .game-message{
+  grid-column:1;grid-row:6;min-height:26px;margin:0;padding:4px 8px;
+  border:1px solid #c6d8ac;border-radius:9px;background:#e9f1d9;
+  color:#3c633b;font-size:10px;line-height:1.2;
+}
+body.focus-play .game-message.success{background:#d9efc8;color:#28713a}
+body.focus-play .game-message.warning{background:#fff0c6;color:#8a5c19}
+body.focus-play .action-row{
+  grid-column:1;grid-row:7;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:4px;margin:0;align-items:stretch;
+}
+body.focus-play .action-row button{
+  min-width:0;min-height:35px;padding:4px 2px;border-radius:9px;
+  font-size:clamp(8px,2.2vw,10px);line-height:1.1;white-space:normal;
+  overflow-wrap:anywhere;
+}
+body.focus-play .action-row .secondary-button{
+  border:1px solid #a9bd8b;background:linear-gradient(180deg,#f7f3df,#e5ebcf);
+  color:#365b35;box-shadow:0 2px 0 #b9c99c;
+}
+body.focus-play .action-row .primary-button{
+  background:linear-gradient(180deg,#f8d66b,#eab53e);color:#513a13;
+  box-shadow:0 2px 0 #bd8d2b;
+}
+body.focus-play .action-row:has(#next-button:not([hidden])){grid-template-columns:repeat(6,minmax(0,1fr))}
+body.focus-play .meta-actions{display:none!important}
+body.focus-play.tools-open .meta-actions{
+  display:grid!important;position:fixed;z-index:1000;left:10px;right:10px;
+  bottom:max(10px,env(safe-area-inset-bottom));grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:7px;padding:12px;max-height:48dvh;overflow:auto;
+  border:2px solid #d5b85d;border-radius:16px;background:#fff8df;
+  box-shadow:0 12px 40px #142d1c66;
+}
+body.focus-play.tools-open .meta-actions .secondary-button{
+  min-width:0;min-height:38px;padding:7px 4px;font-size:10px;
+  white-space:normal;color:#355b35;background:#f0edda;border-color:#c5d3a7;
+}
+body.focus-play.tools-open:after{content:"";position:fixed;inset:0;z-index:999;background:#142d1c66;pointer-events:none}
+body.focus-play.tools-open .meta-actions{z-index:1000}
+body.focus-play.tools-open .level-actions #tools-toggle-button{background:#ffdf83;color:#60431a;border-color:#b77b27}
+
+/* Wider phones/tablets use anchored panes: board left, compact HUD right. */
+@media(min-width:680px){
+  body.focus-play .app-shell{gap:8px;padding:8px max(10px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left))}
+  body.focus-play .topbar{min-height:40px;padding:4px 12px}
+  body.focus-play .brand-mark{width:31px;height:31px;font-size:19px}
+  body.focus-play .brand strong{font-size:13px}
+  body.focus-play .brand small{display:block;font-size:7px}
+  body.focus-play .game-panel{
+    grid-template-columns:minmax(0,1fr) minmax(230px,min(31vw,330px));
+    grid-template-rows:auto auto minmax(0,1fr) auto auto;
+    gap:7px 12px;padding:12px;
+  }
+  body.focus-play .level-row{grid-column:1/-1;grid-row:1;min-height:34px}
+  body.focus-play .level-row h2{font-size:17px}
+  body.focus-play .level-row .eyebrow{font-size:8px}
+  body.focus-play .level-actions .quiet-button{min-height:30px;font-size:10px}
+  body.focus-play .stats{grid-column:2;grid-row:2;gap:6px}
+  body.focus-play .stat{padding:8px 9px}
+  body.focus-play .stat>span{font-size:8px}
+  body.focus-play .stat strong{font-size:clamp(18px,2.3vw,25px)}
+  body.focus-play .stat>small{font-size:9px}
+  body.focus-play .board-heading{grid-column:1;grid-row:2;margin:0 4px;font-size:10px}
+  body.focus-play #chain-hint{font-size:9px}
+  body.focus-play .objective-card{grid-column:2;grid-row:3;align-self:start;padding:10px;gap:5px 8px}
+  body.focus-play .objective-copy strong{font-size:13px}
+  body.focus-play .objective-copy>span:last-child{font-size:10px}
+  body.focus-play .objective-status{font-size:11px}
+  body.focus-play .game-board{
+    grid-column:1;grid-row:3/6;align-self:center;
+    width:min(100%,72dvh);height:auto;max-height:100%;padding:clamp(6px,.9vw,11px);
+    gap:clamp(3px,.65vw,7px);border-radius:18px;
+  }
+  body.focus-play .crop-tile{font-size:clamp(25px,4.2vw,53px);border-radius:clamp(6px,1vw,12px)}
+  body.focus-play .game-message{grid-column:2;grid-row:4;align-self:end;min-height:40px;font-size:11px;padding:8px}
+  body.focus-play .action-row{
+    grid-column:2;grid-row:5;grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:7px;align-self:end;
+  }
+  body.focus-play .action-row button{min-height:42px;padding:7px;font-size:11px}
+  body.focus-play .action-row:has(#next-button:not([hidden])){grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(min-width:680px) and (max-height:620px){
+  body.focus-play .game-panel{grid-template-columns:minmax(0,1fr) minmax(210px,29vw);gap:5px 9px;padding:7px}
+  body.focus-play .stats .stat{padding:5px 7px}
+  body.focus-play .objective-card{padding:6px}
+  body.focus-play .game-board{width:min(100%,calc(100dvh - 150px));padding:4px;gap:2px}
+  body.focus-play .crop-tile{font-size:clamp(17px,3.6vw,30px)}
+  body.focus-play .action-row button{min-height:34px;font-size:9px}
+}
+@media(max-width:679px) and (max-height:620px){
+  body.focus-play .app-shell{gap:3px;padding-top:3px}
+  body.focus-play .topbar{min-height:29px;padding:2px 6px}
+  body.focus-play .brand-mark{width:23px;height:23px;font-size:15px}
+  body.focus-play .game-panel{gap:2px;padding:5px}
+  body.focus-play .level-row{min-height:24px}
+  body.focus-play .level-actions .quiet-button{min-height:24px;padding:3px 5px;font-size:8px}
+  body.focus-play .stat{padding:3px 5px}
+  body.focus-play .stat>span{font-size:6px}
+  body.focus-play .stat strong{font-size:16px}
+  body.focus-play .objective-card{padding:4px 6px}
+  body.focus-play .board-heading{font-size:8px}
+  body.focus-play .game-board{width:min(100%,calc(100dvh - 275px));padding:3px;gap:2px}
+  body.focus-play .crop-tile{font-size:clamp(15px,4.5vw,24px)}
+  body.focus-play .game-message{min-height:22px;font-size:9px;padding:3px}
+  body.focus-play .action-row button{min-height:29px;font-size:8px}
+}
+@media(max-width:679px) and (orientation:landscape){
+  body.focus-play .game-panel{
+    grid-template-columns:minmax(0,1fr) minmax(170px,35vw);
+    grid-template-rows:auto auto minmax(0,1fr) auto auto;
+    gap:3px 8px;padding:5px 7px;
+  }
+  body.focus-play .level-row{grid-column:1/-1;grid-row:1;min-height:23px}
+  body.focus-play .stats{grid-column:2;grid-row:2;gap:3px}
+  body.focus-play .stat{padding:3px 5px}
+  body.focus-play .stat>span{font-size:6px}
+  body.focus-play .stat strong{font-size:15px}
+  body.focus-play .board-heading{grid-column:1;grid-row:2;font-size:8px}
+  body.focus-play .objective-card{grid-column:2;grid-row:3;padding:5px;gap:3px}
+  body.focus-play .objective-copy strong{font-size:10px}
+  body.focus-play .objective-copy>span:last-child{font-size:8px}
+  body.focus-play .game-board{
+    grid-column:1;grid-row:3/6;width:min(100%,calc(100dvh - 115px));
+    max-height:100%;padding:3px;gap:2px;
+  }
+  body.focus-play .crop-tile{font-size:clamp(14px,4.3vh,24px)}
+  body.focus-play .game-message{grid-column:2;grid-row:4;min-height:23px;font-size:8px;padding:4px}
+  body.focus-play .action-row{grid-column:2;grid-row:5;grid-template-columns:repeat(2,minmax(0,1fr));gap:3px}
+  body.focus-play .action-row button{min-height:27px;padding:3px;font-size:8px}
+}
+@media(prefers-reduced-motion:reduce){body.focus-play .game-board,body.focus-play .crop-tile{transition:none!important}}
