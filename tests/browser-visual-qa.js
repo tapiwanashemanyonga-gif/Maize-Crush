@@ -207,7 +207,6 @@ async function runLongSessionSoak(page, profile) {
     document.querySelectorAll("#game-board .crop-tile").length === 64,
     openingMoves
   );
-  await page.locator("#game-board").scrollIntoViewIfNeeded();
   await waitForBoardAnimations(page);
   const baseline = await measureAfterCollection();
 
@@ -378,12 +377,23 @@ async function runViewport(browser, profile, viewport) {
 
   const dimensions = await page.evaluate(() => ({
     viewportWidth: window.innerWidth,
+    viewportHeight: window.innerHeight,
     documentWidth: document.documentElement.scrollWidth,
+    documentHeight: document.documentElement.scrollHeight,
     boardWidth: document.querySelector("#game-board").getBoundingClientRect().width,
-    boardHeight: document.querySelector("#game-board").getBoundingClientRect().height
+    boardHeight: document.querySelector("#game-board").getBoundingClientRect().height,
+    boardTop: document.querySelector("#game-board").getBoundingClientRect().top,
+    boardBottom: document.querySelector("#game-board").getBoundingClientRect().bottom,
+    actionsBottom: document.querySelector(".action-row").getBoundingClientRect().bottom
   }));
   if (dimensions.documentWidth > dimensions.viewportWidth + 2) {
     throw new Error(profile + " layout overflows horizontally: " + JSON.stringify(dimensions));
+  }
+  if (dimensions.documentHeight > dimensions.viewportHeight + 2 ||
+      dimensions.boardTop < -1 ||
+      dimensions.boardBottom > dimensions.viewportHeight + 1 ||
+      dimensions.actionsBottom > dimensions.viewportHeight + 1) {
+    throw new Error(profile + " active gameplay does not fit one viewport without vertical scrolling: " + JSON.stringify(dimensions));
   }
   if (!(dimensions.boardWidth > 0 && dimensions.boardHeight > 0)) {
     throw new Error(profile + " crop board has no visible dimensions.");
@@ -395,9 +405,7 @@ async function runViewport(browser, profile, viewport) {
     animations: "disabled"
   });
 
-  // Put the board in the viewport before sending pointer gestures. On tablet
-  // layouts the complete page is taller than the browser viewport.
-  await page.locator("#game-board").scrollIntoViewIfNeeded();
+  // The active game must already fit; do not scroll the board into view.
   await waitForBoardAnimations(page);
 
   // Verify a mismatched drag never swaps crops or consumes a move.
@@ -458,10 +466,12 @@ async function runViewport(browser, profile, viewport) {
   // Check that the hint and settings controls remain operable.
   await page.locator("#hint-button").click();
   await page.waitForFunction(() => document.querySelectorAll("#game-board .crop-tile.hinted").length >= 3);
+  await page.locator("#tools-toggle-button").click();
   await page.locator("#settings-button").click();
   await page.locator("#settings-dialog").waitFor({ state: "visible" });
   await page.locator("#settings-close").click();
   await page.locator("#settings-dialog").waitFor({ state: "hidden" });
+  await page.locator("#tools-toggle-button").click();
 
   await page.screenshot({
     path: path.join(OUTPUT, profile + "-after-interactions.png"),

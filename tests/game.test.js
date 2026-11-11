@@ -245,3 +245,23 @@ test("pointer handlers use one hit-test result without a redundant fallback", ()
   assert.ok(handlers.includes("extendPath(locateTileAtPoint(e.clientX,e.clientY))"));
   assert.ok(!handlers.includes("||locateTile(document.elementFromPoint"));
 });
+
+
+test("viewport-fit gameplay keeps the full active game inside the device screen",()=>{
+  const root=path.join(__dirname,".."),css=fs.readFileSync(path.join(root,"styles.css"),"utf8"),androidCss=fs.readFileSync(path.join(root,"android/app/src/main/assets/styles.css"),"utf8"),source=fs.readFileSync(path.join(root,"game.js"),"utf8"),androidSource=fs.readFileSync(path.join(root,"android/app/src/main/assets/game.js"),"utf8"),html=fs.readFileSync(path.join(root,"index.html"),"utf8"),androidHtml=fs.readFileSync(path.join(root,"android/app/src/main/assets/index.html"),"utf8");
+  assert.equal(css,androidCss,"browser and Android viewport layouts must match");
+  assert.equal(source,androidSource,"browser and Android gameplay controls must match");
+  assert.equal(html,androidHtml,"browser and Android game markup must match");
+  assert.match(source,/setFocusPlay\(true\)/,"screen-fitted play should be the default");
+  assert.match(source,/toolsToggleButton\.addEventListener\("click"/,"secondary tools must remain accessible");
+  assert.match(html,/id="tools-toggle-button"/);
+  assert.match(html,/id="game-tools"/);
+  assert.match(css,/body\.focus-play \.app-shell\{[^}]*height:100dvh/);
+  assert.match(css,/body\.focus-play\{height:100%;min-height:0;overflow:hidden/);
+  assert.match(css,/grid-template-rows:auto auto auto auto minmax\(0,1fr\) auto auto/);
+  assert.ok(css.includes("body.focus-play .score-extra,body.focus-play .mission-card,body.focus-play .progress-track,body.focus-play .board-help{display:none!important}"));
+  assert.match(css,/body\.focus-play \.game-board\{[^}]*aspect-ratio:1/);
+  assert.ok(css.includes("body.focus-play.tools-open .meta-actions{"));
+  assert.ok(css.includes("display:grid!important;position:fixed;"));
+  assert.match(css,/@media\(max-height:560px\) and \(orientation:landscape\)/);
+});
