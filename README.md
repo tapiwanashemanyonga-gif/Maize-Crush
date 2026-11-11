@@ -87,4 +87,4 @@ Cascade chains are capped at ten consecutive cascade resolutions. If another aut
 
 ## Opening chapter challenge curve
 
-The first 20 levels now build difficulty more deliberately: score goals rise from 650 to 6,500 points, move budgets progress from 18 to 28, and the eight opening objective types gradually ask for stronger crop collections, longer chains, special harvests and more successful connections. The objective sequence and connect-path rules stay the same; the challenge grows without introducing tile swapping or requiring an online connection.
+The first 20 levels now build difficulty more deliberately: score goals rise from 650 to 6,500 points, move budgets progress from 18 to 28, while retaining the existing eight-objective sequence and its established scaling rules. The connect-path rules stay the same; the challenge grows without introducing tile swapping or requiring an online connection.
