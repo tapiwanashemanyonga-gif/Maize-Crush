@@ -189,3 +189,14 @@ Use the approved vibrant fantasy-farming tokens to introduce original world scen
 - Added gentle floating crop-card motion with reduced-motion support; existing puzzle UI and game logic are untouched.
 - Browser and Android WebView stylesheets and service workers are mirrored byte-for-byte; offline shell cache advanced to v6.
 - Validation pending: gameplay regression checks, browser visual QA, Android builds and release-candidate parity. No physical-device result is claimed.
+
+
+## Stronger opening challenge — stage 6 in progress
+
+- Based on the verified Stage 5 merge `5bf5260b107dc5de2ab49e983ee15ab07ff94d40`.
+- Audited the existing first 20 score goals, move budgets and eight rotating objective types. The opening chapter previously began at 500 points and 20 moves, with objective difficulty staying flat across the first seven levels.
+- Raised the first-level score target to 650 and set a smoother opening score progression through level 20 (ending at 6,500). Reduced the opening move budget to 18, then increased it gradually to 28 by level 20.
+- Made objective scaling respond progressively to level number instead of changing only in seven-level blocks. Added regression coverage for the first eight objective targets and move budgets.
+- Browser and Android WebView game engines and service workers are updated together; offline cache advanced from v6 to v7.
+- Preserved the 8×8 board, connect-not-swap and diagonal path rules, crop roster, save/checkpoint format, boosters, achievements, endless level support, Android identity and offline operation.
+- Validation pending on this PR: gameplay/security regression suite, browser phone/tablet visual QA, Android debug/APK and release-candidate asset-parity workflows. No physical-device test is claimed.

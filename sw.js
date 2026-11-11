@@ -1,6 +1,6 @@
 "use strict";
 
-const CACHE_NAME = "maize-crush-shell-v6";
+const CACHE_NAME = "maize-crush-shell-v7";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -25,7 +25,7 @@ self.addEventListener("activate", event => {
     caches.keys()
       .then(keys => Promise.all(
         keys
-          .filter(key => (key.startsWith("maize-crush-shell-") && key !== CACHE_NAME) || (key === "maize-crush-shell-v5" || key === "maize-crush-shell-v4" || key === "maize-crush-shell-v3" || key === "maize-crush-v2"))
+          .filter(key => (key.startsWith("maize-crush-shell-") && key !== CACHE_NAME) || (key === "maize-crush-shell-v6" || key === "maize-crush-shell-v5" || key === "maize-crush-shell-v4" || key === "maize-crush-shell-v3" || key === "maize-crush-v2"))
           .map(key => caches.delete(key))
       ))
       .then(() => self.clients.claim())

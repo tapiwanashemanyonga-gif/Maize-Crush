@@ -196,14 +196,16 @@ async function runLongSessionSoak(page, profile) {
     };
   }
 
-  // Start from a known fresh round, then exercise five short rounds. Restarting
-  // between sessions checks that board replacement and checkpoint writes stay
-  // bounded instead of measuring only one untouched board.
+  // Start from a known fresh round, then exercise repeated short sessions.
+  // Read the current opening move budget from the game engine so the soak stays
+  // valid when the difficulty curve is intentionally rebalanced.
+  const openingMoves = await page.evaluate(() => window.MaizeCrush.movesForLevel(1));
   await page.locator("#restart-button").click();
-  await page.waitForFunction(() =>
-    Number(document.querySelector("#moves-value").textContent) === 20 &&
+  await page.waitForFunction((expectedMoves) =>
+    Number(document.querySelector("#moves-value").textContent) === expectedMoves &&
     Number(document.querySelector("#score-value").textContent.replace(/,/g, "")) === 0 &&
-    document.querySelectorAll("#game-board .crop-tile").length === 64
+    document.querySelectorAll("#game-board .crop-tile").length === 64,
+    openingMoves
   );
   await page.locator("#game-board").scrollIntoViewIfNeeded();
   await waitForBoardAnimations(page);
@@ -219,10 +221,11 @@ async function runLongSessionSoak(page, profile) {
   while (harvests < 20 && rounds < maxRounds) {
     if (rounds > 0) {
       await page.locator("#restart-button").click();
-      await page.waitForFunction(() =>
-        Number(document.querySelector("#moves-value").textContent) === 20 &&
+      await page.waitForFunction((expectedMoves) =>
+        Number(document.querySelector("#moves-value").textContent) === expectedMoves &&
         Number(document.querySelector("#score-value").textContent.replace(/,/g, "")) === 0 &&
-        document.querySelectorAll("#game-board .crop-tile").length === 64
+        document.querySelectorAll("#game-board .crop-tile").length === 64,
+        openingMoves
       );
       await page.locator("#game-board").scrollIntoViewIfNeeded();
       await waitForBoardAnimations(page);
