@@ -259,8 +259,8 @@ test("viewport-fit gameplay keeps the full active game inside the device screen"
   assert.match(css,/body\.focus-play \.app-shell\{[^}]*height:100dvh/);
   assert.match(css,/body\.focus-play\{height:100%;min-height:0;overflow:hidden/);
   assert.match(css,/grid-template-rows:auto auto auto auto minmax\(0,1fr\) auto auto/);
-  assert.match(css,/body\.focus-play \.mission-card,body\.focus-play \.progress-track,body\.focus-play \.board-help\{display:none!important\}/);
+  assert.ok(css.includes("body.focus-play .score-extra,body.focus-play .mission-card,body.focus-play .progress-track,body.focus-play .board-help{display:none!important}"));
   assert.match(css,/body\.focus-play \.game-board\{[^}]*aspect-ratio:1/);
-  assert.match(css,/body\.focus-play\.tools-open \.meta-actions\{display:grid!important;position:fixed/);
+  assert.match(css,/body\\.focus-play\\.tools-open \\.meta-actions\\{\\s*display:grid!important;position:fixed/);
   assert.match(css,/@media\(max-height:560px\) and \(orientation:landscape\)/);
 });
