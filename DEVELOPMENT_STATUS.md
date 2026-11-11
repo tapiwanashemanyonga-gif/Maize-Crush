@@ -210,3 +210,13 @@ Use the approved vibrant fantasy-farming tokens to introduce original world scen
 - Corrective branch restores the established objective scaling formula while retaining the new opening score goals and move budgets.
 - Browser long-session QA now derives the expected restart move count from the currently displayed level, rather than assuming the player is still on level 1 after earlier gameplay interactions.
 - Browser and Android WebView game engines remain byte-identical. Corrective PR and fresh CI validation are required before Stage 6 can be considered complete.
+
+
+## True one-screen gameplay HUD — implementation in progress
+
+- Research basis: Apple game UI guidance recommends anchored, flexible HUD zones, safe-area-aware controls, and touch targets sized for fingers rather than shrinking a desktop-style layout. Epic's mobile HUD guidance recommends one primary focus, a context-adaptive HUD, and showing only essential active controls. Unity's game UI guidance recommends prioritising frequently changing information, keeping the centre clear for gameplay, and moving rarely used options into menus.
+- Audit finding: the active screen still carried oversized vertical spacing and stacked presentation sections. The existing focus-mode CSS used a board width based mainly on viewport width, which could make the square board exceed the height available in its grid row; it also hid the bonus mission rather than presenting it compactly.
+- New layout: explicit grid areas keep level, score/goal/moves, main objective, bonus mission, board label, square 8×8 board, feedback and six action slots in one viewport. Welcome scenery, crop guide and footer are removed only while playing; secondary tools remain under More.
+- Responsive rules: safe-area insets, dynamic viewport units, square-board width/height constraints, compact-phone sizing, and a two-column layout on short landscape screens. Browser QA is expanded to check 320×568, 360×640, 800×1280 and 844×390 viewports for document overflow and clipped board/action controls.
+- Browser and Android WebView CSS remain byte-identical; service-worker cache advances from v8 to v9. No game-engine, save-format, objective, booster, progression or connect-not-swap changes.
+- CI and screenshots are pending. Automated browser checks are not physical-device testing.
