@@ -26,8 +26,7 @@ function startServer() {
     cwd: ROOT,
     stdio: "ignore"
   });
-  return 
-(async () => {
+  return (async () => {
     for (let attempt = 0; attempt < 40; attempt++) {
       try {
         const response = await fetch(BASE_URL);
