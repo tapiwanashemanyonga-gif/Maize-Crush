@@ -513,3 +513,39 @@ footer .privacy-link{color:#426b46}
  .game-panel{max-width:790px}
  .game-board{max-width:620px}
 }
+
+
+/* Stage 5 — an atmospheric Zimbabwean farm world behind the puzzle */
+body{position:relative;isolation:isolate;background:linear-gradient(180deg,#142f3a 0%,#173a35 44%,#10291e 100%)}
+body:before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:
+ radial-gradient(ellipse 180px 180px at 83% 8%,#f6cf7150 0%,#f6cf7120 42%,transparent 74%),
+ radial-gradient(ellipse 75% 32% at 12% 66%,#54894b 0%,#54894b 48%,transparent 49%),
+ radial-gradient(ellipse 76% 34% at 91% 71%,#376f43 0%,#376f43 48%,transparent 49%),
+ radial-gradient(ellipse 90% 30% at 52% 100%,#244e32 0%,#244e32 55%,transparent 56%),
+ repeating-linear-gradient(166deg,transparent 0 38px,#c6a65a0b 39px 41px,transparent 42px 76px);
+ opacity:.92}
+.app-shell{position:relative;z-index:1}
+.topbar{padding:7px 10px;border:1px solid #ffffff16;border-radius:18px;background:linear-gradient(110deg,#102c20d9,#173b2bd9);box-shadow:0 8px 26px #06170f35;backdrop-filter:blur(10px)}
+.hero{min-height:218px;padding-left:18px;padding-right:18px}
+.hero:after{content:"";position:absolute;left:0;right:0;bottom:12px;height:1px;background:linear-gradient(90deg,transparent,#f4d78a55 18%,#f4d78a55 82%,transparent)}
+.hero-copy>p:last-child{color:#d3e2ca}
+.hero-art{filter:drop-shadow(0 14px 22px #06170f40)}
+.sun{background:radial-gradient(circle at 35% 30%,#fff1b7,#f6cf71 62%,#df9d43);box-shadow:0 0 45px #f6cf7166,0 0 100px #f6cf7122}
+.crop{border:1px solid #ffffff40;background:linear-gradient(145deg,#427b4c,#173f2a);box-shadow:inset 0 1px 0 #ffffff45,0 12px 30px #071b114d}
+.hero-art .crop-one{animation:field-drift 5.5s ease-in-out infinite}
+.hero-art .crop-two{animation:field-drift 6.5s ease-in-out -1.2s infinite}
+.hero-art .crop-three{animation:field-drift 5.8s ease-in-out -2s infinite}
+.hero-art .crop-four{animation:field-drift 6.2s ease-in-out -.7s infinite}
+.game-panel{backdrop-filter:blur(14px)}
+.crop-guide{position:relative;padding-left:12px;padding-right:12px;border:1px solid #ffffff12;border-radius:20px;background:linear-gradient(110deg,#102c20b8,#173b2bb8);backdrop-filter:blur(9px);margin-top:22px}
+.crop-guide h2{color:#f5f1dc}
+.crop-list>span{background:#ffffff0b;border-color:#ffffff20}
+footer{margin-top:14px;padding-left:12px;padding-right:12px}
+@keyframes field-drift{0%,100%{translate:0 0}50%{translate:0 -7px}}
+@media(max-width:480px){
+ .topbar{padding:6px 7px;border-radius:14px}
+ .hero{min-height:174px;padding-left:7px;padding-right:7px}
+ .hero-art{right:-58px}
+ .crop-guide{padding:18px 12px;margin-top:16px}
+}
+@media(prefers-reduced-motion:reduce){.hero-art .crop-one,.hero-art .crop-two,.hero-art .crop-three,.hero-art .crop-four{animation:none}}
