@@ -210,3 +210,13 @@ Use the approved vibrant fantasy-farming tokens to introduce original world scen
 - Corrective branch restores the established objective scaling formula while retaining the new opening score goals and move budgets.
 - Browser long-session QA now derives the expected restart move count from the currently displayed level, rather than assuming the player is still on level 1 after earlier gameplay interactions.
 - Browser and Android WebView game engines remain byte-identical. Corrective PR and fresh CI validation are required before Stage 6 can be considered complete.
+
+
+## Adaptive board-first gameplay HUD — stage 8
+
+- Audited the previous viewport-fit implementation after player feedback. The earlier browser QA passed only 390×844 and 1024×768; its tablet board measured 468×438 pixels, proving the grid was not preserving a square playfield. It did not exercise the Samsung-class 800×1280 portrait tablet or a compact 360×640 phone.
+- Research reference patterns: Royal Match keeps level targets in the upper-left and moves in the upper-right; Apple game-layout guidance recommends anchored interface zones, safe-area-aware full-screen layouts, readable text and comfortable touch targets rather than uniformly shrinking a full page.
+- Replace the fixed-height subtraction and crowded five-control row with a square 8×8 board, anchored top HUD, compact objective strip, one four-action bottom row, and a secondary tools overlay. Fresh Field and Focus Play remain accessible inside More.
+- Add distinct portrait and landscape layouts. Browser and Android WebView HTML/CSS/worker remain byte-identical; cache advances from v8 to v9.
+- Expand browser QA to 390×844, 360×640, 800×1280 portrait and 1024×768 landscape. Assert no page scrolling, square board geometry, all board edges visible, one action row, and 40px+ primary touch targets; preserve connect-not-swap and diagonal interaction checks.
+- Automated validation pending. No physical-device result or Pages deployment is claimed.
