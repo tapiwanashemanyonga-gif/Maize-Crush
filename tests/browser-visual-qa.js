@@ -27,21 +27,6 @@ function startServer() {
     stdio: "ignore"
   });
   return 
-async function runLayoutOnly(browser, profile, viewport) {
- const context=await browser.newContext({viewport,deviceScaleFactor:1,isMobile:true,hasTouch:true});
- const page=await context.newPage();page.on("pageerror",error=>errors.push(profile+": "+error.message));
- await page.addInitScript(()=>localStorage.setItem("maize-crush-tutorial-seen","true"));
- await page.goto(BASE_URL,{waitUntil:"networkidle",timeout:30000});
- await page.locator("#game-board .crop-tile").first().waitFor({state:"visible",timeout:15000});
- await page.waitForFunction(()=>document.querySelectorAll("#game-board .crop-tile").length===64);
- const d=await page.evaluate(()=>{const b=document.querySelector("#game-board").getBoundingClientRect(),a=document.querySelector(".action-row"),buttons=Array.from(a.querySelectorAll("button:not([hidden])")).map(x=>x.getBoundingClientRect());return{viewportWidth:innerWidth,viewportHeight:innerHeight,documentWidth:document.documentElement.scrollWidth,documentHeight:document.documentElement.scrollHeight,boardWidth:b.width,boardHeight:b.height,boardTop:b.top,boardBottom:b.bottom,actionsBottom:a.getBoundingClientRect().bottom,actionButtonRows:[...new Set(buttons.map(x=>Math.round(x.top)))],actionButtonHeights:buttons.map(x=>x.height)}});
- if(d.documentWidth>d.viewportWidth+2||d.documentHeight>d.viewportHeight+2||d.boardTop<0||d.boardBottom>d.viewportHeight+1||d.actionsBottom>d.viewportHeight+1)throw new Error(profile+" screen overflow: "+JSON.stringify(d));
- if(Math.abs(d.boardWidth-d.boardHeight)>2)throw new Error(profile+" board is not square: "+JSON.stringify(d));
- if(d.actionButtonRows.length!==1||d.actionButtonHeights.some(h=>h<40))throw new Error(profile+" controls wrap or are too small: "+JSON.stringify(d));
- await page.screenshot({path:path.join(OUTPUT,profile+"-layout.png"),fullPage:true,animations:"disabled"});
- await context.close();return{profile,...d,fit:true,squareBoard:true,singleActionRow:true};
-}
-
 (async () => {
     for (let attempt = 0; attempt < 40; attempt++) {
       try {
@@ -517,6 +502,22 @@ async function runViewport(browser, profile, viewport) {
   await context.close();
   return { profile, ...dimensions, mismatchRejected: true, diagonalConnection: true, scoreBefore, scoreAfter, layoutWork, longSession };
 }
+
+async function runLayoutOnly(browser, profile, viewport) {
+ const context=await browser.newContext({viewport,deviceScaleFactor:1,isMobile:true,hasTouch:true});
+ const page=await context.newPage();page.on("pageerror",error=>errors.push(profile+": "+error.message));
+ await page.addInitScript(()=>localStorage.setItem("maize-crush-tutorial-seen","true"));
+ await page.goto(BASE_URL,{waitUntil:"networkidle",timeout:30000});
+ await page.locator("#game-board .crop-tile").first().waitFor({state:"visible",timeout:15000});
+ await page.waitForFunction(()=>document.querySelectorAll("#game-board .crop-tile").length===64);
+ const d=await page.evaluate(()=>{const b=document.querySelector("#game-board").getBoundingClientRect(),a=document.querySelector(".action-row"),buttons=Array.from(a.querySelectorAll("button:not([hidden])")).map(x=>x.getBoundingClientRect());return{viewportWidth:innerWidth,viewportHeight:innerHeight,documentWidth:document.documentElement.scrollWidth,documentHeight:document.documentElement.scrollHeight,boardWidth:b.width,boardHeight:b.height,boardTop:b.top,boardBottom:b.bottom,actionsBottom:a.getBoundingClientRect().bottom,actionButtonRows:[...new Set(buttons.map(x=>Math.round(x.top)))],actionButtonHeights:buttons.map(x=>x.height)}});
+ if(d.documentWidth>d.viewportWidth+2||d.documentHeight>d.viewportHeight+2||d.boardTop<0||d.boardBottom>d.viewportHeight+1||d.actionsBottom>d.viewportHeight+1)throw new Error(profile+" screen overflow: "+JSON.stringify(d));
+ if(Math.abs(d.boardWidth-d.boardHeight)>2)throw new Error(profile+" board is not square: "+JSON.stringify(d));
+ if(d.actionButtonRows.length!==1||d.actionButtonHeights.some(h=>h<40))throw new Error(profile+" controls wrap or are too small: "+JSON.stringify(d));
+ await page.screenshot({path:path.join(OUTPUT,profile+"-layout.png"),fullPage:true,animations:"disabled"});
+ await context.close();return{profile,...d,fit:true,squareBoard:true,singleActionRow:true};
+}
+
 
 (async () => {
   fs.mkdirSync(OUTPUT, { recursive: true });
