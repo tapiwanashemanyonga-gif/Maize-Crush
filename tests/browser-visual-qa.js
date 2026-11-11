@@ -199,7 +199,7 @@ async function runLongSessionSoak(page, profile) {
   // Start from a known fresh round, then exercise repeated short sessions.
   // Read the current opening move budget from the game engine so the soak stays
   // valid when the difficulty curve is intentionally rebalanced.
-  const openingMoves = await page.evaluate(() => window.MaizeCrush.movesForLevel(1));
+  const openingMoves = await page.evaluate(() => { const match = document.querySelector("#level-label").textContent.match(/Level\\s+(\\d+)/); const level = match ? Number(match[1]) : 1; return window.MaizeCrush.movesForLevel(level); });
   await page.locator("#restart-button").click();
   await page.waitForFunction((expectedMoves) =>
     Number(document.querySelector("#moves-value").textContent) === expectedMoves &&
