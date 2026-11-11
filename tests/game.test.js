@@ -265,3 +265,6 @@ test("viewport-fit gameplay keeps the full active game inside the device screen"
   assert.ok(css.includes("display:grid!important;position:fixed;"));
   assert.match(css,/@media\(max-height:560px\) and \(orientation:landscape\)/);
 });
+
+
+test("adaptive gameplay uses a square board and a four-action primary strip",()=>{const root=path.join(__dirname,".."),css=fs.readFileSync(path.join(root,"styles.css"),"utf8"),html=fs.readFileSync(path.join(root,"index.html"),"utf8"),qa=fs.readFileSync(path.join(__dirname,"browser-visual-qa.js"),"utf8");assert.equal(css,fs.readFileSync(path.join(root,"android/app/src/main/assets/styles.css"),"utf8"));assert.equal(html,fs.readFileSync(path.join(root,"android/app/src/main/assets/index.html"),"utf8"));assert.match(css,/grid-template-rows:repeat\(8,minmax\(0,1fr\)\)/);assert.match(css,/aspect-ratio:1\/1/);assert.match(css,/min-height:44px/);assert.match(html,/id="shuffle-button"/);assert.match(html,/id="focus-play-button"/);assert.match(qa,/boardRatio/);assert.match(qa,/compact-phone/);assert.match(qa,/tablet-portrait/);assert.doesNotMatch(qa,/scrollIntoViewIfNeeded/)});
