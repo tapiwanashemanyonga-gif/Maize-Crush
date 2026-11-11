@@ -26,7 +26,23 @@ function startServer() {
     cwd: ROOT,
     stdio: "ignore"
   });
-  return (async () => {
+  return 
+async function runLayoutOnly(browser, profile, viewport) {
+ const context=await browser.newContext({viewport,deviceScaleFactor:1,isMobile:true,hasTouch:true});
+ const page=await context.newPage();page.on("pageerror",error=>errors.push(profile+": "+error.message));
+ await page.addInitScript(()=>localStorage.setItem("maize-crush-tutorial-seen","true"));
+ await page.goto(BASE_URL,{waitUntil:"networkidle",timeout:30000});
+ await page.locator("#game-board .crop-tile").first().waitFor({state:"visible",timeout:15000});
+ await page.waitForFunction(()=>document.querySelectorAll("#game-board .crop-tile").length===64);
+ const d=await page.evaluate(()=>{const b=document.querySelector("#game-board").getBoundingClientRect(),a=document.querySelector(".action-row"),buttons=Array.from(a.querySelectorAll("button:not([hidden])")).map(x=>x.getBoundingClientRect());return{viewportWidth:innerWidth,viewportHeight:innerHeight,documentWidth:document.documentElement.scrollWidth,documentHeight:document.documentElement.scrollHeight,boardWidth:b.width,boardHeight:b.height,boardTop:b.top,boardBottom:b.bottom,actionsBottom:a.getBoundingClientRect().bottom,actionButtonRows:[...new Set(buttons.map(x=>Math.round(x.top)))],actionButtonHeights:buttons.map(x=>x.height)}});
+ if(d.documentWidth>d.viewportWidth+2||d.documentHeight>d.viewportHeight+2||d.boardTop<0||d.boardBottom>d.viewportHeight+1||d.actionsBottom>d.viewportHeight+1)throw new Error(profile+" screen overflow: "+JSON.stringify(d));
+ if(Math.abs(d.boardWidth-d.boardHeight)>2)throw new Error(profile+" board is not square: "+JSON.stringify(d));
+ if(d.actionButtonRows.length!==1||d.actionButtonHeights.some(h=>h<40))throw new Error(profile+" controls wrap or are too small: "+JSON.stringify(d));
+ await page.screenshot({path:path.join(OUTPUT,profile+"-layout.png"),fullPage:true,animations:"disabled"});
+ await context.close();return{profile,...d,fit:true,squareBoard:true,singleActionRow:true};
+}
+
+(async () => {
     for (let attempt = 0; attempt < 40; attempt++) {
       try {
         const response = await fetch(BASE_URL);
@@ -179,6 +195,13 @@ async function installLayoutProbe(page) {
   });
 }
 
+async function useFreshField(page) {
+ const open=await page.locator("body").evaluate(body=>body.classList.contains("tools-open"));
+ if(!open) await page.locator("#tools-toggle-button").click();
+ await useFreshField(page);
+ if(await page.locator("body").evaluate(body=>body.classList.contains("tools-open"))) await page.locator("#tools-toggle-button").click();
+}
+
 async function runLongSessionSoak(page, profile) {
   const client = await page.context().newCDPSession(page);
   await client.send("Performance.enable");
@@ -226,7 +249,7 @@ async function runLongSessionSoak(page, profile) {
         document.querySelectorAll("#game-board .crop-tile").length === 64,
         openingMoves
       );
-      await page.locator("#game-board").scrollIntoViewIfNeeded();
+      
       await waitForBoardAnimations(page);
       restarts++;
     }
@@ -236,9 +259,9 @@ async function runLongSessionSoak(page, profile) {
       let tiles = await getBoardState(page);
       let chain = findConnectedTriple(tiles);
       for (let attempt = 0; !chain && attempt < 10; attempt++) {
-        await page.locator("#shuffle-button").click();
+        await useFreshField(page);
         await page.waitForFunction(() => document.querySelectorAll("#game-board .crop-tile").length === 64);
-        await page.locator("#game-board").scrollIntoViewIfNeeded();
+        
         await waitForBoardAnimations(page);
         tiles = await getBoardState(page);
         chain = findConnectedTriple(tiles);
@@ -384,7 +407,10 @@ async function runViewport(browser, profile, viewport) {
     boardHeight: document.querySelector("#game-board").getBoundingClientRect().height,
     boardTop: document.querySelector("#game-board").getBoundingClientRect().top,
     boardBottom: document.querySelector("#game-board").getBoundingClientRect().bottom,
-    actionsBottom: document.querySelector(".action-row").getBoundingClientRect().bottom
+    actionsBottom: document.querySelector(".action-row").getBoundingClientRect().bottom,
+    boardRatio: document.querySelector("#game-board").getBoundingClientRect().width / document.querySelector("#game-board").getBoundingClientRect().height,
+    actionButtonHeights: Array.from(document.querySelectorAll(".action-row button:not([hidden])")).map(button => button.getBoundingClientRect().height),
+    actionButtonRows: Array.from(new Set(Array.from(document.querySelectorAll(".action-row button:not([hidden])")).map(button => Math.round(button.getBoundingClientRect().top))))
   }));
   if (dimensions.documentWidth > dimensions.viewportWidth + 2) {
     throw new Error(profile + " layout overflows horizontally: " + JSON.stringify(dimensions));
@@ -395,6 +421,8 @@ async function runViewport(browser, profile, viewport) {
       dimensions.actionsBottom > dimensions.viewportHeight + 1) {
     throw new Error(profile + " active gameplay does not fit one viewport without vertical scrolling: " + JSON.stringify(dimensions));
   }
+  if (Math.abs(dimensions.boardRatio - 1) > 0.015) throw new Error(profile + " crop board is not square: " + JSON.stringify(dimensions));
+  if (dimensions.actionButtonRows.length > 1 || dimensions.actionButtonHeights.some(height => height < 40)) throw new Error(profile + " primary controls wrap or are too small: " + JSON.stringify(dimensions));
   if (!(dimensions.boardWidth > 0 && dimensions.boardHeight > 0)) {
     throw new Error(profile + " crop board has no visible dimensions.");
   }
@@ -429,7 +457,7 @@ async function runViewport(browser, profile, viewport) {
   tiles = await getBoardState(page);
   let diagonal = findDiagonalTriple(tiles);
   for (let attempt = 0; !diagonal && attempt < 10; attempt++) {
-    await page.locator("#shuffle-button").click();
+    await useFreshField(page);
     await page.waitForFunction(() => document.querySelectorAll("#game-board .crop-tile").length === 64);
     await waitForBoardAnimations(page);
     tiles = await getBoardState(page);
@@ -498,7 +526,9 @@ async function runViewport(browser, profile, viewport) {
     await startServer();
     browser = await chromium.launch({ headless: true });
     results.push(await runViewport(browser, "mobile", { width: 390, height: 844 }));
-    results.push(await runViewport(browser, "tablet", { width: 1024, height: 768 }));
+    results.push(await runViewport(browser, "tablet-landscape", { width: 1024, height: 768 }));
+    results.push(await runLayoutOnly(browser, "compact-phone", {width:360,height:640}));
+    results.push(await runLayoutOnly(browser, "tablet-portrait", {width:800,height:1280}));
     if (errors.length) throw new Error("Browser console errors detected:\n" + errors.join("\n"));
     fs.writeFileSync(path.join(OUTPUT, "results.json"), JSON.stringify({ passed: true, results, errors }, null, 2));
     process.stdout.write(JSON.stringify({ passed: true, results }, null, 2) + "\n");
