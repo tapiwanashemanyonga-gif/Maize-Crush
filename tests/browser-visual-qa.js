@@ -526,7 +526,7 @@ async function runCompactViewportCheck(browser, name, viewport) {
       layout.objective.top < -1 || layout.objective.bottom > layout.height + 1 ||
       layout.mission.top < -1 || layout.mission.bottom > layout.height + 1 ||
       layout.actions.bottom > layout.height + 1 ||
-      layout.visibleActions.some(button => button.top < -1 || button.bottom > layout.height + 1 || button.height < 36)) {
+      layout.visibleActions.some(button => button.top < -1 || button.bottom > layout.height + 1 || button.height < 40)) {
     throw new Error(name + " compact viewport does not fit the complete active HUD: " + JSON.stringify(layout));
   }
   await page.screenshot({ path: path.join(OUTPUT, name + "-viewport-fit.png"), fullPage: false, animations: "disabled" });
