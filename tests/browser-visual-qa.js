@@ -355,6 +355,24 @@ async function runLongSessionSoak(page, profile) {
   };
 }
 
+
+async function verifyResponsiveFit(browser, profile, viewport) {
+  const context = await browser.newContext({viewport,deviceScaleFactor:1});
+  const page = await context.newPage();
+  await page.addInitScript(() => localStorage.setItem("maize-crush-tutorial-seen","true"));
+  await page.goto(BASE_URL,{waitUntil:"networkidle",timeout:30000});
+  await page.waitForFunction(() => document.querySelectorAll("#game-board .crop-tile").length===64);
+  const layout=await page.evaluate(()=>{
+    const rect=selector=>{const r=document.querySelector(selector).getBoundingClientRect();return {top:r.top,bottom:r.bottom,width:r.width,height:r.height}};
+    const buttons=Array.from(document.querySelectorAll(".action-row button:not([hidden])"));
+    return {viewport:{width:innerWidth,height:innerHeight},document:{width:document.documentElement.scrollWidth,height:document.documentElement.scrollHeight},focusPlay:document.body.classList.contains("focus-play"),board:rect("#game-board"),actions:rect(".action-row"),buttons:buttons.map(b=>{const r=b.getBoundingClientRect();return {top:r.top,bottom:r.bottom,width:r.width,height:r.height}}),tileCount:document.querySelectorAll("#game-board .crop-tile").length};
+  });
+  const failed=!layout.focusPlay||layout.tileCount!==64||layout.document.width>layout.viewport.width+2||layout.document.height>layout.viewport.height+2||layout.board.top<0||layout.board.bottom>layout.viewport.height+1||layout.actions.bottom>layout.viewport.height+1||layout.buttons.some(b=>b.top<0||b.bottom>layout.viewport.height+1||b.width<30||b.height<26);
+  await context.close();
+  if(failed)throw new Error(profile+" viewport-fit failure: "+JSON.stringify(layout));
+  return {profile,...layout};
+}
+
 async function runViewport(browser, profile, viewport) {
   const context = await browser.newContext({
     viewport,
@@ -538,6 +556,8 @@ async function verifyCompactViewport(browser) {
     results.push(await runViewport(browser, "mobile", { width: 390, height: 844 }));
     results.push(await runViewport(browser, "tablet", { width: 1024, height: 768 }));
     results.push({ profile: "compact-phone-viewport-fit", ...(await verifyCompactViewport(browser)) });
+    results.push(await verifyResponsiveFit(browser,"tablet-portrait",{width:800,height:1280}));
+    results.push(await verifyResponsiveFit(browser,"wide-landscape",{width:1280,height:720}));
     if (errors.length) throw new Error("Browser console errors detected:\n" + errors.join("\n"));
     fs.writeFileSync(path.join(OUTPUT, "results.json"), JSON.stringify({ passed: true, results, errors }, null, 2));
     process.stdout.write(JSON.stringify({ passed: true, results }, null, 2) + "\n");
