@@ -196,9 +196,17 @@ Use the approved vibrant fantasy-farming tokens to introduce original world scen
 - Based on the verified Stage 5 merge `5bf5260b107dc5de2ab49e983ee15ab07ff94d40`.
 - Audited the existing first 20 score goals, move budgets and eight rotating objective types. The opening chapter previously began at 500 points and 20 moves, with objective difficulty staying flat across the first seven levels.
 - Raised the first-level score target to 650 and set a smoother opening score progression through level 20 (ending at 6,500). Reduced the opening move budget to 18, then increased it gradually to 28 by level 20.
-- Made objective scaling respond progressively to level number instead of changing only in seven-level blocks. Added regression coverage for the first eight objective targets and move budgets.
+- Kept the established objective scaling rules intact after regression review; added regression coverage for the opening eight objective targets and move budgets.
 - Browser and Android WebView game engines and service workers are updated together; offline cache advanced from v6 to v7.
 - Preserved the 8×8 board, connect-not-swap and diagonal path rules, crop roster, save/checkpoint format, boosters, achievements, endless level support, Android identity and offline operation.
 - Validation pending on this PR: gameplay/security regression suite, browser phone/tablet visual QA, Android debug/APK and release-candidate asset-parity workflows. No physical-device test is claimed.
 
 - CI correction: keep the established objective scaling bands intact; the opening challenge is rebalanced through score goals and move budgets, not by unexpectedly changing unrelated objective progression. Browser soak now reads the current displayed level before checking its restart move budget.
+
+
+## Stage 6 corrective follow-up — validation required
+
+- PR #83 was automatically merged by GitHub as `6762dfa27c5e2fa0442f83c4d508b3604fc8a876` before its failing checks were resolved. Its checks did fail; this is not a verified release.
+- Corrective branch restores the established objective scaling formula while retaining the new opening score goals and move budgets.
+- Browser long-session QA now derives the expected restart move count from the currently displayed level, rather than assuming the player is still on level 1 after earlier gameplay interactions.
+- Browser and Android WebView game engines remain byte-identical. Corrective PR and fresh CI validation are required before Stage 6 can be considered complete.
