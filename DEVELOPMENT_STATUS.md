@@ -200,3 +200,5 @@ Use the approved vibrant fantasy-farming tokens to introduce original world scen
 - Browser and Android WebView game engines and service workers are updated together; offline cache advanced from v6 to v7.
 - Preserved the 8×8 board, connect-not-swap and diagonal path rules, crop roster, save/checkpoint format, boosters, achievements, endless level support, Android identity and offline operation.
 - Validation pending on this PR: gameplay/security regression suite, browser phone/tablet visual QA, Android debug/APK and release-candidate asset-parity workflows. No physical-device test is claimed.
+
+- CI correction: keep the established objective scaling bands intact; the opening challenge is rebalanced through score goals and move budgets, not by unexpectedly changing unrelated objective progression. Browser soak now reads the current displayed level before checking its restart move budget.
