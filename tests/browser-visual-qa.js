@@ -466,10 +466,12 @@ async function runViewport(browser, profile, viewport) {
   // Check that the hint and settings controls remain operable.
   await page.locator("#hint-button").click();
   await page.waitForFunction(() => document.querySelectorAll("#game-board .crop-tile.hinted").length >= 3);
+  await page.locator("#tools-toggle-button").click();
   await page.locator("#settings-button").click();
   await page.locator("#settings-dialog").waitFor({ state: "visible" });
   await page.locator("#settings-close").click();
   await page.locator("#settings-dialog").waitFor({ state: "hidden" });
+  await page.locator("#tools-toggle-button").click();
 
   await page.screenshot({
     path: path.join(OUTPUT, profile + "-after-interactions.png"),
