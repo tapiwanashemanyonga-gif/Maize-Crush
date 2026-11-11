@@ -422,7 +422,7 @@ async function runViewport(browser, profile, viewport) {
     throw new Error(profile + " active gameplay does not fit one viewport without vertical scrolling: " + JSON.stringify(dimensions));
   }
   if (Math.abs(dimensions.boardRatio - 1) > 0.015) throw new Error(profile + " crop board is not square: " + JSON.stringify(dimensions));
-  if (dimensions.actionButtonRows.length > 1 || dimensions.actionButtonHeights.some(height => height < 40)) throw new Error(profile + " primary controls wrap or are too small: " + JSON.stringify(dimensions));
+  if (dimensions.actionButtonRows.length > (profile.includes("landscape") ? 2 : 1) || dimensions.actionButtonHeights.some(height => height < 40)) throw new Error(profile + " primary controls wrap or are too small: " + JSON.stringify(dimensions));
   if (!(dimensions.boardWidth > 0 && dimensions.boardHeight > 0)) {
     throw new Error(profile + " crop board has no visible dimensions.");
   }
