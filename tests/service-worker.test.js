@@ -16,7 +16,7 @@ test("the browser registers one authoritative offline service worker", () => {
 
 test("offline worker uses a new cache version and retires the legacy cache", () => {
   const worker = read("sw.js");
-  assert.match(worker, /CACHE_NAME = "maize-crush-shell-v12"/);
+  assert.match(worker, /CACHE_NAME = "maize-crush-shell-v13"/);
   assert.match(worker, /key === "maize-crush-shell-v10" || key === "maize-crush-shell-v9" || key === "maize-crush-shell-v8" || key === "maize-crush-shell-v7" || key === "maize-crush-shell-v6" || key === "maize-crush-shell-v5" || key === "maize-crush-shell-v4" || key === "maize-crush-shell-v3"/);
   assert.match(worker, /key === "maize-crush-v2"/);
   assert.match(worker, /const cached = await caches\.match\(request\)/);
