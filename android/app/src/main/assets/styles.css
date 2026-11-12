@@ -1028,7 +1028,3 @@ body.focus-play .crop-tile{width:100%;height:100%;min-width:0;min-height:0;aspec
 /* Delivery orders are overlays; they never change the square crop-tile geometry. */
 .crop-tile.delivery-plot{outline:2px solid #f5c75e;outline-offset:-3px;box-shadow:inset 0 0 0 2px #6b4818,0 0 0 1px #f5c75e66}
 .delivery-crate-marker{position:absolute;top:2px;right:3px;z-index:4;display:grid;place-items:center;width:clamp(16px,2.8vw,23px);height:clamp(16px,2.8vw,23px);border:1px solid #fff1b5;border-radius:6px;background:linear-gradient(145deg,#fff0b2,#d68b25);box-shadow:0 2px 5px #0008;font-size:clamp(10px,1.8vw,15px);line-height:1;pointer-events:none}
-
-/* Delivery crates are overlays: the tile grid and tap target remain unchanged. */
-.crop-tile.delivery-plot{outline:2px solid #f5c75e;outline-offset:-3px;box-shadow:inset 0 0 0 2px #6b4818,0 0 0 1px #f5c75e66}
-.delivery-crate-marker{position:absolute;top:2px;right:3px;z-index:4;display:grid;place-items:center;width:clamp(16px,2.8vw,23px);height:clamp(16px,2.8vw,23px);border:1px solid #fff1b5;border-radius:6px;background:linear-gradient(145deg,#fff0b2,#d68b25);box-shadow:0 2px 5px #0008;font-size:clamp(10px,1.8vw,15px);line-height:1;pointer-events:none}
