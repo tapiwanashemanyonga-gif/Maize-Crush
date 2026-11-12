@@ -246,3 +246,13 @@ Use the approved vibrant fantasy-farming tokens to introduce original world scen
 ## Current next milestone
 
 Complete physical Android WebView validation on a modest/older phone and a current phone or tablet, then profile low-memory and long-session performance. Continue checking all eight objective types, endless progression, backup/restore, background/process recovery and rotation. Browser/CI results do not replace physical-device testing. Keep release signing and publication blocked until all release-readiness gates pass and the user supplies credentials and explicit authorization.
+
+
+## Board-to-HUD fit correction — implementation in progress
+
+- Re-audited the current Stage 9 layout after feedback that the screen still felt scroll-dependent. The board's previous portrait sizing was based on a viewport-height subtraction and could be larger than the actual flexible grid row remaining after the HUD and action dock.
+- The board now derives its square size from the available grid track in compact-phone, tablet-portrait and short-landscape layouts. This lets the HUD and touch dock reserve their space first, then fits the 8×8 board into the remainder.
+- Browser QA now explicitly rejects board/action overlap, board overflow beyond its game panel, non-square boards, page scrolling, and clipped primary controls. Added a 320×568 compact-phone profile alongside existing phone/tablet/landscape profiles.
+- Browser and Android CSS/service-worker assets are mirrored; offline shell cache advances from v10 to v11. No game-engine, objective, booster, progression, save-format or connect-not-swap rules are changed.
+- Research reference: established puzzle layouts prioritise a central board with compact goal/move information and put secondary options outside the primary play surface; see Candy Crush's documented gameplay HUD and Toon Blast's goal/booster structure. https://www.cs.cornell.edu/courses/cs5152/2023sp/lectures/lecture4/slides-4.pdf https://peakgames.helpshift.com/hc/en/4-toon-blast/section/95-gameplay/
+- CI and screenshots pending. Browser automation is not physical-device testing.

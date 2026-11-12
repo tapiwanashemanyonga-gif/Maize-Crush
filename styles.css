@@ -998,3 +998,47 @@ body.focus-play .crop-tile{width:100%;height:100%;min-width:0;min-height:0;aspec
   body.focus-play .action-row{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media(prefers-reduced-motion:reduce){body.focus-play .game-board,body.focus-play .crop-tile{transition:none!important}}
+
+
+/* Stage 9.1 — constrain the board by the actual flexible grid track.
+   A viewport-height estimate alone is not enough: the board must fit the
+   space left after the HUD and action dock have taken their measured rows. */
+@media(max-width:650px) and (orientation:portrait){
+  body.focus-play .game-board{
+    grid-row:5;
+    width:min(100%,92vw,calc(100dvh - 360px));
+    height:auto;
+    min-width:0;
+    min-height:0;
+    max-width:100%;
+    max-height:100%;
+    aspect-ratio:1/1;
+    align-self:center;
+    justify-self:center;
+  }
+}
+@media(min-width:700px) and (min-height:650px) and (orientation:portrait){
+  body.focus-play .game-board{
+    grid-row:6;
+    width:min(100%,92vw,calc(100dvh - 360px));
+    height:auto;
+    min-width:0;
+    min-height:0;
+    max-width:100%;
+    max-height:100%;
+    aspect-ratio:1/1;
+    align-self:center;
+    justify-self:center;
+  }
+}
+@media(max-height:520px) and (orientation:landscape){
+  body.focus-play .game-board{
+    width:min(100%,calc(100dvh - 190px));
+    height:auto;
+    max-width:100%;
+    max-height:100%;
+    aspect-ratio:1/1;
+    align-self:center;
+    justify-self:center;
+  }
+}
