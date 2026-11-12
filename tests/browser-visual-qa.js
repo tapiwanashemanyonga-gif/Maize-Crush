@@ -374,15 +374,16 @@ async function verifyResponsiveFit(browser, profile, viewport) {
     const b=document.querySelector("#game-board").getBoundingClientRect(),a=document.querySelector(".action-row");
     const buttons=Array.from(a.querySelectorAll("button:not([hidden])")).map(x=>x.getBoundingClientRect());
     return {viewport:{width:innerWidth,height:innerHeight},document:{width:document.documentElement.scrollWidth,height:document.documentElement.scrollHeight},
-      scrollY,focusPlay:document.body.classList.contains("focus-play"),board:{top:b.top,bottom:b.bottom,width:b.width,height:b.height},
-      actions:{top:a.getBoundingClientRect().top,bottom:a.getBoundingClientRect().bottom},
+      scrollY,focusPlay:document.body.classList.contains("focus-play"),board:{top:b.top,bottom:b.bottom,left:b.left,right:b.right,width:b.width,height:b.height},
+      actions:{top:a.getBoundingClientRect().top,bottom:a.getBoundingClientRect().bottom,left:a.getBoundingClientRect().left,right:a.getBoundingClientRect().right},
+      boardOverlapsActions:b.left<a.getBoundingClientRect().right&&b.right>a.getBoundingClientRect().left&&b.top<a.getBoundingClientRect().bottom&&b.bottom>a.getBoundingClientRect().top,
       actionRows:[...new Set(buttons.map(x=>Math.round(x.top)))],buttonHeights:buttons.map(x=>x.height),tileCount:document.querySelectorAll("#game-board .crop-tile").length};
   });
   const maxRows=profile.includes("landscape")?2:1;
   const failed=!layout.focusPlay||layout.tileCount!==64||layout.document.width>layout.viewport.width+2||
     layout.document.height>layout.viewport.height+2||layout.scrollY!==0||layout.board.top<0||
     layout.board.bottom>layout.viewport.height+1||layout.actions.bottom>layout.viewport.height+1||
-    Math.abs(layout.board.width-layout.board.height)>2||layout.actionRows.length>maxRows||
+    layout.boardOverlapsActions||Math.abs(layout.board.width-layout.board.height)>2||layout.actionRows.length>maxRows||
     layout.buttonHeights.some(h=>h<40);
   await page.screenshot({path:path.join(OUTPUT,profile+"-viewport-fit.png"),fullPage:true,animations:"disabled"});
   await context.close();
@@ -541,12 +542,15 @@ async function verifyCompactViewport(browser) {
   const layout=await page.evaluate(()=>{
     const rect=selector=>{const r=document.querySelector(selector).getBoundingClientRect();return{top:r.top,bottom:r.bottom,width:r.width,height:r.height}};
     const buttons=Array.from(document.querySelectorAll(".action-row button:not([hidden])")).map(x=>x.getBoundingClientRect());
+    const board=rect("#game-board"),actions=rect(".action-row"),panel=rect(".game-panel");
+    const overlaps=board.left<actions.right&&board.right>actions.left&&board.top<actions.bottom&&board.bottom>actions.top;
     return{viewport:{width:innerWidth,height:innerHeight},document:{width:document.documentElement.scrollWidth,height:document.documentElement.scrollHeight},
-      scrollY,focusMode:document.body.classList.contains("focus-play"),board:rect("#game-board"),actions:rect(".action-row"),
+      scrollY,focusMode:document.body.classList.contains("focus-play"),board,actions,panel,boardOverlapsActions:overlaps,
       actionRows:[...new Set(buttons.map(x=>Math.round(x.top)))],buttonHeights:buttons.map(x=>x.height),tileCount:document.querySelectorAll("#game-board .crop-tile").length};
   });
   if(!layout.focusMode||layout.tileCount!==64||layout.document.width>layout.viewport.width+2||layout.document.height>layout.viewport.height+2||
     layout.scrollY!==0||layout.board.top<0||layout.board.bottom>layout.viewport.height+1||
+    layout.board.bottom>layout.panel.bottom+1||layout.boardOverlapsActions||
     Math.abs(layout.board.width-layout.board.height)>2||layout.actions.bottom>layout.viewport.height+1||
     layout.actionRows.length!==1||layout.buttonHeights.some(h=>h<40)){
     throw new Error("compact-phone gameplay is not fully visible without scrolling: "+JSON.stringify(layout));
@@ -565,6 +569,7 @@ async function verifyCompactViewport(browser) {
     results.push(await runViewport(browser, "mobile", { width: 390, height: 844 }));
     results.push(await runViewport(browser, "tablet", { width: 1024, height: 768 }));
     results.push({ profile: "compact-phone-viewport-fit", ...(await verifyCompactViewport(browser)) });
+    results.push(await verifyResponsiveFit(browser,"small-phone",{width:320,height:568}));
     results.push(await verifyResponsiveFit(browser,"tablet-portrait",{width:800,height:1280}));
     results.push(await verifyResponsiveFit(browser,"wide-landscape",{width:1280,height:720}));
     results.push(await verifyResponsiveFit(browser,"short-landscape",{width:844,height:390}));
