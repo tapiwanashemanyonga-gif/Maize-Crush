@@ -398,7 +398,7 @@ async function verifyResponsiveFit(browser, profile, viewport) {
     layout.shell.bottom>layout.viewport.height+1||clipped||layout.overlaps.length>0||
     layout.board.top<0||layout.board.bottom>layout.viewport.height+1||layout.actions.bottom>layout.viewport.height+1||
     Math.abs(layout.board.width-layout.board.height)>2||layout.actionRows.length>maxRows||
-    layout.buttonHeights.some(h=>h<40);
+    layout.buttonHeights.some(h=>h<44);
   await page.screenshot({path:path.join(OUTPUT,profile+"-viewport-fit.png"),fullPage:false,animations:"disabled"});
   await context.close();
   if(failed)throw new Error(profile+" viewport-fit failure: "+JSON.stringify(layout));
@@ -563,7 +563,7 @@ async function verifyCompactViewport(browser) {
   if(!layout.focusMode||layout.tileCount!==64||layout.document.width>layout.viewport.width+2||layout.document.height>layout.viewport.height+2||
     layout.scrollY!==0||layout.board.top<0||layout.board.bottom>layout.viewport.height+1||
     Math.abs(layout.board.width-layout.board.height)>2||layout.actions.bottom>layout.viewport.height+1||
-    layout.actionRows.length!==1||layout.buttonHeights.some(h=>h<40)){
+    layout.actionRows.length!==1||layout.buttonHeights.some(h=>h<44)){
     throw new Error("compact-phone gameplay is not fully visible without scrolling: "+JSON.stringify(layout));
   }
   await page.screenshot({path:path.join(OUTPUT,"compact-phone-viewport-fit.png"),animations:"disabled"});
