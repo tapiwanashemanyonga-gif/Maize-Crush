@@ -246,3 +246,13 @@ Use the approved vibrant fantasy-farming tokens to introduce original world scen
 ## Current next milestone
 
 Complete physical Android WebView validation on a modest/older phone and a current phone or tablet, then profile low-memory and long-session performance. Continue checking all eight objective types, endless progression, backup/restore, background/process recovery and rotation. Browser/CI results do not replace physical-device testing. Keep release signing and publication blocked until all release-readiness gates pass and the user supplies credentials and explicit authorization.
+
+
+## Stage 11 — shorter viewport and browser-chrome fit correction
+
+- Research reviewed: Apple HIG Layout and WWDC24 game-interface guidance recommend anchoring HUD zones instead of scaling the entire interface, preserving comfortable control sizes, respecting safe areas and adapting to the actual available window size. Unity's multi-resolution guidance similarly recommends validating multiple aspect ratios and resolutions.
+- Audit finding: Stage 9 validated a full 800×1280 portrait tablet viewport but did not include shorter 800px-wide portrait windows that occur when browser/system chrome or split-screen reduces the usable height. Its tablet board sizing was based on viewport width and a 360px height allowance, leaving insufficient headroom on shorter windows.
+- Correction: introduce a compact portrait-tablet breakpoint for available heights up to 1199px. It reduces only secondary spacing and board dimensions; primary actions retain at least 44px targets, and the board remains square.
+- QA now adds 800×1100 and 800×1024 tablet windows, checks document and body scroll heights, shell bounds, every visible HUD region (level, stats, objective, mission, board heading, board, feedback and action dock), overlap, clipping, square-board geometry and minimum action-target height. Viewport screenshots are captured at the actual viewport size rather than full-page.
+- Browser and Android WebView styles remain byte-identical; service worker cache advances v10 → v11. No game logic, connect rules, progression, boosters, saves, art identity or offline behavior changes.
+- Validation pending. Browser/CI results are not physical-device testing.

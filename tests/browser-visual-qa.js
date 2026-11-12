@@ -371,20 +371,35 @@ async function verifyResponsiveFit(browser, profile, viewport) {
   await page.goto(BASE_URL,{waitUntil:"networkidle",timeout:30000});
   await page.waitForFunction(() => document.querySelectorAll("#game-board .crop-tile").length===64);
   const layout=await page.evaluate(()=>{
-    const b=document.querySelector("#game-board").getBoundingClientRect(),a=document.querySelector(".action-row");
-    const buttons=Array.from(a.querySelectorAll("button:not([hidden])")).map(x=>x.getBoundingClientRect());
-    return {viewport:{width:innerWidth,height:innerHeight},document:{width:document.documentElement.scrollWidth,height:document.documentElement.scrollHeight},
-      scrollY,focusPlay:document.body.classList.contains("focus-play"),board:{top:b.top,bottom:b.bottom,width:b.width,height:b.height},
-      actions:{top:a.getBoundingClientRect().top,bottom:a.getBoundingClientRect().bottom},
-      actionRows:[...new Set(buttons.map(x=>Math.round(x.top)))],buttonHeights:buttons.map(x=>x.height),tileCount:document.querySelectorAll("#game-board .crop-tile").length};
+    const rect=selector=>{
+      const element=document.querySelector(selector),r=element.getBoundingClientRect(),style=getComputedStyle(element);
+      return {top:r.top,bottom:r.bottom,left:r.left,right:r.right,width:r.width,height:r.height,visible:style.display!=="none"&&r.width>0&&r.height>0};
+    };
+    const board=rect("#game-board"),actions=rect(".action-row");
+    const buttons=Array.from(document.querySelectorAll(".action-row button:not([hidden])")).map(x=>x.getBoundingClientRect());
+    const critical=[".topbar",".game-panel",".level-row",".stats","#objective-card","#mission-card",".board-heading","#game-board",".game-message",".action-row"]
+      .map(selector=>({selector,...rect(selector)})).filter(item=>item.visible);
+    const overlaps=[];
+    const peerRegions=critical.filter(item=>item.selector!==".game-panel");
+    for(let i=0;i<peerRegions.length;i++)for(let j=i+1;j<peerRegions.length;j++){
+      const a=peerRegions[i],b=peerRegions[j];
+      const width=Math.min(a.right,b.right)-Math.max(a.left,b.left);
+      const height=Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top);
+      if(width>2&&height>2)overlaps.push([a.selector,b.selector]);
+    }
+    return {viewport:{width:innerWidth,height:innerHeight},document:{width:document.documentElement.scrollWidth,height:document.documentElement.scrollHeight,bodyHeight:document.body.scrollHeight},
+      shell:rect(".app-shell"),scrollY,focusPlay:document.body.classList.contains("focus-play"),board,actions,
+      critical,overlaps,actionRows:[...new Set(buttons.map(x=>Math.round(x.top)))],buttonHeights:buttons.map(x=>x.height),tileCount:document.querySelectorAll("#game-board .crop-tile").length};
   });
   const maxRows=profile.includes("landscape")?2:1;
+  const clipped=layout.critical.some(item=>item.top < -1 || item.bottom > layout.viewport.height+1 || item.left < -1 || item.right > layout.viewport.width+1);
   const failed=!layout.focusPlay||layout.tileCount!==64||layout.document.width>layout.viewport.width+2||
-    layout.document.height>layout.viewport.height+2||layout.scrollY!==0||layout.board.top<0||
-    layout.board.bottom>layout.viewport.height+1||layout.actions.bottom>layout.viewport.height+1||
+    layout.document.height>layout.viewport.height+2||layout.document.bodyHeight>layout.viewport.height+2||layout.scrollY!==0||
+    layout.shell.bottom>layout.viewport.height+1||clipped||layout.overlaps.length>0||
+    layout.board.top<0||layout.board.bottom>layout.viewport.height+1||layout.actions.bottom>layout.viewport.height+1||
     Math.abs(layout.board.width-layout.board.height)>2||layout.actionRows.length>maxRows||
     layout.buttonHeights.some(h=>h<40);
-  await page.screenshot({path:path.join(OUTPUT,profile+"-viewport-fit.png"),fullPage:true,animations:"disabled"});
+  await page.screenshot({path:path.join(OUTPUT,profile+"-viewport-fit.png"),fullPage:false,animations:"disabled"});
   await context.close();
   if(failed)throw new Error(profile+" viewport-fit failure: "+JSON.stringify(layout));
   return {profile,...layout,fit:true,squareBoard:true};
@@ -566,6 +581,8 @@ async function verifyCompactViewport(browser) {
     results.push(await runViewport(browser, "tablet", { width: 1024, height: 768 }));
     results.push({ profile: "compact-phone-viewport-fit", ...(await verifyCompactViewport(browser)) });
     results.push(await verifyResponsiveFit(browser,"tablet-portrait",{width:800,height:1280}));
+    results.push(await verifyResponsiveFit(browser,"tablet-portrait-browser-chrome",{width:800,height:1100}));
+    results.push(await verifyResponsiveFit(browser,"tablet-portrait-short-window",{width:800,height:1024}));
     results.push(await verifyResponsiveFit(browser,"wide-landscape",{width:1280,height:720}));
     results.push(await verifyResponsiveFit(browser,"short-landscape",{width:844,height:390}));
     if (errors.length) throw new Error("Browser console errors detected:\n" + errors.join("\n"));

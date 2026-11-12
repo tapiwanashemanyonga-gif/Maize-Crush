@@ -998,3 +998,29 @@ body.focus-play .crop-tile{width:100%;height:100%;min-width:0;min-height:0;aspec
   body.focus-play .action-row{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media(prefers-reduced-motion:reduce){body.focus-play .game-board,body.focus-play .crop-tile{transition:none!important}}
+
+
+/* Stage 11 — fit the actual available height, not only the nominal tablet size.
+   Browser chrome, split-screen windows and short portrait viewports reduce the
+   height available to the board even when the device is physically a tablet. */
+@media(min-width:700px) and (min-height:650px) and (orientation:portrait) and (max-height:1199px){
+  body.focus-play .game-panel{
+    gap:clamp(3px,.55dvh,6px);
+    padding:clamp(6px,.9dvh,10px) 12px;
+  }
+  body.focus-play .level-row{min-height:32px}
+  body.focus-play .stats{gap:6px}
+  body.focus-play .stat{padding:6px 9px}
+  body.focus-play .objective-card{padding:7px 10px;gap:4px 8px}
+  body.focus-play .mission-card{padding:6px 10px;gap:3px 8px}
+  body.focus-play .board-heading{min-height:16px}
+  body.focus-play .game-board{
+    width:min(100%,92vw,calc(100dvh - 500px));
+    height:auto;max-height:100%;aspect-ratio:1/1;
+    padding:clamp(5px,.8vw,9px);gap:clamp(3px,.6vw,6px);
+  }
+  body.focus-play .crop-tile{font-size:clamp(22px,4vw,40px)}
+  body.focus-play .game-message{min-height:32px;padding:6px 8px}
+  body.focus-play .action-row{gap:6px}
+  body.focus-play .action-row button{min-height:44px;padding:6px 4px;font-size:10px}
+}
