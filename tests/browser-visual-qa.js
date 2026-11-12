@@ -380,8 +380,9 @@ async function verifyResponsiveFit(browser, profile, viewport) {
     const critical=[".topbar",".game-panel",".level-row",".stats","#objective-card","#mission-card",".board-heading","#game-board",".game-message",".action-row"]
       .map(selector=>({selector,...rect(selector)})).filter(item=>item.visible);
     const overlaps=[];
-    for(let i=0;i<critical.length;i++)for(let j=i+1;j<critical.length;j++){
-      const a=critical[i],b=critical[j];
+    const peerRegions=critical.filter(item=>item.selector!==".game-panel");
+    for(let i=0;i<peerRegions.length;i++)for(let j=i+1;j<peerRegions.length;j++){
+      const a=peerRegions[i],b=peerRegions[j];
       const width=Math.min(a.right,b.right)-Math.max(a.left,b.left);
       const height=Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top);
       if(width>2&&height>2)overlaps.push([a.selector,b.selector]);
