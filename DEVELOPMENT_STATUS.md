@@ -1,10 +1,10 @@
 # Maize Crush development status
 
-Last reviewed: 2026-11-11
+Last reviewed: 2026-11-12
 
 ## Current verified baseline
 
-- Default branch: `main`; latest verified merge is `5b02a8c38d33b6f1bfff89d0b4f0d9a7b3510578` (portrait-tablet board-first gameplay HUD). This is the current browser and Android WebView baseline.
+- Default branch: `main`; latest verified code merge is `1c9fcce3140068fa6c777f073adaae792f1b62e1` (Android release metadata and launcher regression guards). Latest gameplay/layout baseline remains the portrait-tablet board-first HUD from `5b02a8c38d33b6f1bfff89d0b4f0d9a7b3510578`.
 - Android identity: `com.maizecrush.zimbabweharvest`, version `1.0.0` (`versionCode 1`), min SDK 24, target SDK 36.
 - Gameplay is an original 8×8 connect-path puzzle: drag through 3+ matching adjacent crops; diagonal connections count; tiles are never swapped.
 - Six Zimbabwe-harvest illustrations are bundled: maize, tomato, groundnut, banana, orange and sweet potato. The game includes eight objective types, endless level scaling, local progress, boosters, accessibility options and responsive phone/tablet layouts.
@@ -232,9 +232,17 @@ Use the approved vibrant fantasy-farming tokens to introduce original world scen
 - Verified on the latest main commit `5b02a8c38d33b6f1bfff89d0b4f0d9a7b3510578`: gameplay checks (112/112), Android debug APK, unsigned release APK/AAB candidate, browser visual QA and GitHub Pages deployment all passed (runs `42980311176`, `42980311520`, `42980311256`, `42980311210`, `42980310796`). The release workflow confirmed package `com.maizecrush.zimbabweharvest`, version `1.0.0` / code 1, min SDK 24, target SDK 36 and label `Maize Crush`. The temporary CI key smoke test verified APK/AAB signing; it is not the user's release key. Browser QA is not a physical-device test, and the optional emulator diagnostic was skipped.
 
 
-## Stage 10 — Android release metadata and launcher asset regression guards (in progress)
+## Stage 10 — Android release metadata and launcher asset regression guards (verified and merged)
 
-- Base commit: `5b02a8c38d33b6f1bfff89d0b4f0d9a7b3510578` on `main`.
+- PR [#95](https://github.com/tapiwanashemanyonga-gif/Maize-Crush/pull/95) was squash-merged to `main` on 2026-11-12 as `1c9fcce3140068fa6c777f073adaae792f1b62e1`; PR head: `40990818c838b7010569bdfa6365ce9023f59aee`.
 - Added `tests/android-release-metadata.test.js` to protect namespace/application ID, positive version code and semantic version name, min/target/compile SDK levels, release-checklist consistency, release workflow metadata assertions, adaptive and legacy launcher icon references, and the current offline-only permission surface.
-- This is a test-only increment: no gameplay behavior, Android identity, manifest permission, art, saved data, signing credentials or release outputs are changed.
-- CI validation is pending on the pull request. Merge only after gameplay, browser QA, Android debug and unsigned release-candidate workflows pass on the same head SHA.
+- The increment is test-only: no gameplay behavior, Android identity, manifest permissions, art, saved data, signing credentials or release outputs were changed.
+- Exact PR-head validation passed: **115/115 tests** (run `43034463824`), Android APK (run `43034463720`), unsigned release candidate (run `43034463632`), and browser visual QA (run `43034464032`). The first browser attempt failed while Ubuntu apt mirrors temporarily failed DNS resolution; only the failed browser job was rerun, and the retry passed. Optional emulator diagnostics were skipped.
+- All five post-merge workflows passed on exact main commit `1c9fcce3140068fa6c777f073adaae792f1b62e1`: gameplay/security checks **115/115** (run `43226069827`), Android debug APK (run `43226070085`), unsigned release candidate (run `43226070058`), browser visual QA (run `43226070219`), and GitHub Pages deployment (run `43226069808`).
+- Verified post-merge artifacts: Android debug APK (73,797 bytes; [workflow](https://github.com/tapiwanashemanyonga-gif/Maize-Crush/actions/runs/43226070085)), unsigned release APK/AAB candidate bundle (121,070 bytes; [workflow](https://github.com/tapiwanashemanyonga-gif/Maize-Crush/actions/runs/43226070058)), and browser QA screenshots/results (3,378,619 bytes; [workflow](https://github.com/tapiwanashemanyonga-gif/Maize-Crush/actions/runs/43226070219)).
+- Browser results on 390×844 mobile and 1024×768 tablet confirmed mismatched drags are rejected without swapping or spending a move, diagonal three-crop connections work and score 30 points, and 20 harvests complete per profile. The responsive viewport checks reported zero page scroll. This is Chromium/shared-asset evidence, not physical Android hardware testing.
+- The release workflow built the APK/AAB and verified them with a temporary CI smoke-test key. That key is disposable and is not the user's production signing identity; release outputs remain unsigned for the user.
+
+## Current next milestone
+
+Complete physical Android WebView validation on a modest/older phone and a current phone or tablet, then profile low-memory and long-session performance. Continue checking all eight objective types, endless progression, backup/restore, background/process recovery and rotation. Browser/CI results do not replace physical-device testing. Keep release signing and publication blocked until all release-readiness gates pass and the user supplies credentials and explicit authorization.
