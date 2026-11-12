@@ -97,3 +97,8 @@ The first 20 levels now build difficulty more deliberately: score goals rise fro
 - The visual treatment uses a bright Zimbabwean countryside backdrop, a warm harvest-card panel, a forest-green field frame and distinct crop tiles. The objective and move count remain visible while playing.
 - The layout follows Apple game-interface guidance on anchored zones, safe areas, readable controls and aspect-ratio adaptation; Android adaptive-layout guidance on reflow and pane-based composition; and Roblox adaptive-design guidance on responsive rearrangement and collapsible secondary controls.
 - Chromium checks cover 360×640 and 390×844 phones, 800×1280 tablet portrait, 1024×768 tablet landscape and 1280×720 wide landscape. Automated browser checks are not physical-device tests.
+
+
+### Board sizing correction
+
+The square crop board now takes its size from the actual flexible grid row left after the HUD and action dock are laid out, rather than relying only on a fixed viewport-height subtraction. This prevents the board from pushing into the bottom controls on short portrait screens. Browser QA checks for board/action overlap as well as page scrolling, clipping and square-board geometry.
