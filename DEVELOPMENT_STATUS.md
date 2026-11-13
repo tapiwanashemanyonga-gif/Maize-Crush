@@ -1,14 +1,16 @@
 # Maize Crush development status
 
-Last reviewed: 2026-11-12
+Last reviewed: 2026-11-13
 
 ## Current verified baseline
 
-- Default branch: `main`; latest verified code merge is `1c9fcce3140068fa6c777f073adaae792f1b62e1` (Android release metadata and launcher regression guards). Latest gameplay/layout baseline remains the portrait-tablet board-first HUD from `5b02a8c38d33b6f1bfff89d0b4f0d9a7b3510578`.
+- Default branch: main; latest verified code merge is 732344c1345d128b9023be0c3c76bdb5dfeca16c via PR #105 (keyboard connect-path fix). The current layout baseline includes viewport-fitted phone/tablet play, short-window checks and 44px primary touch targets.
 - Android identity: `com.maizecrush.zimbabweharvest`, version `1.0.0` (`versionCode 1`), min SDK 24, target SDK 36.
-- Gameplay is an original 8×8 connect-path puzzle: drag through 3+ matching adjacent crops; diagonal connections count; tiles are never swapped.
-- Six Zimbabwe-harvest illustrations are bundled: maize, tomato, groundnut, banana, orange and sweet potato. The game includes eight objective types, endless level scaling, local progress, boosters, accessibility options and responsive phone/tablet layouts.
+- Gameplay is an original 8×8 connect-path puzzle: drag or use arrow keys + Enter to connect 3+ matching adjacent crops; diagonal connections count; tiles are never swapped.
+- Six Zimbabwe-harvest illustrations are bundled: maize, tomato, groundnut, banana, orange and sweet potato. The game includes eight base objective families, mixed multi-goal combinations, marked delivery plots with ordered routes, endless level scaling, local progress, boosters, accessibility options and responsive phone/tablet layouts.
 - No ads, analytics or internet permission are included. Game assets are bundled for offline play.
+
+> Historical note: the Stage 6–11 entries below preserve earlier development snapshots. Where their old headings say “in progress” or “pending”, use the current verified baseline, recent mainline increments and remaining release gates in this file as the source of truth.
 
 ## Crop artwork and Android device layout — verified
 
@@ -243,9 +245,17 @@ Use the approved vibrant fantasy-farming tokens to introduce original world scen
 - Browser results on 390×844 mobile and 1024×768 tablet confirmed mismatched drags are rejected without swapping or spending a move, diagonal three-crop connections work and score 30 points, and 20 harvests complete per profile. The responsive viewport checks reported zero page scroll. This is Chromium/shared-asset evidence, not physical Android hardware testing.
 - The release workflow built the APK/AAB and verified them with a temporary CI smoke-test key. That key is disposable and is not the user's production signing identity; release outputs remain unsigned for the user.
 
+## Recent mainline gameplay increments — verified
+
+- PR [#101](https://github.com/tapiwanashemanyonga-gif/Maize-Crush/pull/101) raised primary gameplay touch-target checks to 44px; merge commit 5a7140d0614880ac80ed61823063fbb8b88dc077.
+- PR [#102](https://github.com/tapiwanashemanyonga-gif/Maize-Crush/pull/102) introduced mixed multi-goal harvest objectives; merge commit c201919af5ab5d7ee56b232b9b58bf1248a34842.
+- PR [#103](https://github.com/tapiwanashemanyonga-gif/Maize-Crush/pull/103) added marked delivery plots as level tasks; merge commit 8cbf8d5831e12b3b8578352c7a944d81422528fa.
+- PR [#104](https://github.com/tapiwanashemanyonga-gif/Maize-Crush/pull/104) added ordered harvest-delivery routes; out-of-order stops are rejected and route state is normalized on restore. Merge commit 641f5b40aff2e8a08f5b7dd42a6af2e301ddbfe6.
+- Mainline validation on 641f5b40aff2e8a08f5b7dd42a6af2e301ddbfe6 passed 124/124 tests, Android APK, unsigned release candidate, browser visual QA and Pages deployment (runs 43287518137, 43287518198, 43287518251, 43287518104, 43287517268).
+
 ## Current next milestone
 
-Complete physical Android WebView validation on a modest/older phone and a current phone or tablet, then profile low-memory and long-session performance. Continue checking all eight objective types, endless progression, backup/restore, background/process recovery and rotation. Browser/CI results do not replace physical-device testing. Keep release signing and publication blocked until all release-readiness gates pass and the user supplies credentials and explicit authorization.
+Complete physical Android WebView validation on a modest/older phone and a current phone or tablet, then profile low-memory and long-session performance. Continue checking all eight base objective families, mixed multi-goal combinations and ordered delivery routes, endless progression, backup/restore, background/process recovery, rotation, TalkBack and hardware-keyboard behavior where available. Browser/CI results do not replace physical-device testing. Keep release signing and publication blocked until all release-readiness gates pass and the user supplies credentials and explicit authorization.
 
 
 ## Stage 11 — shorter viewport and browser-chrome fit correction
@@ -255,4 +265,16 @@ Complete physical Android WebView validation on a modest/older phone and a curre
 - Correction: introduce a compact portrait-tablet breakpoint for available heights up to 1199px. It reduces only secondary spacing and board dimensions; primary actions retain at least 44px targets, and the board remains square.
 - QA now adds 800×1100 and 800×1024 tablet windows, checks document and body scroll heights, shell bounds, every visible HUD region (level, stats, objective, mission, board heading, board, feedback and action dock), overlap, clipping, square-board geometry and minimum action-target height. Viewport screenshots are captured at the actual viewport size rather than full-page.
 - Browser and Android WebView styles remain byte-identical; service worker cache advances v10 → v11. No game logic, connect rules, progression, boosters, saves, art identity or offline behavior changes.
-- Validation pending. Browser/CI results are not physical-device testing.
+- Verification carried into mainline: browser QA checks 800×1100 and 800×1024 short portrait windows, full HUD bounds, overlap, square-board geometry and 44px actions. The current mainline browser QA run 43432187316 passed. This remains Chromium evidence, not physical Android hardware testing.
+
+## Stage 16 — keyboard connect-path accessibility (verified and merged)
+
+- Audit found that the help text advertised arrow-key navigation and Enter-to-connect, but the second keyboard-generated activation was rejected: the click handler treated the in-progress keyboard path as an active pointer drag.
+- Corrected the click guard to block clicks while a real pointer is captured (activePointerId), while allowing keyboard-generated button clicks to extend the same connect path. Browser and Android WebView game.js remain byte-for-byte identical.
+- Advanced the offline shell cache from v15 to v16 and mirrored the service worker into Android assets so existing offline installs refresh the keyboard fix.
+- Browser QA now exercises both compact mobile (390×844) and tablet (1024×768): arrow keys + Enter must reject a mismatched crop without swapping tiles or spending a move, then complete a valid diagonal three-crop path, increase the score by 30 and spend exactly one move. Each profile also completed the existing 20-harvest long-session soak.
+- PR #105 passed 126/126 tests on head 33e03396d964485e76e80f47b5358fc2cbdd0186 (run 43431877822), plus Android APK (run 43431877728), unsigned release candidate (run 43431877725) and browser visual QA/debug APK (run 43431877778).
+- PR #105 was squash-merged to main as 732344c1345d128b9023be0c3c76bdb5dfeca16c. All five post-merge workflows passed on that exact commit: gameplay tests 126/126 (43432186967), Android APK (43432186959), unsigned release candidate (43432186891), browser visual QA/debug build (43432187316) and Pages deployment (43432186102).
+- Verified mainline artifacts: Android debug APK, 76,260 bytes (workflow 43432186959); unsigned APK/AAB release candidate bundle, 125,008 bytes (workflow 43432186891); browser screenshots/results, 4,380,272 bytes (workflow 43432187316). These artifacts are build/QA evidence, not a signed public release.
+- The optional emulator diagnostic was skipped. Browser keyboard checks do not replace testing with an external keyboard, TalkBack or touch gestures on physical Android devices. No production signing credentials were added, and no signing or publishing was performed.
+- Next milestone: physical-device validation of the full objective/progression set and modest-device performance before considering release signing.
