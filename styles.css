@@ -1112,3 +1112,9 @@ body.focus-play .crop-tile{width:100%;height:100%;min-width:0;min-height:0;aspec
 @keyframes trail-current-pulse{from{filter:brightness(1)}to{filter:brightness(1.12)}}
 @media(max-width:600px){#level-map .map-intro-strip{gap:8px;padding:10px;border-radius:14px}#level-map .map-world-emblem{width:38px;height:38px;font-size:22px}#level-map .map-intro-strip strong{font-size:9px}#level-map .map-intro-strip small{font-size:9px}#level-map .map-country-mark{font-size:8px}#level-map .map-world-levels{min-height:170px;gap:12px 18px;padding:8px}#level-map .map-world-levels .map-level{min-height:68px;border-radius:18px}#level-map .map-world-levels .map-level .map-level-objective{font-size:21px}#level-map .map-play-current{min-height:50px;font-size:14px}}
 @media(prefers-reduced-motion:reduce){#level-map .map-world-levels .map-level.current-level{animation:none}}
+
+
+/* Keep the primary map action anchored and tappable on short phone screens. */
+#level-map.level-map{padding-bottom:calc(100px + env(safe-area-inset-bottom))}
+#level-map .map-play-current{position:fixed;left:50%;bottom:max(12px,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(900px,calc(100vw - 28px));margin:0;z-index:1001}
+#level-map .map-play-current:active{transform:translate(-50%,3px)}
