@@ -42,7 +42,14 @@ function startServer() {
 
 // Treat the journey map as the launch surface; wait for its generated chapter and path nodes.
 async function enterGameFromJourney(page, verify = false) {
-  let journeyOpen = await page.waitForFunction(() => { const map=document.querySelector("#level-map"); return !!map && map.open && map.querySelectorAll(".map-world-group").length > 0; }, null, {timeout:8000}).then(() => true).catch(() => false);
+  let journeyOpen = await page.waitForFunction(() => { const map=document.querySelector("#level-map"); return !!map && map.open && map.querySelectorAll(".map-world-group").length > 0; }, null, {timeout:15000}).then(() => true).catch(() => false);
+  if (!journeyOpen) {
+    const initial = await page.evaluate(() => ({open:!!document.querySelector("#level-map")?.open,chapters:document.querySelectorAll("#level-map .map-world-group").length}));
+    if (initial.open) {
+      await page.waitForFunction(() => document.querySelectorAll("#level-map .map-world-group").length > 0, null, {timeout:15000});
+      journeyOpen = true;
+    }
+  }
   if (!journeyOpen && !verify) {
     const tutorial = await page.locator("#tutorial-dialog").evaluate(dialog => !!dialog && dialog.open).catch(() => false);
     if (tutorial) await page.locator("#tutorial-start").click();
