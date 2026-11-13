@@ -39,6 +39,43 @@ function startServer() {
   })();
 }
 
+
+// Treat the journey map as the launch surface; wait for its generated chapter and path nodes.
+async function enterGameFromJourney(page, verify = false) {
+  let journeyOpen = await page.waitForFunction(() => { const map=document.querySelector("#level-map"); return !!map && map.open && map.querySelectorAll(".map-world-group").length > 0; }, null, {timeout:8000}).then(() => true).catch(() => false);
+  if (!journeyOpen && !verify) {
+    const tutorial = await page.locator("#tutorial-dialog").evaluate(dialog => !!dialog && dialog.open).catch(() => false);
+    if (tutorial) await page.locator("#tutorial-start").click();
+    else await page.locator("#level-map-button").click();
+    await page.evaluate(() => {
+      const tutorialDialog=document.querySelector("#tutorial-dialog");
+      if(tutorialDialog?.open)tutorialDialog.close();
+      const map=document.querySelector("#level-map");
+      if(map && !map.open && typeof map.showModal==="function")map.showModal();
+    });
+    await page.waitForFunction(() => { const map=document.querySelector("#level-map"); return !!map && map.open && map.querySelectorAll(".map-world-group").length > 0; }, null, {timeout:8000});
+    journeyOpen = true;
+  }
+  if (!journeyOpen) {
+    const state = await page.evaluate(() => ({mapExists:!!document.querySelector("#level-map"),mapOpen:!!document.querySelector("#level-map")?.open,tutorialOpen:!!document.querySelector("#tutorial-dialog")?.open,tutorialSeen:localStorage.getItem("maize-crush-tutorial-seen"),mapButton:!!document.querySelector("#level-map-button")}));
+    throw new Error("Harvest Trail did not open automatically: " + JSON.stringify(state));
+  }
+  if (verify) {
+    const journey = await page.evaluate(() => ({
+      title: document.querySelector("#level-map h2")?.textContent?.trim(),
+      chapters: document.querySelectorAll("#level-map .map-world-group").length,
+      markers: document.querySelectorAll("#level-map .map-level").length,
+      road: !!document.querySelector("#level-map .map-route"),
+      play: document.querySelector("#map-play-current")?.textContent?.trim()
+    }));
+    if (journey.title !== "Harvest Trail" || journey.chapters < 1 || journey.markers !== 4 || !journey.road || !/^▶ Play Level 1$/.test(journey.play || "")) {
+      throw new Error("Harvest Trail launch screen is incomplete: " + JSON.stringify(journey));
+    }
+  }
+  await page.locator("#map-play-current").click();
+  await page.waitForFunction(() => { const map=document.querySelector("#level-map"); return !!map && !map.open; }, null, {timeout:3000});
+}
+
 async function getBoardState(page) {
   return page.locator("#game-board .crop-tile").evaluateAll(tiles =>
     tiles.map(tile => ({
@@ -478,6 +515,7 @@ async function verifyResponsiveFit(browser, profile, viewport) {
   const page = await context.newPage();
   await page.addInitScript(() => localStorage.setItem("maize-crush-tutorial-seen","true"));
   await page.goto(BASE_URL,{waitUntil:"networkidle",timeout:30000});
+  await enterGameFromJourney(page, true);
   await page.waitForFunction(() => document.querySelectorAll("#game-board .crop-tile").length===64);
   const layout=await page.evaluate(()=>{
     const rect=selector=>{
@@ -531,6 +569,7 @@ async function runViewport(browser, profile, viewport) {
     localStorage.setItem("maize-crush-tutorial-seen", "true");
   });
   await page.goto(BASE_URL, { waitUntil: "networkidle", timeout: 30000 });
+  await enterGameFromJourney(page);
   await page.locator("#game-board .crop-tile").first().waitFor({ state: "visible", timeout: 15000 });
   await page.waitForFunction(() => document.querySelectorAll("#game-board .crop-tile").length === 64);
 
@@ -663,6 +702,7 @@ async function verifyCompactViewport(browser) {
   const page=await context.newPage();
   await page.addInitScript(()=>localStorage.setItem("maize-crush-tutorial-seen","true"));
   await page.goto(BASE_URL,{waitUntil:"networkidle",timeout:30000});
+  await enterGameFromJourney(page, false);
   await page.locator("#game-board .crop-tile").first().waitFor({state:"visible",timeout:15000});
   const layout=await page.evaluate(()=>{
     const rect=selector=>{const r=document.querySelector(selector).getBoundingClientRect();return{top:r.top,bottom:r.bottom,width:r.width,height:r.height}};
