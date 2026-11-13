@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-label="Illustrated Zimbabwean countryside with green hills, maize fields, a winding road, river and farm village">
+<defs>
+ <linearGradient id="sky" x2="0" y2="1"><stop stop-color="#65c4ec"/><stop offset=".62" stop-color="#c4e9df"/><stop offset="1" stop-color="#f3e8b5"/></linearGradient>
+ <linearGradient id="sun" x2="0" y2="1"><stop stop-color="#fff5b0"/><stop offset="1" stop-color="#ffc85a"/></linearGradient>
+ <linearGradient id="mountain" x2="0" y2="1"><stop stop-color="#8db8a0"/><stop offset="1" stop-color="#5f9472"/></linearGradient>
+ <linearGradient id="hill" x2="0" y2="1"><stop stop-color="#80c66e"/><stop offset="1" stop-color="#367e4c"/></linearGradient>
+ <linearGradient id="field" x2="0" y2="1"><stop stop-color="#e9c45f"/><stop offset="1" stop-color="#9c9d43"/></linearGradient>
+ <linearGradient id="road" x2="0" y2="1"><stop stop-color="#c98c51"/><stop offset="1" stop-color="#8a5b39"/></linearGradient>
+ <linearGradient id="river" x2="0" y2="1"><stop stop-color="#8be0e6"/><stop offset="1" stop-color="#299bb4"/></linearGradient>
+ <g id="cloud" fill="#fffdf0"><ellipse cx="0" cy="0" rx="72" ry="24"/><circle cx="-32" cy="-14" r="27"/><circle cx="5" cy="-26" r="35"/><circle cx="39" cy="-12" r="27"/></g>
+ <g id="tree"><path d="M0 0v-65" stroke="#765239" stroke-width="13" stroke-linecap="round"/><circle cy="-83" r="39" fill="#32784b"/><circle cx="-25" cy="-69" r="26" fill="#4d9b54"/><circle cx="25" cy="-66" r="27" fill="#6db85b"/><circle cx="-7" cy="-103" r="22" fill="#80c866"/></g>
+ <g id="maize"><path d="M0 0Q-13 -38 -5 -82Q15 -46 8 0" fill="#2f8247"/><path d="M3 0Q-4 -42 12 -92Q28 -48 13 0" fill="#62a94c"/><path d="M-3 -15Q-28 -53 -45 -48Q-28 -16 -3 -15" fill="#4b9a4a"/><path d="M8 -26Q31 -63 47 -57Q34 -28 8 -26" fill="#78b94e"/><path d="M0 -82Q-9 -65 -1 -38Q11 -25 17 -43Q21 -70 8 -84Z" fill="#f2c94e" stroke="#b47d2d" stroke-width="2"/></g>
+</defs>
+<rect width="1600" height="900" fill="url(#sky)"/>
+<circle cx="1290" cy="145" r="76" fill="url(#sun)"/><circle cx="1290" cy="145" r="105" fill="#fff0a1" opacity=".2"/>
+<g opacity=".9"><use href="#cloud" x="250" y="150"/><use href="#cloud" x="760" y="110" transform="scale(.8) translate(190 26)"/></g>
+<path d="M0 455L175 290 305 405 490 235 665 410 840 280 1015 420 1190 265 1380 410 1510 315 1600 390V650H0Z" fill="url(#mountain)" opacity=".82"/>
+<path d="M0 510Q170 380 360 465T730 455T1090 450T1600 430V900H0Z" fill="#8dc477"/>
+<path d="M0 570Q230 420 465 525T900 500T1280 500T1600 475V900H0Z" fill="url(#hill)"/>
+<path d="M0 690Q260 500 500 635T980 610T1400 585T1600 610V900H0Z" fill="#5caa50"/>
+<!-- patchwork fields -->
+<path d="M0 625Q220 560 440 640L610 900H0Z" fill="url(#field)"/>
+<path d="M0 700Q190 635 380 690L500 900H0Z" fill="#d7b34e"/>
+<path d="M1050 610Q1320 530 1600 600V900H1160Z" fill="#d7b552"/>
+<path d="M1150 650Q1370 585 1600 640V900H1260Z" fill="#b6a34a"/>
+<g fill="none" stroke="#f6df91" stroke-width="5" opacity=".65"><path d="M35 650Q230 605 465 685"/><path d="M20 700Q220 660 490 735"/><path d="M10 760Q240 710 520 800"/><path d="M1180 650Q1380 595 1590 650"/><path d="M1220 710Q1410 655 1600 710"/><path d="M1280 775Q1450 725 1600 775"/></g>
+<!-- river and winding farm road -->
+<path d="M690 900Q770 780 690 700T800 555Q930 470 830 410" fill="none" stroke="#e8f1ce" stroke-width="70" opacity=".7"/>
+<path d="M690 900Q770 780 690 700T800 555Q930 470 830 410" fill="none" stroke="url(#river)" stroke-width="52"/>
+<path d="M920 900Q860 790 1000 710T1110 570Q1120 505 1040 470" fill="none" stroke="#ead6a4" stroke-width="58"/>
+<path d="M920 900Q860 790 1000 710T1110 570Q1120 505 1040 470" fill="none" stroke="url(#road)" stroke-width="44"/>
+<path d="M920 900Q860 790 1000 710T1110 570Q1120 505 1040 470" fill="none" stroke="#f3d5a2" stroke-width="3" stroke-dasharray="15 20" opacity=".9"/>
+<!-- village huts -->
+<g transform="translate(1040 505)"><path d="M-55 0L0 -48 57 0V50H-55Z" fill="#d5a75c" stroke="#805a39" stroke-width="5"/><path d="M-67 1L0 -65 68 1Z" fill="#8b5635" stroke="#69432f" stroke-width="5"/><rect x="-12" y="17" width="25" height="33" rx="10" fill="#63462f"/><rect x="-42" y="12" width="18" height="18" fill="#9bd5d4"/></g>
+<g transform="translate(1170 565) scale(.72)"><path d="M-55 0L0 -48 57 0V50H-55Z" fill="#d5a75c" stroke="#805a39" stroke-width="5"/><path d="M-67 1L0 -65 68 1Z" fill="#8b5635" stroke="#69432f" stroke-width="5"/><rect x="-12" y="17" width="25" height="33" rx="10" fill="#63462f"/></g>
+<!-- trees and foreground maize -->
+<use href="#tree" transform="translate(180 650) scale(1.25)"/><use href="#tree" transform="translate(450 565) scale(.85)"/><use href="#tree" transform="translate(1450 600) scale(1.35)"/><use href="#tree" transform="translate(1320 520) scale(.8)"/>
+<g opacity=".96"><use href="#maize" transform="translate(90 900) scale(1.45)"/><use href="#maize" transform="translate(250 900) scale(1.2)"/><use href="#maize" transform="translate(390 900) scale(1.55)"/><use href="#maize" transform="translate(1320 900) scale(1.45)"/><use href="#maize" transform="translate(1480 900) scale(1.2)"/></g>
+<path d="M0 855Q280 810 540 860T1080 850T1600 835V900H0Z" fill="#397a42" opacity=".48"/>
+</svg>

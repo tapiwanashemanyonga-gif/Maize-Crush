@@ -16,7 +16,7 @@ test("the browser registers one authoritative offline service worker", () => {
 
 test("offline worker uses a new cache version and retires the legacy cache", () => {
   const worker = read("sw.js");
-  assert.match(worker, /CACHE_NAME = "maize-crush-shell-v18"/);
+  assert.match(worker, /CACHE_NAME = "maize-crush-shell-v19"/);
   assert.match(worker, /key.startsWith\("maize-crush-shell-"\) && key !== CACHE_NAME/);
   assert.match(worker, /key === "maize-crush-shell-v16"/);
   assert.match(worker, /key === "maize-crush-v2"/);
@@ -39,6 +39,8 @@ test("original Zimbabwe harvest crop artwork contains all six accessible sprite 
     assert.ok(html.includes('<symbol id="crop-' + crop + '"'), "inline browser sprite missing: " + crop);
   }
   assert.ok(read("sw.js").includes('"./crop-art.svg"'));
+  assert.ok(read("sw.js").includes('"./assets/harvest-world.svg"'));
+  assert.match(read("assets/harvest-world.svg"), /Zimbabwean countryside/);
 });
 
 test("browser and Android WebView gameplay and worker assets are byte-identical", () => {
@@ -50,6 +52,7 @@ test("browser and Android WebView gameplay and worker assets are byte-identical"
     ["manifest.webmanifest", "android/app/src/main/assets/manifest.webmanifest"],
     ["icon.svg", "android/app/src/main/assets/icon.svg"],
     ["crop-art.svg", "android/app/src/main/assets/crop-art.svg"],
+    ["assets/harvest-world.svg", "android/app/src/main/assets/assets/harvest-world.svg"],
     ["privacy-policy.html", "android/app/src/main/assets/privacy-policy.html"]
   ]) {
     assert.equal(read(browser), read(android), browser + " must match " + android);

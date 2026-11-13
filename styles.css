@@ -1118,3 +1118,215 @@ body.focus-play .crop-tile{width:100%;height:100%;min-width:0;min-height:0;aspec
 #level-map.level-map{padding-bottom:max(18px,env(safe-area-inset-bottom))}
 #level-map .map-play-current{position:relative;left:auto;bottom:auto;transform:none;width:min(100%,900px);margin:12px auto 14px;z-index:5;pointer-events:auto}
 #level-map .map-play-current:active{transform:translateY(3px)}
+
+
+/* Redesign phase 1 — make the world feel like a place, and gameplay feel effortless. */
+body.focus-play{
+  background:
+    radial-gradient(ellipse 22% 18% at 82% 8%,#fff5bd88 0 38%,transparent 72%),
+    radial-gradient(ellipse 85% 42% at 12% 100%,#367f48 0 48%,transparent 49%),
+    radial-gradient(ellipse 82% 38% at 94% 102%,#4e9b4c 0 47%,transparent 48%),
+    linear-gradient(180deg,#70c9ec 0%,#b8e6ce 42%,#78b75d 100%);
+}
+body.focus-play:before{
+  opacity:.34;
+  background:
+    radial-gradient(ellipse 17% 6% at 18% 22%,#fff 0 45%,transparent 48%),
+    radial-gradient(ellipse 13% 5% at 25% 20%,#fff 0 45%,transparent 48%),
+    radial-gradient(ellipse 18% 7% at 76% 29%,#fff 0 45%,transparent 48%),
+    repeating-linear-gradient(165deg,transparent 0 55px,#fff5 56px 57px,transparent 58px 112px);
+}
+body.focus-play .topbar{
+  background:linear-gradient(105deg,#174a32f5,#286c43f2);
+  border:1px solid #fff9;
+  box-shadow:0 5px 18px #17412630;
+}
+body.focus-play .game-panel{
+  background:linear-gradient(150deg,#fffdf2 0%,#f8f2dc 68%,#eaf0d1 100%);
+  border:1px solid #fff;
+  box-shadow:0 14px 36px #28533335,0 3px 0 #c99b3f;
+}
+body.focus-play .level-row .eyebrow{letter-spacing:.13em}
+body.focus-play .level-actions .quiet-button{
+  border-color:#c5d5ae;background:#f8f6e9;color:#365a38;
+  box-shadow:0 2px 0 #d9dfc9;
+}
+body.focus-play .level-actions .quiet-button:first-child{
+  background:linear-gradient(180deg,#ffe28a,#f2bd4c);
+  border-color:#e0b44a;color:#62451a;font-weight:900;
+}
+body.focus-play .stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+body.focus-play .stat{border-radius:12px}
+body.focus-play .target-stat{background:linear-gradient(145deg,#fff0bf,#f7df9c);border-color:#e8c46c}
+body.focus-play .target-stat strong{color:#8b5b12}
+body.focus-play .objective-card{
+  background:linear-gradient(100deg,#fff4cf,#fff9e8);
+  border-color:#e9c66d;box-shadow:inset 4px 0 #e5ad36;
+}
+body.focus-play .game-board{
+  background:
+    radial-gradient(ellipse at 18% 12%,#4e8150 0%,transparent 50%),
+    linear-gradient(145deg,#285638,#173e2b);
+  border:3px solid #d5a94d;
+  box-shadow:inset 0 3px 10px #071d1288,0 5px 0 #a77732,0 10px 20px #28533328;
+}
+body.focus-play .crop-tile{
+  border:1px solid #ffffff70;
+  box-shadow:inset 0 2px 0 #ffffff9c,0 3px 0 #0d291b66,0 4px 8px #081d1230;
+}
+body.focus-play .action-row{
+  grid-template-columns:minmax(0,1fr);
+  grid-auto-rows:minmax(38px,auto);
+}
+body.focus-play .action-row button#hint-button{
+  justify-self:start;width:auto;min-width:100px;min-height:44px;
+  padding:7px 15px;border-radius:11px;font-weight:800;
+}
+body.focus-play .action-row button#next-button:not([hidden]){
+  justify-self:stretch;width:100%;min-height:44px;font-size:13px;
+}
+body.focus-play .action-row:has(#next-button[hidden]){min-height:0}
+body.focus-play .meta-actions{grid-template-columns:repeat(2,minmax(0,1fr))}
+body.focus-play.tools-open .meta-actions{
+  max-width:560px;left:50%;right:auto;transform:translateX(-50%);
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  padding:14px;gap:8px;border-radius:20px;
+  box-shadow:0 18px 55px #102d1d66;
+}
+body.focus-play.tools-open .meta-actions .secondary-button{
+  min-height:44px;font-size:11px;border-radius:11px;
+}
+@media(min-width:700px) and (min-height:650px){
+  body.focus-play .stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+  body.focus-play .action-row{grid-template-columns:minmax(0,1fr)}
+  body.focus-play .action-row button#hint-button{justify-self:start}
+}
+
+/* Harvest Trail: layered sky, distant hills and crop rows move as chapters advance. */
+#level-map.level-map[open]{
+  isolation:isolate;overflow:hidden;
+  background:linear-gradient(180deg,#76c9ec 0%,#c4e7c4 44%,#83bd64 100%);
+  color:#24482d;
+}
+#level-map.level-map::before{
+  content:"";position:absolute;z-index:-1;inset:-4%;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 82% 13%,#fff0a5 0 5.2%,#fff0a544 5.5% 8%,transparent 8.5%),
+    radial-gradient(ellipse 18% 5% at 16% 19%,#ffffffd9 0 48%,transparent 52%),
+    radial-gradient(ellipse 13% 4% at 23% 17%,#ffffffc9 0 48%,transparent 52%),
+    radial-gradient(ellipse 17% 5% at 67% 26%,#ffffffd0 0 48%,transparent 52%),
+    radial-gradient(ellipse 14% 4% at 74% 24%,#ffffffc9 0 48%,transparent 52%),
+    radial-gradient(ellipse 75% 31% at 8% 66%,#579b61 0 49%,transparent 50%),
+    radial-gradient(ellipse 76% 34% at 94% 68%,#438e55 0 49%,transparent 50%),
+    radial-gradient(ellipse 100% 31% at 50% 100%,#a4ce67 0 54%,transparent 55%),
+    repeating-linear-gradient(163deg,transparent 0 34px,#fff4 35px 36px,transparent 37px 68px);
+  background-position:calc(50% + var(--journey-page,0)*-18px) 0,center;
+  transition:background-position .8s cubic-bezier(.2,.7,.2,1);
+  animation:harvest-cloud-drift 42s linear infinite alternate;
+}
+#level-map.level-map::after{
+  content:"";position:absolute;z-index:-1;left:-8%;right:-8%;bottom:-14%;
+  height:42%;pointer-events:none;
+  background:
+    repeating-linear-gradient(171deg,transparent 0 18px,#f7dc8d88 19px 21px,transparent 22px 39px),
+    linear-gradient(180deg,#83b94c,#4f8e3e);
+  clip-path:polygon(0 35%,12% 17%,25% 29%,40% 8%,56% 24%,72% 10%,87% 28%,100% 12%,100% 100%,0 100%);
+  opacity:.8;
+}
+#level-map .map-head{position:relative;z-index:2}
+#level-map .map-head .eyebrow{color:#fff4b5;text-shadow:0 1px 2px #285b42}
+#level-map .map-head h2{color:#fff8dc;text-shadow:0 3px 0 #356343,0 6px 16px #234c38a8}
+#level-map .map-head p{color:#f3f8df;text-shadow:0 1px 3px #315f42}
+#level-map #level-map-close{background:#fff8e8;color:#315c39;border:1px solid #fff}
+#level-map .map-intro-strip{
+  background:linear-gradient(105deg,#fff7d9e8,#fffdf0c9);
+  border:1px solid #fff;box-shadow:0 7px 18px #315e3b35;
+}
+#level-map .map-intro-strip strong{color:#3f6c3e}
+#level-map .map-intro-strip small{color:#607c50}
+#level-map .map-country-mark{color:#4c713e}
+#level-map .level-map-status{color:#fff9e2;text-shadow:0 1px 3px #315f42}
+#level-map .map-legend{color:#f8f8df;text-shadow:0 1px 3px #315f42}
+#level-map .map-world-group{
+  background:
+    radial-gradient(ellipse at 8% 94%,#8fc75c 0 18%,transparent 19%),
+    radial-gradient(ellipse at 95% 92%,#6cab4e 0 23%,transparent 24%),
+    linear-gradient(180deg,#c4e8f0 0%,#e5efc9 50%,#9dc66d 100%);
+  border:2px solid #fff9d9;
+  box-shadow:0 12px 30px #244e3470,inset 0 1px #fff;
+  animation:map-chapter-arrive .48s cubic-bezier(.2,.8,.2,1) both;
+}
+#level-map .map-world-group::before{
+  content:"";position:absolute;left:-4%;right:-4%;bottom:0;height:35%;
+  background:
+    repeating-linear-gradient(165deg,transparent 0 19px,#fff6 20px 21px,transparent 22px 39px),
+    linear-gradient(180deg,#9bc45c,#629849);
+  clip-path:polygon(0 28%,15% 12%,29% 27%,47% 4%,62% 23%,80% 8%,100% 25%,100% 100%,0 100%);
+  opacity:.75;pointer-events:none;
+}
+#level-map .map-world-header{z-index:3}
+#level-map .map-world-levels{z-index:2}
+#level-map .map-route-line{stroke-dasharray:2.2 2.8;animation:harvest-road-flow 3s linear infinite}
+#level-map .map-route-shadow{stroke-width:13;opacity:.38}
+#level-map .map-scenery{z-index:3;animation:scenery-sway 4s ease-in-out infinite alternate}
+#level-map .map-world-levels .map-level{
+  box-shadow:0 5px 0 #718f50,0 10px 17px #355a3a50;
+  transition:transform .2s ease,filter .2s ease,box-shadow .2s ease;
+}
+#level-map .map-world-levels .map-level:not(:disabled){filter:saturate(1.08)}
+#level-map .map-world-levels .map-level.current-level{
+  animation:trail-current-pulse 1.6s ease-in-out infinite alternate,map-node-arrive .45s .12s both;
+}
+#level-map .level-map-navigation button{
+  background:#fff8e8;color:#365e39;border:1px solid #fff;
+  box-shadow:0 3px 0 #78985a;
+}
+#level-map .level-map-navigation button:disabled{opacity:.45}
+#level-map .level-map-navigation .level-map-status{color:#f9f5d9}
+@keyframes harvest-cloud-drift{from{background-position:0 0,center}to{background-position:38px 0,center}}
+@keyframes harvest-road-flow{to{stroke-dashoffset:-18}}
+@keyframes map-chapter-arrive{from{opacity:.45;transform:translateY(12px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes map-node-arrive{from{opacity:.5;transform:scale(.82)}to{opacity:1;transform:scale(1.07)}}
+@keyframes scenery-sway{from{transform:translateY(0)}to{transform:translateY(-4px)}}
+@media(max-width:600px){
+  #level-map .map-head h2{font-size:clamp(27px,7vw,38px)}
+  #level-map .map-world-group{border-radius:20px}
+  #level-map .map-intro-strip{box-shadow:0 5px 14px #315e3b2b}
+}
+@media(prefers-reduced-motion:reduce){
+  #level-map.level-map::before,#level-map .map-world-group,#level-map .map-route-line,
+  #level-map .map-scenery,#level-map .map-world-levels .map-level.current-level{
+    animation:none!important;transition:none!important
+  }
+}
+
+/* Original illustrated world artwork, shared by web and Android bundles. */
+body.focus-play{
+  background:
+    linear-gradient(180deg,#24583b25 0%,#d6e9b21c 48%,#19482e4a 100%),
+    url("./assets/harvest-world.svg") center center / cover fixed;
+}
+#level-map.level-map[open]::before{
+  background:
+    linear-gradient(180deg,#1b563b50 0%,#2d704018 48%,#17472b55 100%),
+    url("./assets/harvest-world.svg") center center / cover no-repeat;
+  background-position:calc(50% + var(--journey-page,0)*-18px) center;
+  animation:none;
+  transition:background-position .9s cubic-bezier(.2,.7,.2,1);
+}
+
+/* The Harvest Trail is a full-screen destination, never a floating dialog over gameplay. */
+#level-map.level-map[open]{
+  position:fixed;inset:0;margin:0;
+  width:100vw;max-width:none;height:100dvh;max-height:100dvh;
+  min-height:0;border:0;border-radius:0;
+  padding:max(14px,env(safe-area-inset-top))
+    max(14px,env(safe-area-inset-right))
+    max(14px,env(safe-area-inset-bottom))
+    max(14px,env(safe-area-inset-left));
+  overflow:hidden;
+}
+#level-map .level-map-list{min-height:0;overflow:hidden}
+#level-map .map-world-group{height:100%;min-height:0}
+#level-map .map-world-levels{min-height:0}
