@@ -7,6 +7,7 @@ const APP_SHELL = [
   "./styles.css",
   "./game.js",
   "./crop-art.svg",
+  "./assets/harvest-world.svg",
   "./manifest.webmanifest",
   "./icon.svg",
   "./privacy-policy.html"
