@@ -190,6 +190,7 @@ trail.setAttribute("class","connection-trail");trail.setAttribute("aria-hidden",
 const line=document.createElementNS(svgNS,"polyline"),marker=document.createElementNS(svgNS,"circle");
 line.setAttribute("class","connection-line");marker.setAttribute("class","connection-endpoint");
 trail.append(line,marker);boardEl.appendChild(trail);connectionLine=line;connectionEndpoint=marker;
+const shape=G.boardShapeForLevel(level),shapeLabel=$("board-shape-label");if(shapeLabel)shapeLabel.textContent=shape.label+" · "+shape.rows+"×"+shape.cols;boardEl.setAttribute("aria-label",shape.label+" "+shape.rows+" by "+shape.cols+" crop board");
 const objective=G.objectiveForLevel(level),deliveryPlots=!dailyMode&&objective.type==="multi"&&objective.tasks.some(task=>task.type==="delivery")?G.deliveryPlotsForLevel(level):[],collectedDeliveryPlots=new Set(objectiveState&&objectiveState.deliveryCollected||[]),frag=document.createDocumentFragment();
 boardEl.style.gridTemplateColumns="repeat("+Math.max(...board.map(row=>row.length))+",minmax(0,1fr))";
 for(let r=0;r<board.length;r++)for(let c=0;c<board[r].length;c++){
