@@ -139,6 +139,7 @@ test("browser visual QA exercises keyboard navigation and Enter-based diagonal c
   assert.match(qa,/async function verifyKeyboardConnect/);
   assert.match(qa,/page\.keyboard\.press\("Enter"\)/);
   assert.match(qa,/page\.keyboard\.press\(key\)/);
+  assert.match(qa,/keyboardMismatchRejected: true/);
   assert.match(qa,/keyboardDiagonalConnection: true/);
   assert.match(qa,/verifyKeyboardConnect\(page, profile\)/);
 });
