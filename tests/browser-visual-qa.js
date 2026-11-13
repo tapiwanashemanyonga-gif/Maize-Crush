@@ -110,6 +110,36 @@ async function verifyKeyboardConnect(page, profile) {
   await useFreshField(page);
   await waitForBoardAnimations(page);
 
+  // A keyboard attempt to extend into a different crop must be ignored exactly
+  // like a mismatched touch drag: no swap, no move spent, and no second tile selected.
+  const mismatchTiles = await getBoardState(page);
+  const mismatch = findMismatchPair(mismatchTiles);
+  if (!mismatch) throw new Error(profile + " could not find an adjacent mismatch for keyboard validation.");
+  const mismatchBoardBefore = mismatchTiles.map(tile => tile.label).join("|");
+  const mismatchMovesBefore = Number(await page.locator("#moves-value").innerText());
+  const mismatchStart = page.locator('#game-board .crop-tile[data-row="' + mismatch[0].row + '"][data-col="' + mismatch[0].col + '"]');
+  await mismatchStart.focus();
+  await page.keyboard.press("Enter");
+  await page.waitForFunction(
+    () => document.querySelectorAll("#game-board .crop-tile[aria-pressed='true']").length === 1,
+    null,
+    { timeout: 3000 }
+  );
+  await focusCellWithArrowKeys(page, mismatch[0], mismatch[1]);
+  await page.keyboard.press("Enter");
+  await wait(120);
+  const mismatchBoardAfter = (await getBoardState(page)).map(tile => tile.label).join("|");
+  const mismatchMovesAfter = Number(await page.locator("#moves-value").innerText());
+  const mismatchSelected = await page.locator("#game-board .crop-tile[aria-pressed='true']").count();
+  if (mismatchBoardAfter !== mismatchBoardBefore || mismatchMovesAfter !== mismatchMovesBefore || mismatchSelected !== 1) {
+    throw new Error(profile + " keyboard mismatch changed the board, spent a move, or selected a different crop.");
+  }
+
+  // Clear the intentionally incomplete path and begin the diagonal connection
+  // from a fresh round so the successful keyboard action is independently measured.
+  await page.locator("#restart-button").click();
+  await waitForBoardAnimations(page);
+
   let chain = findDiagonalTriple(await getBoardState(page));
   for (let attempt = 0; !chain && attempt < 10; attempt++) {
     await useFreshField(page);
@@ -154,6 +184,7 @@ async function verifyKeyboardConnect(page, profile) {
   const scoreAfter = Number((await page.locator("#score-value").innerText()).replace(/,/g, ""));
   if (scoreAfter <= scoreBefore) throw new Error(profile + " Enter-based diagonal connection did not increase the score.");
   return {
+    keyboardMismatchRejected: true,
     keyboardDiagonalConnection: true,
     accessibleCropLabel: accessibleName,
     path: chain.map(({ row, col }) => ({ row, col })),
