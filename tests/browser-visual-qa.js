@@ -610,7 +610,9 @@ async function runViewport(browser, profile, viewport) {
     animations: "disabled"
   });
 
-  const keyboardConnection = await verifyKeyboardConnect(page, profile);\n\n  const longSession = await runLongSessionSoak(page, profile);
+  const keyboardConnection = await verifyKeyboardConnect(page, profile);
+
+  const longSession = await runLongSessionSoak(page, profile);
   await page.screenshot({
     path: path.join(OUTPUT, profile + "-after-long-session.png"),
     fullPage: true,
