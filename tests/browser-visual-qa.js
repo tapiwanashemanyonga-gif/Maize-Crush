@@ -42,7 +42,30 @@ function startServer() {
 
 // Treat the journey map as the launch surface; wait for its generated chapter and path nodes.
 async function enterGameFromJourney(page, verify = false) {
-  let journeyOpen = await page.waitForFunction(() => { const map=document.querySelector("#level-map"); return !!map && map.open && map.querySelectorAll(".map-world-group").length > 0; }, null, {timeout:8000}).then(() => true).catch(() => false);
+  await page.waitForFunction(() => document.querySelectorAll("#game-board .crop-tile").length === 64, null, {timeout:15000});
+  let journeyOpen = await page.waitForFunction(() => { const map=document.querySelector("#level-map"); return !!map && map.open && map.querySelectorAll(".map-world-group").length > 0; }, null, {timeout:15000}).then(() => true).catch(() => false);
+  if (!journeyOpen) {
+    const initial = await page.evaluate(() => ({open:!!document.querySelector("#level-map")?.open,chapters:document.querySelectorAll("#level-map .map-world-group").length}));
+    if (initial.open) {
+      // The dialog can be present before its chapter nodes finish rendering in an emulated mobile context.
+      // Force the existing Levels action only when the full-screen map is already open but still empty.
+      await page.locator("#level-map-button").click({force:true});
+      try {
+        await page.waitForFunction(() => document.querySelectorAll("#level-map .map-world-group").length > 0, null, {timeout:15000});
+      } catch (error) {
+        const diagnostic = await page.evaluate(() => ({
+          boardTiles: document.querySelectorAll("#game-board .crop-tile").length,
+          mapOpen: !!document.querySelector("#level-map")?.open,
+          mapMarkup: document.querySelector("#level-map-list")?.innerHTML?.slice(0,800) || null,
+          mapButton: !!document.querySelector("#level-map-button"),
+          engine: typeof window.MaizeCrush,
+          levelText: document.querySelector("#level-label")?.textContent || null
+        }));
+        throw new Error("Harvest Trail did not render chapters: " + JSON.stringify(diagnostic) + "; browser errors: " + errors.slice(-10).join(" | ") + ". " + error.message);
+      }
+      journeyOpen = true;
+    }
+  }
   if (!journeyOpen && !verify) {
     const tutorial = await page.locator("#tutorial-dialog").evaluate(dialog => !!dialog && dialog.open).catch(() => false);
     if (tutorial) await page.locator("#tutorial-start").click();
