@@ -607,8 +607,16 @@ async function runViewport(browser, profile, viewport) {
     boardBottom: document.querySelector("#game-board").getBoundingClientRect().bottom,
     actionsBottom: document.querySelector(".action-row").getBoundingClientRect().bottom,
     boardRatio: document.querySelector("#game-board").getBoundingClientRect().width / document.querySelector("#game-board").getBoundingClientRect().height,
-    actionButtonRows: Array.from(new Set(Array.from(document.querySelectorAll(".action-row button:not([hidden])")).map(button => Math.round(button.getBoundingClientRect().top)))),
-    actionButtonHeights: Array.from(document.querySelectorAll(".action-row button:not([hidden])")).map(button => button.getBoundingClientRect().height)
+    actionButtonRows: Array.from(new Set(Array.from(document.querySelectorAll(".action-row button")).filter(button => {
+      const style = getComputedStyle(button);
+      const rect = button.getBoundingClientRect();
+      return !button.hidden && style.display !== "none" && style.visibility !== "hidden" && rect.width > 0 && rect.height > 0;
+    }).map(button => Math.round(button.getBoundingClientRect().top)))),
+    actionButtonHeights: Array.from(document.querySelectorAll(".action-row button")).filter(button => {
+      const style = getComputedStyle(button);
+      const rect = button.getBoundingClientRect();
+      return !button.hidden && style.display !== "none" && style.visibility !== "hidden" && rect.width > 0 && rect.height > 0;
+    }).map(button => button.getBoundingClientRect().height)
   }));
   if (dimensions.documentWidth > dimensions.viewportWidth + 2) {
     throw new Error(profile + " layout overflows horizontally: " + JSON.stringify(dimensions));
