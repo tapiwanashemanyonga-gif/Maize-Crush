@@ -1345,3 +1345,38 @@ body.focus-play .crop-tile{width:100%;height:100%;min-width:0;min-height:0;aspec
  background-size:cover;
  background-position:center 62%;
 }
+
+
+/* Phone portrait correction: use natural document flow instead of the old
+   multi-row focus grid, which reserved empty rows and pushed controls down. */
+@media(max-width:600px) and (min-height:561px) and (orientation:portrait){
+  body.focus-play .game-panel{
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch;
+    gap:clamp(4px,.7dvh,7px);
+    padding:8px 7px;
+  }
+  body.focus-play .level-row,
+  body.focus-play .stats,
+  body.focus-play .objective-card,
+  body.focus-play .board-heading,
+  body.focus-play .game-board,
+  body.focus-play .board-help,
+  body.focus-play .game-message,
+  body.focus-play .action-row,
+  body.focus-play .meta-actions{
+    grid-column:auto!important;
+    grid-row:auto!important;
+    margin-top:0;
+    margin-bottom:0;
+  }
+  body.focus-play .game-board{
+    width:min(100%,calc(100dvh - 300px));
+    max-width:100%;
+    align-self:center;
+  }
+  body.focus-play .action-row{justify-content:stretch;flex-wrap:nowrap;}
+  body.focus-play .action-row button{flex:1 1 0;min-width:0;min-height:38px;padding:7px 5px;font-size:11px;}
+  body.focus-play .meta-actions{flex-wrap:wrap;}
+}
