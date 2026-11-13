@@ -592,6 +592,7 @@ async function runViewport(browser, profile, viewport) {
     localStorage.setItem("maize-crush-tutorial-seen", "true");
   });
   await page.goto(BASE_URL, { waitUntil: "networkidle", timeout: 30000 });
+  await page.screenshot({path:path.join(OUTPUT,profile+"-harvest-trail-map.png"),fullPage:false,animations:"disabled"});
   await enterGameFromJourney(page);
   await page.locator("#game-board .crop-tile").first().waitFor({ state: "visible", timeout: 15000 });
   await page.waitForFunction(() => document.querySelectorAll("#game-board .crop-tile").length === 64);
