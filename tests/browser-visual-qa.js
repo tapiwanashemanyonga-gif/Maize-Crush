@@ -88,6 +88,115 @@ function findDiagonalTriple(tiles) {
   return null;
 }
 
+async function focusCellWithArrowKeys(page, from, to) {
+  const keys = [];
+  if (to.col > from.col) keys.push("ArrowRight");
+  else if (to.col < from.col) keys.push("ArrowLeft");
+  if (to.row > from.row) keys.push("ArrowDown");
+  else if (to.row < from.row) keys.push("ArrowUp");
+  for (const key of keys) await page.keyboard.press(key);
+  await page.waitForFunction(({ row, col }) => {
+    const active = document.activeElement;
+    return active && active.classList.contains("crop-tile") &&
+      Number(active.dataset.row) === row && Number(active.dataset.col) === col;
+  }, { row: to.row, col: to.col }, { timeout: 3000 });
+}
+
+async function verifyKeyboardConnect(page, profile) {
+  // Start from a settled, fresh board so this checks real keyboard interaction,
+  // not a leftover pointer path or an in-flight refill animation.
+  await waitForBoardAnimations(page);
+  await wait(300);
+  await useFreshField(page);
+  await waitForBoardAnimations(page);
+
+  // A keyboard attempt to extend into a different crop must be ignored exactly
+  // like a mismatched touch drag: no swap, no move spent, and no second tile selected.
+  const mismatchTiles = await getBoardState(page);
+  const mismatch = findMismatchPair(mismatchTiles);
+  if (!mismatch) throw new Error(profile + " could not find an adjacent mismatch for keyboard validation.");
+  const mismatchBoardBefore = mismatchTiles.map(tile => tile.label).join("|");
+  const mismatchMovesBefore = Number(await page.locator("#moves-value").innerText());
+  const mismatchStart = page.locator('#game-board .crop-tile[data-row="' + mismatch[0].row + '"][data-col="' + mismatch[0].col + '"]');
+  await mismatchStart.focus();
+  await page.keyboard.press("Enter");
+  await page.waitForFunction(
+    () => document.querySelectorAll("#game-board .crop-tile[aria-pressed='true']").length === 1,
+    null,
+    { timeout: 3000 }
+  );
+  await focusCellWithArrowKeys(page, mismatch[0], mismatch[1]);
+  await page.keyboard.press("Enter");
+  await wait(120);
+  const mismatchBoardAfter = (await getBoardState(page)).map(tile => tile.label).join("|");
+  const mismatchMovesAfter = Number(await page.locator("#moves-value").innerText());
+  const mismatchSelected = await page.locator("#game-board .crop-tile[aria-pressed='true']").count();
+  if (mismatchBoardAfter !== mismatchBoardBefore || mismatchMovesAfter !== mismatchMovesBefore || mismatchSelected !== 1) {
+    throw new Error(profile + " keyboard mismatch changed the board, spent a move, or selected a different crop.");
+  }
+
+  // Clear the intentionally incomplete path and begin the diagonal connection
+  // from a fresh round so the successful keyboard action is independently measured.
+  await page.locator("#restart-button").click();
+  await waitForBoardAnimations(page);
+
+  let chain = findDiagonalTriple(await getBoardState(page));
+  for (let attempt = 0; !chain && attempt < 10; attempt++) {
+    await useFreshField(page);
+    await waitForBoardAnimations(page);
+    chain = findDiagonalTriple(await getBoardState(page));
+  }
+  if (!chain) throw new Error(profile + " could not prepare a diagonal keyboard path after 10 fresh fields.");
+
+  const movesBefore = Number(await page.locator("#moves-value").innerText());
+  const scoreBefore = Number((await page.locator("#score-value").innerText()).replace(/,/g, ""));
+  const first = page.locator('#game-board .crop-tile[data-row="' + chain[0].row + '"][data-col="' + chain[0].col + '"]');
+  const accessibleName = await first.getAttribute("aria-label");
+  if (!accessibleName) throw new Error(profile + " keyboard target has no accessible crop label.");
+
+  await first.focus();
+  await page.keyboard.press("Enter");
+  await page.waitForFunction(({ row, col }) => {
+    const active = document.activeElement;
+    return active && active.classList.contains("crop-tile") &&
+      Number(active.dataset.row) === row && Number(active.dataset.col) === col &&
+      active.getAttribute("aria-pressed") === "true";
+  }, { row: chain[0].row, col: chain[0].col }, { timeout: 3000 });
+
+  for (let index = 1; index < chain.length; index++) {
+    await focusCellWithArrowKeys(page, chain[index - 1], chain[index]);
+    await page.keyboard.press("Enter");
+    if (index < chain.length - 1) {
+      await page.waitForFunction(
+        expected => document.querySelectorAll("#game-board .crop-tile[aria-pressed='true']").length === expected,
+        index + 1,
+        { timeout: 3000 }
+      );
+    }
+  }
+
+  await page.waitForFunction(
+    previous => Number(document.querySelector("#moves-value").textContent) === previous - 1,
+    movesBefore,
+    { timeout: 5000 }
+  );
+  await page.waitForFunction(() => document.querySelectorAll("#game-board .crop-tile").length === 64);
+  const scoreAfter = Number((await page.locator("#score-value").innerText()).replace(/,/g, ""));
+  if (scoreAfter <= scoreBefore) throw new Error(profile + " Enter-based diagonal connection did not increase the score.");
+  await waitForBoardAnimations(page);
+  await wait(300);
+  return {
+    keyboardMismatchRejected: true,
+    keyboardDiagonalConnection: true,
+    accessibleCropLabel: accessibleName,
+    path: chain.map(({ row, col }) => ({ row, col })),
+    movesBefore,
+    movesAfter: Number(await page.locator("#moves-value").innerText()),
+    scoreBefore,
+    scoreAfter
+  };
+}
+
 function findMismatchPair(tiles) {
   const byPosition = new Map(tiles.map(tile => [tile.row + "," + tile.col, tile]));
   for (const tile of tiles) {
@@ -534,6 +643,8 @@ async function runViewport(browser, profile, viewport) {
     animations: "disabled"
   });
 
+  const keyboardConnection = await verifyKeyboardConnect(page, profile);
+
   const longSession = await runLongSessionSoak(page, profile);
   await page.screenshot({
     path: path.join(OUTPUT, profile + "-after-long-session.png"),
@@ -542,7 +653,7 @@ async function runViewport(browser, profile, viewport) {
   });
 
   await context.close();
-  return { profile, ...dimensions, mismatchRejected: true, diagonalConnection: true, scoreBefore, scoreAfter, layoutWork, longSession };
+  return { profile, ...dimensions, mismatchRejected: true, diagonalConnection: true, keyboardConnection, scoreBefore, scoreAfter, layoutWork, longSession };
 }
 
 
