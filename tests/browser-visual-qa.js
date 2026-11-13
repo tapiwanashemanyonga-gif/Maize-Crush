@@ -41,7 +41,18 @@ function startServer() {
 
 
 async function enterGameFromJourney(page, verify = false) {
-  await page.waitForFunction(() => { const map=document.querySelector("#level-map"); return !!map && map.open; }, null, {timeout:8000});
+  let journeyOpen = await page.waitForFunction(() => { const map=document.querySelector("#level-map"); return !!map && map.open; }, null, {timeout:8000}).then(() => true).catch(() => false);
+  if (!journeyOpen && !verify) {
+    const tutorial = await page.locator("#tutorial-dialog").evaluate(dialog => !!dialog && dialog.open).catch(() => false);
+    if (tutorial) await page.locator("#tutorial-start").click();
+    else await page.locator("#level-map-button").click();
+    await page.waitForFunction(() => { const map=document.querySelector("#level-map"); return !!map && map.open; }, null, {timeout:8000});
+    journeyOpen = true;
+  }
+  if (!journeyOpen) {
+    const state = await page.evaluate(() => ({mapExists:!!document.querySelector("#level-map"),mapOpen:!!document.querySelector("#level-map")?.open,tutorialOpen:!!document.querySelector("#tutorial-dialog")?.open,tutorialSeen:localStorage.getItem("maize-crush-tutorial-seen"),mapButton:!!document.querySelector("#level-map-button")}));
+    throw new Error("Harvest Trail did not open automatically: " + JSON.stringify(state));
+  }
   if (verify) {
     const journey = await page.evaluate(() => ({
       title: document.querySelector("#level-map h2")?.textContent?.trim(),
