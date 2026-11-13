@@ -1028,3 +1028,27 @@ body.focus-play .crop-tile{width:100%;height:100%;min-width:0;min-height:0;aspec
 /* Delivery orders are overlays; they never change the square crop-tile geometry. */
 .crop-tile.delivery-plot{outline:2px solid #f5c75e;outline-offset:-3px;box-shadow:inset 0 0 0 2px #6b4818,0 0 0 1px #f5c75e66}
 .delivery-crate-marker{position:absolute;top:2px;right:3px;z-index:4;display:grid;place-items:center;width:clamp(16px,2.8vw,23px);height:clamp(16px,2.8vw,23px);border:1px solid #fff1b5;border-radius:6px;background:linear-gradient(145deg,#fff0b2,#d68b25);box-shadow:0 2px 5px #0008;font-size:clamp(10px,1.8vw,15px);line-height:1;pointer-events:none}.crop-tile.delivery-plot-locked .delivery-crate-marker{filter:saturate(.45);opacity:.58}.crop-tile.delivery-plot-next{outline-color:#ffe27a;box-shadow:inset 0 0 0 2px #fff0a0,0 0 9px #ffd65b99}.crop-tile.delivery-plot-next .delivery-crate-marker{border-color:#fff;background:linear-gradient(145deg,#fff8d4,#efad31);font-weight:900}
+
+
+/* Stage 12 — one-screen chapter journey, mirrored into Android offline assets. */
+#level-map.level-map[open]{display:flex;flex-direction:column;gap:clamp(7px,1.5dvh,13px);width:min(94vw,620px);max-height:88dvh;min-height:0;overflow:hidden;overscroll-behavior:contain;padding:clamp(12px,2.5vw,22px)}
+#level-map .map-head{flex:0 0 auto;align-items:center}
+#level-map .map-head p{margin:5px 0 0;max-width:42ch;font-size:clamp(10px,2.2vw,12px)}
+#level-map .map-head h2{margin:4px 0;font-size:clamp(21px,5vw,29px)}
+#level-map .level-map-status{flex:0 0 auto;margin:0;font-size:11px}
+#level-map .level-map-list{display:block;flex:1 1 auto;min-height:0;overflow:hidden;margin:0}
+#level-map .map-world-group{display:flex;flex-direction:column;justify-content:center;height:100%;min-height:0;padding:clamp(9px,2vw,16px);background:radial-gradient(ellipse at 12% 92%,#79bd5e 0 17%,transparent 17.5%),radial-gradient(ellipse at 88% 90%,#8acb69 0 20%,transparent 20.5%),linear-gradient(180deg,#bfe9f5 0%,#e7f5d6 54%,#c4e5a2 100%)}
+#level-map .map-world-header{flex:0 0 auto;padding-bottom:7px}
+#level-map .map-world-header strong{font-size:clamp(13px,3vw,17px)}
+#level-map .map-world-header span{font-size:10px}
+#level-map .map-world-levels{flex:1 1 auto;min-height:0;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:clamp(8px,2.2vw,18px) clamp(18px,6vw,58px);padding:clamp(8px,2dvh,18px) clamp(9px,3vw,30px)}
+#level-map .map-world-levels .map-level{min-height:0;height:100%;max-height:clamp(82px,18dvh,132px);border-radius:clamp(15px,3vw,24px)}
+#level-map .map-world-levels .map-level .map-level-objective{font-size:clamp(21px,5vw,31px)}
+#level-map .map-world-levels .map-level .map-level-number{font-size:clamp(10px,2.5vw,13px)}
+#level-map .map-scenery{font-size:clamp(13px,3.2vw,23px);opacity:.82}
+#level-map .level-map-navigation{flex:0 0 auto;display:grid;grid-template-columns:minmax(74px,1fr) auto minmax(74px,1fr);align-items:center;gap:8px;margin:0;padding-top:7px}
+#level-map .level-map-navigation button{min-height:40px;padding:7px 10px;font-size:11px}
+#level-map .level-map-navigation .level-map-status{max-width:140px;text-align:center;font-size:9px;line-height:1.25}
+#level-map .level-map-navigation button:disabled{opacity:.38;cursor:not-allowed}
+@media(max-height:560px){#level-map.level-map[open]{max-height:94dvh;padding:8px;gap:5px}#level-map .map-head h2{font-size:18px}#level-map .map-head p{font-size:9px;line-height:1.25}#level-map .map-world-group{padding:7px}#level-map .map-world-levels{gap:6px 16px;padding:5px 12px}#level-map .map-world-levels .map-level{max-height:clamp(58px,17dvh,86px);border-radius:13px}#level-map .map-world-levels .map-level .map-level-objective{font-size:19px}#level-map .level-map-navigation{padding-top:4px}#level-map .level-map-navigation button{min-height:34px}}
+@media(prefers-reduced-motion:reduce){#level-map .map-world-levels .map-level.current-level{animation:none}}
