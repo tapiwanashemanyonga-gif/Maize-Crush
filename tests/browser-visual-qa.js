@@ -183,6 +183,8 @@ async function verifyKeyboardConnect(page, profile) {
   await page.waitForFunction(() => document.querySelectorAll("#game-board .crop-tile").length === 64);
   const scoreAfter = Number((await page.locator("#score-value").innerText()).replace(/,/g, ""));
   if (scoreAfter <= scoreBefore) throw new Error(profile + " Enter-based diagonal connection did not increase the score.");
+  await waitForBoardAnimations(page);
+  await wait(300);
   return {
     keyboardMismatchRejected: true,
     keyboardDiagonalConnection: true,
