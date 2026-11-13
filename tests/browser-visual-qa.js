@@ -52,7 +52,7 @@ async function enterGameFromJourney(page, verify = false) {
       const map=document.querySelector("#level-map");
       if(map && !map.open && typeof map.showModal==="function")map.showModal();
     });
-    await page.waitForFunction(() => { const map=document.querySelector("#level-map"); return !!map && map.open; }, null, {timeout:8000});
+    await page.waitForFunction(() => { const map=document.querySelector("#level-map"); return !!map && map.open && map.querySelectorAll(".map-world-group").length > 0; }, null, {timeout:8000});
     journeyOpen = true;
   }
   if (!journeyOpen) {
