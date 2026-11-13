@@ -46,6 +46,9 @@ async function enterGameFromJourney(page, verify = false) {
   if (!journeyOpen) {
     const initial = await page.evaluate(() => ({open:!!document.querySelector("#level-map")?.open,chapters:document.querySelectorAll("#level-map .map-world-group").length}));
     if (initial.open) {
+      // The dialog can be present before its chapter nodes finish rendering in an emulated mobile context.
+      // Force the existing Levels action only when the full-screen map is already open but still empty.
+      await page.locator("#level-map-button").click({force:true});
       await page.waitForFunction(() => document.querySelectorAll("#level-map .map-world-group").length > 0, null, {timeout:15000});
       journeyOpen = true;
     }
