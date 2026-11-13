@@ -46,6 +46,12 @@ async function enterGameFromJourney(page, verify = false) {
     const tutorial = await page.locator("#tutorial-dialog").evaluate(dialog => !!dialog && dialog.open).catch(() => false);
     if (tutorial) await page.locator("#tutorial-start").click();
     else await page.locator("#level-map-button").click();
+    await page.evaluate(() => {
+      const tutorialDialog=document.querySelector("#tutorial-dialog");
+      if(tutorialDialog?.open)tutorialDialog.close();
+      const map=document.querySelector("#level-map");
+      if(map && !map.open && typeof map.showModal==="function")map.showModal();
+    });
     await page.waitForFunction(() => { const map=document.querySelector("#level-map"); return !!map && map.open; }, null, {timeout:8000});
     journeyOpen = true;
   }
