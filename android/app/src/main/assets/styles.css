@@ -1115,6 +1115,6 @@ body.focus-play .crop-tile{width:100%;height:100%;min-width:0;min-height:0;aspec
 
 
 /* Keep the primary map action anchored and tappable on short phone screens. */
-#level-map.level-map{padding-bottom:calc(100px + env(safe-area-inset-bottom))}
-#level-map .map-play-current{position:fixed;left:50%;bottom:max(12px,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(900px,calc(100vw - 28px));margin:0;z-index:1001}
-#level-map .map-play-current:active{transform:translate(-50%,3px)}
+#level-map.level-map{padding-bottom:max(18px,env(safe-area-inset-bottom))}
+#level-map .map-play-current{position:relative;left:auto;bottom:auto;transform:none;width:min(100%,900px);margin:12px auto 14px;z-index:5;pointer-events:auto}
+#level-map .map-play-current:active{transform:translateY(3px)}
