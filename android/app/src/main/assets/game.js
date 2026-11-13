@@ -59,8 +59,64 @@ function objectiveForLevel(level){
  });
  return{id:"mixed-"+n,type:"multi",title:tasks.length===3?"Triple harvest challenge":"Mixed harvest challenge",description:tasks.map(task=>task.description).join(" AND "),target:tasks.length,tasks};
 }
-function normalizeObjectiveState(input,level){const n=Math.max(1,Math.floor(Number(level)||1)),objective=objectiveForLevel(n),fresh=()=>objective.type==="multi"?{level:n,id:objective.id,progress:0,tasks:objective.tasks.map(task=>({id:task.id,progress:0,complete:false})),deliveryCollected:[],complete:false}:objective.type==="variety"?{level:n,id:objective.id,progress:0,seenCrops:[],complete:false}:{level:n,id:objective.id,progress:0,complete:false};if(!input||typeof input!=="object"||Array.isArray(input)||input.level!==n||input.id!==objective.id)return fresh();if(objective.type==="multi"){const deliveryTask=objective.tasks.find(task=>task.type==="delivery"),deliveryCollected=[];if(deliveryTask&&Array.isArray(input.deliveryCollected)){for(const index of input.deliveryCollected){if(Number.isInteger(index)&&index===deliveryCollected.length&&index>=0&&index<deliveryTask.target)deliveryCollected.push(index);else break}}const tasks=objective.tasks.map(task=>{const saved=Array.isArray(input.tasks)?input.tasks.find(item=>item&&item.id===task.id):null,progress=task.type==="delivery"?deliveryCollected.length:Math.max(0,Math.min(task.target,Math.floor(Number(saved&&saved.progress)||0)));return{id:task.id,progress:Math.min(task.target,progress),complete:progress>=task.target}});const progress=tasks.filter(task=>task.complete).length;return{level:n,id:objective.id,progress,tasks,deliveryCollected,complete:progress===tasks.length}}if(objective.type==="variety"){const seenCrops=Array.isArray(input.seenCrops)?Array.from(new Set(input.seenCrops.filter(id=>CROPS.some(crop=>crop.id===id)))):[],progress=Math.min(objective.target,seenCrops.length);return{level:n,id:objective.id,progress,seenCrops,complete:progress>=objective.target}}const progress=Math.max(0,Math.min(objective.target,Math.floor(Number(input.progress)||0)));return{level:n,id:objective.id,progress,complete:progress>=objective.target}}
-function advanceObjective(input,level,event,amount){const objective=objectiveForLevel(level),state=normalizeObjectiveState(input,level);if(state.complete)return{state,completedNow:false};const value=Math.max(0,Math.floor(Number(amount)||0));if(objective.type==="multi"){const deliveryTask=objective.tasks.find(task=>task.type==="delivery"),deliveryMatch=!!deliveryTask&&typeof event==="string"&&event.startsWith("delivery:"),deliveryIndex=deliveryMatch?Number(event.slice(9)):-1,deliveryCollected=state.deliveryCollected.slice();const validDelivery=deliveryMatch&&Number.isInteger(deliveryIndex)&&deliveryIndex===deliveryCollected.length&&deliveryIndex>=0&&deliveryIndex<deliveryTask.target;if(validDelivery)deliveryCollected.push(deliveryIndex);const tasks=objective.tasks.map(task=>{const current=state.tasks.find(item=>item.id===task.id)||{progress:0,complete:false};const matches=task.type==="score"?event==="score":task.type==="crop"?event==="crop:"+task.cropId:task.type==="delivery"?validDelivery:event===task.type;if(!matches||current.complete)return current;const progress=task.type==="score"||task.type==="chain"?Math.max(current.progress,value):task.type==="delivery"?deliveryCollected.length:Math.min(task.target,current.progress+value);return{id:task.id,progress:Math.min(task.target,progress),complete:progress>=task.target}});const progress=tasks.filter(task=>task.complete).length,next={level:state.level,id:state.id,progress,tasks,deliveryCollected,complete:progress===tasks.length};return{state:next,completedNow:!state.complete&&next.complete}}if(objective.type==="variety"){if(typeof event!=="string"||!event.startsWith("crop:"))return{state,completedNow:false};const cropId=event.slice(5);if(!CROPS.some(crop=>crop.id===cropId))return{state,completedNow:false};const seenCrops=state.seenCrops.includes(cropId)?state.seenCrops:state.seenCrops.concat(cropId),progress=Math.min(objective.target,seenCrops.length),next={level:state.level,id:state.id,progress,seenCrops,complete:progress>=objective.target};return{state:next,completedNow:!state.complete&&next.complete}}const matches=objective.type==="score"?event==="score":objective.type==="crop"?event==="crop:"+objective.cropId:event===objective.type;if(!matches)return{state,completedNow:false};const progress=objective.type==="score"||objective.type==="chain"?Math.max(state.progress,value):Math.min(objective.target,state.progress+value),next={level:state.level,id:state.id,progress:Math.min(objective.target,progress),complete:progress>=objective.target};return{state:next,completedNow:!state.complete&&next.complete}}
+function normalizeObjectiveState(input,level){
+ const n=Math.max(1,Math.floor(Number(level)||1)),objective=objectiveForLevel(n);
+ const fresh=()=>objective.type==="multi"?{level:n,id:objective.id,progress:0,tasks:objective.tasks.map(task=>({id:task.id,progress:0,complete:false})),deliveryCollected:[],seenCrops:[],complete:false}:objective.type==="variety"?{level:n,id:objective.id,progress:0,seenCrops:[],complete:false}:{level:n,id:objective.id,progress:0,complete:false};
+ if(!input||typeof input!=="object"||Array.isArray(input)||input.level!==n||input.id!==objective.id)return fresh();
+ if(objective.type==="multi"){
+  const deliveryTask=objective.tasks.find(task=>task.type==="delivery"),deliveryCollected=[];
+  if(deliveryTask&&Array.isArray(input.deliveryCollected)){
+   for(const index of input.deliveryCollected){if(Number.isInteger(index)&&index===deliveryCollected.length&&index>=0&&index<deliveryTask.target)deliveryCollected.push(index);else break}
+  }
+  const seenCrops=Array.isArray(input.seenCrops)?Array.from(new Set(input.seenCrops.filter(id=>CROPS.some(crop=>crop.id===id)))):[];
+  const tasks=objective.tasks.map(task=>{
+   const saved=Array.isArray(input.tasks)?input.tasks.find(item=>item&&item.id===task.id):null;
+   const progress=task.type==="delivery"?deliveryCollected.length:task.type==="variety"?seenCrops.length:Math.max(0,Math.min(task.target,Math.floor(Number(saved&&saved.progress)||0)));
+   return{id:task.id,progress:Math.min(task.target,progress),complete:progress>=task.target};
+  });
+  const progress=tasks.filter(task=>task.complete).length;
+  return{level:n,id:objective.id,progress,tasks,deliveryCollected,seenCrops,complete:progress===tasks.length};
+ }
+ if(objective.type==="variety"){
+  const seenCrops=Array.isArray(input.seenCrops)?Array.from(new Set(input.seenCrops.filter(id=>CROPS.some(crop=>crop.id===id)))):[],progress=Math.min(objective.target,seenCrops.length);
+  return{level:n,id:objective.id,progress,seenCrops,complete:progress>=objective.target};
+ }
+ const progress=Math.max(0,Math.min(objective.target,Math.floor(Number(input.progress)||0)));
+ return{level:n,id:objective.id,progress,complete:progress>=objective.target};
+}
+function advanceObjective(input,level,event,amount){
+ const objective=objectiveForLevel(level),state=normalizeObjectiveState(input,level);
+ if(state.complete)return{state,completedNow:false};
+ const value=Math.max(0,Math.floor(Number(amount)||0));
+ if(objective.type==="multi"){
+  const deliveryTask=objective.tasks.find(task=>task.type==="delivery"),deliveryMatch=!!deliveryTask&&typeof event==="string"&&event.startsWith("delivery:"),deliveryIndex=deliveryMatch?Number(event.slice(9)):-1,deliveryCollected=state.deliveryCollected.slice(),seenCrops=state.seenCrops.slice();
+  const validDelivery=deliveryMatch&&Number.isInteger(deliveryIndex)&&deliveryIndex===deliveryCollected.length&&deliveryIndex>=0&&deliveryIndex<deliveryTask.target;
+  if(validDelivery)deliveryCollected.push(deliveryIndex);
+  if(typeof event==="string"&&event.startsWith("crop:")){
+   const cropId=event.slice(5);
+   if(CROPS.some(crop=>crop.id===cropId)&&!seenCrops.includes(cropId))seenCrops.push(cropId);
+  }
+  const tasks=objective.tasks.map(task=>{
+   const current=state.tasks.find(item=>item.id===task.id)||{progress:0,complete:false};
+   const matches=task.type==="score"?event==="score":task.type==="crop"?event==="crop:"+task.cropId:task.type==="delivery"?validDelivery:task.type==="variety"?typeof event==="string"&&event.startsWith("crop:")&&CROPS.some(crop=>crop.id===event.slice(5)):event===task.type;
+   if(!matches||current.complete)return current;
+   const progress=task.type==="score"||task.type==="chain"?Math.max(current.progress,value):task.type==="delivery"?deliveryCollected.length:task.type==="variety"?seenCrops.length:Math.min(task.target,current.progress+value);
+   return{id:task.id,progress:Math.min(task.target,progress),complete:progress>=task.target};
+  });
+  const progress=tasks.filter(task=>task.complete).length,next={level:state.level,id:state.id,progress,tasks,deliveryCollected,seenCrops,complete:progress===tasks.length};
+  return{state:next,completedNow:!state.complete&&next.complete};
+ }
+ if(objective.type==="variety"){
+  if(typeof event!=="string"||!event.startsWith("crop:"))return{state,completedNow:false};
+  const cropId=event.slice(5);if(!CROPS.some(crop=>crop.id===cropId))return{state,completedNow:false};
+  const seenCrops=state.seenCrops.includes(cropId)?state.seenCrops:state.seenCrops.concat(cropId),progress=Math.min(objective.target,seenCrops.length),next={level:state.level,id:state.id,progress,seenCrops,complete:progress>=objective.target};
+  return{state:next,completedNow:!state.complete&&next.complete};
+ }
+ const matches=objective.type==="score"?event==="score":objective.type==="crop"?event==="crop:"+objective.cropId:event===objective.type;
+ if(!matches)return{state,completedNow:false};
+ const progress=objective.type==="score"||objective.type==="chain"?Math.max(state.progress,value):Math.min(objective.target,state.progress+value),next={level:state.level,id:state.id,progress:Math.min(objective.target,progress),complete:progress>=objective.target};
+ return{state:next,completedNow:!state.complete&&next.complete};
+}
 function validateBoard(b){return Array.isArray(b)&&b.length===SIZE&&b.every(row=>Array.isArray(row)&&row.length===SIZE&&row.every(x=>Number.isInteger(x)&&x>=0&&x<CROPS.length))}
 function normalizeRoundCheckpoint(input){if(!input||typeof input!=="object"||Array.isArray(input)||!validateBoard(input.board))return null;const level=Number(input.level),score=Number(input.score),moves=Number(input.moves);if(!Number.isSafeInteger(level)||level<1||level>MAX_LEVEL||!Number.isFinite(score)||score<0||score>1e9||!Number.isInteger(moves)||moves<0||moves>1000)return null;const dailyMode=input.dailyMode===true,d=input.dailyChallenge;if(dailyMode&&(!d||typeof d!=="object"||typeof d.date!=="string"||!/^\d{4}-\d{2}-\d{2}$/.test(d.date)||!Number.isInteger(Number(d.goal))||Number(d.goal)<1||!Number.isInteger(Number(d.moves))||Number(d.moves)<1))return null;return{board:cloneBoard(input.board),level,score:Math.floor(score),moves,dailyMode,dailyChallenge:dailyMode?{date:d.date,goal:Number(d.goal),moves:Number(d.moves)}:null,fertilizerUsed:input.fertilizerUsed===true,rainUsed:input.rainUsed===true,marketUsed:input.marketUsed===true,missionState:normalizeMissionState(input.missionState,level),objectiveState:normalizeObjectiveState(input.objectiveState,level),completed:input.completed===true}}
 function cloneBoard(b){return Array.isArray(b)?b.map(row=>Array.isArray(row)?row.slice():[]):[]}
