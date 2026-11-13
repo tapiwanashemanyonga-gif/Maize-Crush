@@ -41,7 +41,7 @@ function startServer() {
 
 
 async function enterGameFromJourney(page, verify = false) {
-  let journeyOpen = await page.waitForFunction(() => { const map=document.querySelector("#level-map"); return !!map && map.open; }, null, {timeout:8000}).then(() => true).catch(() => false);
+  let journeyOpen = await page.waitForFunction(() => { const map=document.querySelector("#level-map"); return !!map && map.open && map.querySelectorAll(".map-world-group").length > 0; }, null, {timeout:8000}).then(() => true).catch(() => false);
   if (!journeyOpen && !verify) {
     const tutorial = await page.locator("#tutorial-dialog").evaluate(dialog => !!dialog && dialog.open).catch(() => false);
     if (tutorial) await page.locator("#tutorial-start").click();
