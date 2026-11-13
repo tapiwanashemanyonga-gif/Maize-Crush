@@ -1068,3 +1068,47 @@ body.focus-play .crop-tile{width:100%;height:100%;min-width:0;min-height:0;aspec
 .crop-tile.special-clearing.harvest-impact::after{content:"";position:absolute;inset:4%;z-index:3;pointer-events:none;border-radius:50%;background:repeating-conic-gradient(from 0deg,#fff8 0deg 5deg,transparent 5deg 30deg);-webkit-mask:radial-gradient(circle,transparent 0 12%,#000 18% 68%,transparent 78%);mask:radial-gradient(circle,transparent 0 12%,#000 18% 68%,transparent 78%);animation:harvest-spark-burst .3s cubic-bezier(.18,.72,.28,1) both}
 @keyframes harvest-spark-burst{from{opacity:.95;transform:scale(.28) rotate(-18deg)}to{opacity:0;transform:scale(1.28) rotate(18deg)}}
 @media(prefers-reduced-motion:reduce){.crop-tile.special-clearing.harvest-impact::after{display:none;animation:none!important}}
+
+
+/* Harvest Trail home screen: a full-world journey, not a hidden level picker. */
+#level-map.level-map{box-sizing:border-box;position:fixed;inset:0;margin:0;width:100%;max-width:none;height:100dvh;max-height:100dvh;overflow-x:hidden;overflow-y:auto;padding:clamp(14px,3vw,34px) max(14px,env(safe-area-inset-right)) max(18px,env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left));border:0;border-radius:0;color:#fff8df;background:radial-gradient(ellipse at 12% 8%,#f5c75e38 0 7%,transparent 29%),radial-gradient(ellipse at 88% 17%,#6cae5140 0 10%,transparent 32%),radial-gradient(ellipse at 50% 100%,#1d7043 0 18%,transparent 57%),linear-gradient(155deg,#173f2c 0%,#245a39 42%,#153a2a 100%);box-shadow:none;overscroll-behavior:contain}
+#level-map.level-map::backdrop{background:#071b12}
+#level-map .map-head,#level-map .map-intro-strip,#level-map .level-map-status,#level-map .map-legend,#level-map .level-map-list,#level-map .map-play-current,#level-map .level-map-navigation{width:min(100%,900px);margin-left:auto;margin-right:auto}
+#level-map .map-head{align-items:center;padding:4px 0 16px}
+#level-map .map-head .eyebrow{color:#f6d779}
+#level-map .map-head h2{font-size:clamp(28px,5vw,46px);color:#fff2c7;margin:5px 0 7px;text-shadow:0 3px 0 #102c1d}
+#level-map .map-head p{max-width:520px;color:#d7e8c8;font-size:clamp(12px,1.8vw,15px)}
+#level-map .map-intro-strip{display:flex;align-items:center;gap:12px;padding:12px 15px;margin-bottom:13px;border:1px solid #f8e2a64a;border-radius:17px;background:linear-gradient(100deg,#f8d77b24,#ffffff0a);box-shadow:0 8px 25px #071b1233}
+#level-map .map-world-emblem{display:grid;place-items:center;flex:none;width:45px;height:45px;border-radius:14px;background:#f4d27a24;font-size:27px}
+#level-map .map-intro-strip strong,#level-map .map-intro-strip small{display:block}
+#level-map .map-intro-strip strong{font-size:11px;letter-spacing:.14em;color:#ffe49a}
+#level-map .map-intro-strip small{margin-top:4px;font-size:11px;color:#d5e6c8}
+#level-map .map-country-mark{margin-left:auto;white-space:nowrap;font-size:10px;font-weight:900;letter-spacing:.08em;color:#fff0c3}
+#level-map .level-map-status{display:block;text-align:center;color:#f4e8bd;font-size:12px;font-weight:800;letter-spacing:.04em;margin-top:8px;margin-bottom:8px}
+#level-map .map-legend{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;margin-bottom:10px;color:#e0edcf;font-size:10px}
+#level-map .map-legend span{display:inline-flex;align-items:center;gap:6px}
+#level-map .legend-dot{display:inline-block;width:10px;height:10px;border-radius:50%;border:2px solid #fff0c5;background:#8ab66a}
+#level-map .legend-dot.current{background:#ffc94f;box-shadow:0 0 0 3px #ffc94f35}
+#level-map .legend-dot.locked{background:#526b58;border-color:#9bb09a}
+#level-map .level-map-list{gap:14px}
+#level-map .map-world-group{position:relative;overflow:hidden;padding:clamp(12px,2vw,20px);border:1px solid #e5d99c66;border-radius:22px;background:radial-gradient(ellipse at 8% 88%,#b0c66a35 0 14%,transparent 36%),radial-gradient(ellipse at 92% 10%,#d9c77b30 0 12%,transparent 33%),linear-gradient(145deg,#d8c88a 0%,#a5bb75 45%,#789e62 100%);box-shadow:0 10px 28px #061b123d;color:#24452c}
+#level-map .map-world-group::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.25;background:repeating-linear-gradient(155deg,transparent 0 24px,#fff8d0 25px 26px,transparent 27px 52px);mask-image:linear-gradient(90deg,transparent,#000 18%,#000 82%,transparent)}
+#level-map .map-world-header{position:relative;z-index:4;border-color:#526f4a55}
+#level-map .map-world-header strong{font-size:clamp(13px,2vw,17px);color:#25492b;text-shadow:0 1px #fff8d0}
+#level-map .map-world-header span{color:#3f5f3e;font-weight:800}
+#level-map .map-world-levels{min-height:190px;grid-template-rows:repeat(2,minmax(82px,auto));gap:16px clamp(28px,7vw,76px);padding:10px clamp(12px,4vw,44px)}
+#level-map .map-world-levels .map-route{opacity:.96}
+#level-map .map-route-shadow{stroke:#76512f;stroke-width:11;opacity:.48}
+#level-map .map-route-line{stroke:#fff4c7;stroke-width:6;stroke-dasharray:1.8 2.5;filter:drop-shadow(0 2px 1px #45683b)}
+#level-map .map-scenery{font-size:clamp(17px,3vw,27px);opacity:.9;filter:drop-shadow(0 2px 2px #fff8d0)}
+#level-map .map-world-levels .map-level{min-height:78px;border:3px solid #fff9df;border-radius:23px;background:linear-gradient(145deg,#fff9dd,#e6edc5);color:#3b653d;box-shadow:0 5px 0 #78965a,0 9px 16px #34552b50;transition:transform .16s,box-shadow .16s}
+#level-map .map-world-levels .map-level:not(:disabled){background:linear-gradient(145deg,#fff0a9,#f2b83c);color:#63471d;border-color:#fff4c7;box-shadow:0 5px 0 #bd812b,0 9px 16px #34552b50}
+#level-map .map-world-levels .map-level.current-level{outline:4px solid #fff8d5;outline-offset:2px;box-shadow:0 0 0 7px #f5c75e55,0 7px 0 #a66c21,0 12px 20px #24462980;transform:scale(1.07);animation:trail-current-pulse 1.8s ease-in-out infinite alternate}
+#level-map .map-world-levels .map-level:disabled{background:linear-gradient(145deg,#d8dfc8,#aab9a0);color:#637563;opacity:.94;border-color:#e6ebd9;box-shadow:0 4px 0 #758b73}
+#level-map .map-play-current{position:sticky;bottom:8px;display:block;min-height:54px;margin-top:15px;padding:13px 24px;border:2px solid #fff0bd;border-radius:17px;background:linear-gradient(135deg,#ffe28a,#f2ad32);color:#533715;font-size:16px;font-weight:950;box-shadow:0 7px 0 #a96e24,0 12px 24px #061b1266;z-index:8}
+#level-map .map-play-current:active{transform:translateY(3px);box-shadow:0 4px 0 #a96e24,0 8px 16px #061b1266}
+#level-map .level-map-navigation{padding:8px 0 4px}
+#level-map .level-map-navigation .level-map-status{font-size:10px}
+@keyframes trail-current-pulse{from{filter:brightness(1)}to{filter:brightness(1.12)}}
+@media(max-width:600px){#level-map .map-intro-strip{gap:8px;padding:10px;border-radius:14px}#level-map .map-world-emblem{width:38px;height:38px;font-size:22px}#level-map .map-intro-strip strong{font-size:9px}#level-map .map-intro-strip small{font-size:9px}#level-map .map-country-mark{font-size:8px}#level-map .map-world-levels{min-height:170px;gap:12px 18px;padding:8px}#level-map .map-world-levels .map-level{min-height:68px;border-radius:18px}#level-map .map-world-levels .map-level .map-level-objective{font-size:21px}#level-map .map-play-current{min-height:50px;font-size:14px}}
+@media(prefers-reduced-motion:reduce){#level-map .map-world-levels .map-level.current-level{animation:none}}
