@@ -20,6 +20,12 @@ test("harvest clear and refill animations stay in sync across browser and Androi
   assert.ok(browserCss.includes("@keyframes harvest-ring"));
   assert.ok(browserCss.includes("transition-delay:var(--harvest-delay,0ms)"));
   assert.ok(browserCss.includes(".crop-tile.harvest-impact::before{display:none;animation:none!important}"));
+  assert.ok(browserGame.includes("lastObjectiveProgressKey=null;"));
+  assert.ok(browserGame.includes("objective-progress-pop"));
+  assert.ok(browserGame.includes("objectiveProgressKey!==lastObjectiveProgressKey"));
+  assert.ok(browserCss.includes(".objective-card.objective-progress-pop"));
+  assert.ok(browserCss.includes("@keyframes objective-progress-pop"));
+  assert.ok(browserCss.includes("@media(prefers-reduced-motion:reduce){.objective-card.objective-progress-pop{animation:none!important}}"));
   assert.ok(browserCss.includes("translateY(-28px) scale(.82)"));
   assert.ok(browserCss.includes("@media(prefers-reduced-motion:reduce){.crop-tile.tile-arrive{animation:none}}"));
 });
