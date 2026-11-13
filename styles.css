@@ -1063,3 +1063,8 @@ body.focus-play .crop-tile{width:100%;height:100%;min-width:0;min-height:0;aspec
 .objective-card.objective-progress-pop{animation:objective-progress-pop .34s cubic-bezier(.2,.8,.2,1)}
 @keyframes objective-progress-pop{0%,100%{transform:scale(1);box-shadow:0 4px 0 #8eaa5b24}45%{transform:scale(1.015);box-shadow:0 0 0 3px #f3c84b88,0 7px 18px #dcae3c44}}
 @media(prefers-reduced-motion:reduce){.objective-card.objective-progress-pop{animation:none!important}}
+
+/* Larger harvests get a distinct radial sparkle burst, layered above the crop art. */
+.crop-tile.special-clearing.harvest-impact::after{content:"";position:absolute;inset:4%;z-index:3;pointer-events:none;border-radius:50%;background:repeating-conic-gradient(from 0deg,#fff8 0deg 5deg,transparent 5deg 30deg);-webkit-mask:radial-gradient(circle,transparent 0 12%,#000 18% 68%,transparent 78%);mask:radial-gradient(circle,transparent 0 12%,#000 18% 68%,transparent 78%);animation:harvest-spark-burst .3s cubic-bezier(.18,.72,.28,1) both}
+@keyframes harvest-spark-burst{from{opacity:.95;transform:scale(.28) rotate(-18deg)}to{opacity:0;transform:scale(1.28) rotate(18deg)}}
+@media(prefers-reduced-motion:reduce){.crop-tile.special-clearing.harvest-impact::after{display:none;animation:none!important}}
