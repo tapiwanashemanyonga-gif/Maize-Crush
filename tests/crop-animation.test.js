@@ -18,6 +18,10 @@ test("harvest clear and refill animations stay in sync across browser and Androi
   assert.ok(browserGame.includes("Math.max(delay,180)+70"));
   assert.ok(browserCss.includes(".crop-tile.harvest-impact::before"));
   assert.ok(browserCss.includes("@keyframes harvest-ring"));
+  assert.ok(browserCss.includes(".crop-tile.special-clearing.harvest-impact::after"));
+  assert.ok(browserCss.includes("repeating-conic-gradient(from 0deg,#fff8 0deg 5deg,transparent 5deg 30deg)"));
+  assert.ok(browserCss.includes("@keyframes harvest-spark-burst"));
+  assert.ok(browserCss.includes("@media(prefers-reduced-motion:reduce){.crop-tile.special-clearing.harvest-impact::after{display:none;animation:none!important}}"));
   assert.ok(browserCss.includes("transition-delay:var(--harvest-delay,0ms)"));
   assert.ok(browserCss.includes(".crop-tile.harvest-impact::before{display:none;animation:none!important}"));
   assert.ok(browserGame.includes("lastObjectiveProgressKey=null;"));
