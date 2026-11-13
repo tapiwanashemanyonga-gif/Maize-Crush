@@ -133,6 +133,17 @@ test("default crop field scales up on tablets and desktop while staying responsi
 test("crop board supports arrow-key focus navigation without changing the connect mechanic",()=>{const root=path.join(__dirname,".."),source=fs.readFileSync(path.join(root,"game.js"),"utf8"),html=fs.readFileSync(path.join(root,"index.html"),"utf8"),androidSource=fs.readFileSync(path.join(root,"android/app/src/main/assets/game.js"),"utf8"),androidHtml=fs.readFileSync(path.join(root,"android/app/src/main/assets/index.html"),"utf8");assert.match(source,/boardEl\.addEventListener\("keydown",e=>\{const cell=locateTile\(e\.target\)/);for(const key of ["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"])assert.ok(source.includes(key),"missing "+key+" keyboard navigation");assert.match(source,/const directions=\{ArrowUp:\[-1,0\],ArrowDown:\[1,0\],ArrowLeft:\[0,-1\],ArrowRight:\[0,1\]\}/);assert.match(source,/next\.focus\(\)/);assert.match(html,/Keyboard: use arrow keys to move, then Enter to connect crops/);assert.equal(source,androidSource,"browser and Android game controls must match");assert.equal(html,androidHtml,"browser and Android instructions must match")});
 
 
+test("keyboard activation can extend a connect path while pointer drags remain isolated",()=>{
+  const root=path.join(__dirname,".."),source=fs.readFileSync(path.join(root,"game.js"),"utf8"),android=fs.readFileSync(path.join(root,"android/app/src/main/assets/game.js"),"utf8");
+  const start=source.indexOf('boardEl.addEventListener("click"');
+  const end=source.indexOf('boardEl.addEventListener("keydown"',start);
+  assert.ok(start>=0&&end>start,"keyboard activation handler must remain distinct from arrow navigation");
+  const handler=source.slice(start,end);
+  assert.match(handler,/if\(e\.detail!==0\|\|activePointerId!==null\|\|busy\|\|completed\)return/);
+  assert.doesNotMatch(handler,/if\(e\.detail!==0\|\|pointerDown\|\|busy\|\|completed\)return/);
+  assert.equal(source,android,"browser and Android keyboard path behavior must match");
+});
+
 test("browser visual QA exercises keyboard navigation and Enter-based diagonal crop connections",()=>{
   const qa=fs.readFileSync(path.join(__dirname,"browser-visual-qa.js"),"utf8");
   assert.match(qa,/async function focusCellWithArrowKeys/);
