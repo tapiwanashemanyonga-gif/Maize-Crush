@@ -1300,3 +1300,18 @@ body.focus-play.tools-open .meta-actions .secondary-button{
     animation:none!important;transition:none!important
   }
 }
+
+/* Original illustrated world artwork, shared by web and Android bundles. */
+body.focus-play{
+  background:
+    linear-gradient(180deg,#24583b25 0%,#d6e9b21c 48%,#19482e4a 100%),
+    url("./assets/harvest-world.svg") center center / cover fixed;
+}
+#level-map.level-map[open]::before{
+  background:
+    linear-gradient(180deg,#1b563b50 0%,#2d704018 48%,#17472b55 100%),
+    url("./assets/harvest-world.svg") center center / cover no-repeat;
+  background-position:calc(50% + var(--journey-page,0)*-18px) center;
+  animation:none;
+  transition:background-position .9s cubic-bezier(.2,.7,.2,1);
+}
