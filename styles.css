@@ -1118,3 +1118,187 @@ body.focus-play .crop-tile{width:100%;height:100%;min-width:0;min-height:0;aspec
 #level-map.level-map{padding-bottom:max(18px,env(safe-area-inset-bottom))}
 #level-map .map-play-current{position:relative;left:auto;bottom:auto;transform:none;width:min(100%,900px);margin:12px auto 14px;z-index:5;pointer-events:auto}
 #level-map .map-play-current:active{transform:translateY(3px)}
+
+
+/* Maize Crush: professional illustrated Harvest World */
+#level-map.level-map{
+  width:min(100vw - 24px,1040px);
+  max-width:1040px;
+  max-height:min(94dvh,980px);
+  overflow-y:auto;
+  padding:clamp(16px,3vw,30px);
+  border:1px solid rgba(255,244,205,.42);
+  border-radius:28px;
+  color:#fff7dc;
+  background:
+    radial-gradient(ellipse at 12% 8%,rgba(255,220,130,.32),transparent 26%),
+    linear-gradient(180deg,#70c5dc 0%,#b7e1c9 35%,#477c4d 72%,#244c35 100%);
+  box-shadow:0 28px 90px rgba(5,28,19,.55),inset 0 1px rgba(255,255,255,.4);
+  scrollbar-width:thin;
+  scrollbar-color:#f4d27a #315b43;
+}
+#level-map.level-map::before{
+  content:"";
+  position:absolute;
+  z-index:0;
+  pointer-events:none;
+  inset:0 0 auto;
+  height:clamp(180px,30vh,290px);
+  border-radius:inherit;
+  background:
+    radial-gradient(ellipse at 14% 18%,rgba(255,255,255,.9) 0 3%,transparent 3.5%),
+    radial-gradient(ellipse at 18% 18%,rgba(255,255,255,.75) 0 5%,transparent 5.5%),
+    radial-gradient(ellipse at 78% 23%,rgba(255,255,255,.8) 0 4%,transparent 4.5%),
+    linear-gradient(180deg,rgba(63,156,194,.24),transparent 80%);
+}
+#level-map .map-head,#level-map .map-intro-strip,#level-map .level-map-status,
+#level-map .map-legend,#level-map .map-play-current,#level-map .level-map-list,
+#level-map .level-map-navigation{position:relative;z-index:1}
+#level-map .map-head{padding-bottom:8px}
+#level-map .map-head h2{
+  color:#fff8df;
+  font-size:clamp(30px,5vw,48px);
+  letter-spacing:-.035em;
+  text-shadow:0 3px 0 rgba(27,76,49,.45),0 8px 22px rgba(22,67,46,.24);
+}
+#level-map .map-head p{color:#f4ffe8;text-shadow:0 1px 4px rgba(20,67,44,.35)}
+#level-map .map-head .eyebrow{color:#fff0b7}
+#level-map .map-intro-strip{
+  background:rgba(27,83,58,.36);
+  border:1px solid rgba(255,255,255,.28);
+  backdrop-filter:blur(8px);
+}
+#level-map .map-world-group{
+  isolation:isolate;
+  min-height:245px;
+  margin:14px 0 18px;
+  padding:clamp(15px,2.5vw,24px);
+  border:1px solid rgba(255,255,255,.58);
+  border-radius:26px;
+  overflow:hidden;
+  background:
+    radial-gradient(ellipse at 12% 86%,#e9d77a 0 7%,transparent 24%),
+    radial-gradient(ellipse at 85% 80%,#b7cc6b 0 12%,transparent 29%),
+    linear-gradient(180deg,#a9d9e3 0%,#d9e6b1 42%,#8db66b 43%,#5d9656 100%);
+  box-shadow:0 14px 32px rgba(12,54,36,.28),inset 0 1px rgba(255,255,255,.7);
+  animation:harvest-world-arrive .5s cubic-bezier(.2,.8,.2,1) both;
+}
+#level-map .map-world-group::before{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  inset:24% -8% 12%;
+  background:
+    radial-gradient(ellipse at 15% 85%,#6b9d54 0 23%,transparent 23.5%),
+    radial-gradient(ellipse at 48% 100%,#80aa59 0 32%,transparent 32.5%),
+    radial-gradient(ellipse at 88% 84%,#527f49 0 27%,transparent 27.5%);
+  opacity:.9;
+}
+#level-map .map-world-group::after{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  inset:auto -5% -14%;
+  height:48%;
+  opacity:.38;
+  background:repeating-linear-gradient(166deg,transparent 0 13px,rgba(255,238,159,.62) 14px 16px,transparent 17px 31px);
+  transform:skewY(-5deg);
+}
+#level-map .map-world-header{
+  padding:0 2px 10px;
+  border-bottom:1px solid rgba(45,91,53,.2);
+}
+#level-map .map-world-header strong{color:#244c35;text-shadow:0 1px rgba(255,255,255,.5)}
+#level-map .map-world-header span{color:#315f3b}
+#level-map .map-world-levels{
+  min-height:174px;
+  padding:12px clamp(12px,5vw,58px);
+  gap:18px clamp(34px,8vw,90px);
+}
+#level-map .map-route{overflow:visible}
+#level-map .map-route-shadow{stroke:#744c2c;stroke-width:14;opacity:.55}
+#level-map .map-route-line{
+  stroke:#fff4c8;
+  stroke-width:7;
+  stroke-dasharray:2 2.8;
+  stroke-linecap:round;
+  filter:drop-shadow(0 2px 2px rgba(38,71,40,.45));
+  animation:harvest-road-flow 16s linear infinite;
+}
+#level-map .map-scenery{
+  font-size:clamp(21px,3.4vw,32px);
+  letter-spacing:clamp(8px,3vw,30px);
+  opacity:.98;
+  filter:drop-shadow(0 3px 2px rgba(32,73,42,.28));
+  transform:translateY(-3px);
+}
+#level-map .map-world-levels .map-level{
+  min-width:66px;
+  min-height:70px;
+  border:3px solid #fff9df;
+  border-radius:22px;
+  background:linear-gradient(155deg,#fffef0,#dbe9c5);
+  color:#315d3c;
+  box-shadow:0 5px 0 #78965a,0 10px 18px rgba(27,65,39,.28);
+  transition:transform .2s ease,filter .2s ease;
+}
+#level-map .map-world-levels .map-level:not(:disabled){
+  background:linear-gradient(155deg,#fff4b9,#f3b83e);
+  color:#67451a;
+  box-shadow:0 5px 0 #b77a2c,0 10px 18px rgba(27,65,39,.28);
+}
+#level-map .map-world-levels .map-level:not(:disabled):hover{transform:translateY(-4px) scale(1.04);filter:brightness(1.06)}
+#level-map .map-world-levels .map-level.current-level{
+  outline:4px solid rgba(255,255,255,.88);
+  outline-offset:3px;
+  box-shadow:0 0 0 8px rgba(255,210,83,.35),0 6px 0 #a66c21,0 13px 22px rgba(20,54,34,.4);
+  animation:trail-current-pulse 1.8s ease-in-out infinite alternate;
+}
+#level-map .map-world-levels .map-level:disabled{
+  background:linear-gradient(155deg,#e0e6d5,#a9b99d);
+  color:#647765;
+  border-color:#f1f3e7;
+}
+#level-map .map-play-current{
+  width:min(100%,430px);
+  min-height:56px;
+  margin:10px auto 14px;
+  border:2px solid #fff4c9;
+  border-radius:18px;
+  background:linear-gradient(135deg,#fff0a8,#f5b83e 58%,#e99a2e);
+  color:#533716;
+  font-size:16px;
+  font-weight:950;
+  box-shadow:0 6px 0 #a76d26,0 12px 22px rgba(25,60,39,.3);
+}
+#level-map .level-map-navigation{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding-top:12px;
+  border-top:1px solid rgba(255,255,255,.25);
+}
+#level-map .level-map-navigation .secondary-button{
+  border:1px solid rgba(255,255,255,.4);
+  border-radius:14px;
+  background:rgba(24,75,51,.55);
+  color:#fff8df;
+  min-height:42px;
+}
+#level-map .level-map-navigation .level-map-status{color:#f3ffe7}
+@keyframes harvest-road-flow{to{stroke-dashoffset:-48}}
+@keyframes harvest-world-arrive{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:600px){
+ #level-map.level-map{width:calc(100vw - 12px);max-height:96dvh;padding:14px;border-radius:22px}
+ #level-map .map-intro-strip{padding:9px 11px}
+ #level-map .map-world-group{min-height:215px;margin:10px 0 14px;padding:13px;border-radius:21px}
+ #level-map .map-world-levels{min-height:156px;gap:12px 14px;padding:8px 5px}
+ #level-map .map-world-levels .map-level{min-width:56px;min-height:62px;border-radius:17px}
+ #level-map .map-world-levels .map-level .map-level-objective{font-size:20px}
+ #level-map .map-scenery{font-size:20px;letter-spacing:8px}
+ #level-map .level-map-navigation .level-map-status{max-width:110px}
+}
+@media(prefers-reduced-motion:reduce){
+ #level-map .map-world-group,#level-map .map-route-line,#level-map .map-world-levels .map-level.current-level{animation:none}
+}
