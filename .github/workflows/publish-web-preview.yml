@@ -39,10 +39,13 @@ jobs:
           set -euo pipefail
           blender --background --python scripts/build_harvest_world_assets.py
           blender --background --python scripts/build_harvest_world_terrain.py
+          blender --background --python scripts/build_harvest_world_settlement.py
           test -s assets/harvest-world-farmstead.glb
           test -s assets/harvest-world-terrain.glb
+          test -s assets/harvest-world-settlement.glb
           cmp assets/harvest-world-farmstead.glb android/app/src/main/assets/assets/harvest-world-farmstead.glb
           cmp assets/harvest-world-terrain.glb android/app/src/main/assets/assets/harvest-world-terrain.glb
+          cmp assets/harvest-world-settlement.glb android/app/src/main/assets/assets/harvest-world-settlement.glb
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
