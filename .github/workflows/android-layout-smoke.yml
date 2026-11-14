@@ -16,6 +16,10 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+      - name: Install pinned Babylon.js runtime
+        run: npm install --no-save --no-package-lock --ignore-scripts babylonjs@9.36.0
+      - name: Prepare local web and Android 3D runtime
+        run: node scripts/prepare-babylon-runtime.js
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -66,8 +70,10 @@ jobs:
           node-version: 20
       - name: Validate browser QA script syntax
         run: node --check tests/browser-visual-qa.js
-      - name: Install pinned Playwright test dependency
-        run: npm install --no-save --no-package-lock playwright@1.56.1
+      - name: Install pinned Playwright and Babylon.js dependencies
+        run: npm install --no-save --no-package-lock playwright@1.56.1 babylonjs@9.36.0
+      - name: Prepare local web and Android 3D runtime
+        run: node scripts/prepare-babylon-runtime.js
       - name: Install Chromium and Linux browser dependencies
         run: npx playwright install --with-deps chromium
       - name: Run mobile and tablet visual and interaction checks
