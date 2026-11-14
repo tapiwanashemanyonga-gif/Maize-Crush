@@ -36,11 +36,12 @@ function buildWorld(startLevel){
   return BABYLON.SceneLoader.ImportMeshAsync("","./assets/",filename,scene).then(result=>{
    const anchor=new BABYLON.TransformNode(anchorName,scene);
    anchor.position.copyFrom(position);anchor.scaling.setAll(scale);anchor.rotation.y=rotationY;
-   result.meshes.forEach(mesh=>{if(mesh.name!=="__root__")mesh.parent=anchor});
-   const geometryCount=result.meshes.filter(mesh=>mesh.name!=="__root__"&&typeof mesh.getTotalVertices==="function"&&mesh.getTotalVertices()>0).length;
+   const geometryMeshes=result.meshes.filter(mesh=>mesh.name!=="__root__"&&typeof mesh.getTotalVertices==="function"&&mesh.getTotalVertices()>0);
+   geometryMeshes.forEach(mesh=>{mesh.parent=anchor});
+   const geometryCount=geometryMeshes.length;
    if(anchorName.includes("zimbabwe-terrain"))terrainMeshCount=geometryCount;
    else if(anchorName.includes("zimbabwe-farmstead"))farmsteadMeshCount=geometryCount;
-   else if(anchorName.includes("rural-settlement")){settlementMeshCount+=geometryCount;settlementAnchors.push(anchor);}
+   else if(anchorName.includes("rural-settlement")){settlementMeshCount+=geometryCount;settlementAnchors.push({anchor,meshes:geometryMeshes});}
    return true;
   }).catch(error=>{console.warn("Authored world asset unavailable:",filename,error);return false});
  };
@@ -50,7 +51,7 @@ function buildWorld(startLevel){
  const farmsteadZ=14,farmsteadX=roadX(farmsteadZ)+11.5;
  const farmsteadPromise=loadAuthoredAsset("harvest-world-farmstead.glb","blender-authored-zimbabwe-farmstead",new BABYLON.Vector3(farmsteadX,terrainHeight(farmsteadX,farmsteadZ),farmsteadZ),.72).then(ok=>{farmsteadLoaded=ok;return ok});
  const settlementEastZ=38,settlementEastX=roadX(settlementEastZ)+12.5;
- const settlementWestZ=74,settlementWestX=roadX(settlementWestZ)-12.5;
+ const settlementWestZ=74,settlementWestX=roadX(settlementWestZ)-4.5;
  const settlementEast=loadAuthoredAsset("harvest-world-settlement.glb","blender-authored-rural-settlement-east",new BABYLON.Vector3(settlementEastX,terrainHeight(settlementEastX,settlementEastZ),settlementEastZ),.72);
  const settlementWest=loadAuthoredAsset("harvest-world-settlement.glb","blender-authored-rural-settlement-west",new BABYLON.Vector3(settlementWestX,terrainHeight(settlementWestX,settlementWestZ),settlementWestZ),.72,Math.PI);
  const settlementPromise=Promise.all([settlementEast,settlementWest]).then(results=>{settlementLoaded=results.every(Boolean);return settlementLoaded});
@@ -91,5 +92,28 @@ function start(canvasId,level){
  if(engine){if(scene&&camera)scene.stopAnimation(camera);engine.dispose();engine=null;scene=null;camera=null;gateMeshes=[]}
  try{engine=new BABYLON.Engine(canvas,true,{preserveDrawingBuffer:false,stencil:true,antialias:true,powerPreference:"high-performance"});buildWorld(level||1);focusLevel(level||pageStart,false);engine.runRenderLoop(()=>{if(scene)scene.render()});if(!resizeBound){window.addEventListener("resize",()=>engine&&engine.resize());resizeBound=true}return true}catch(error){console.error("3D Harvest World failed:",error);return false}
 }
-root.HarvestWorld3D={start,focusLevel,get ready(){return!!scene},get assetsReady(){return assetsReady},get activeLevel(){return activeLevel},get cameraPosition(){return camera?camera.position.asArray():null},get cameraTarget(){return camera?camera.target.asArray():null},get gatePositions(){return gateMeshes.map(item=>item.group.position.asArray())},get settlementPositions(){return settlementAnchors.map(anchor=>anchor.position.asArray())},get farmsteadLoaded(){return farmsteadLoaded},get terrainLoaded(){return terrainLoaded},get settlementLoaded(){return settlementLoaded},get settlementMeshCount(){return settlementMeshCount},get terrainMeshCount(){return terrainMeshCount},get farmsteadMeshCount(){return farmsteadMeshCount},get gateCount(){return gateMeshes.length},dispose(){if(scene&&camera)scene.stopAnimation(camera);if(camera)camera.overrideCloneAlphaBetaRadius=null;farmsteadMeshCount=0;terrainMeshCount=0;settlementMeshCount=0;settlementAnchors=[];camera=null;if(engine){engine.stopRenderLoop();engine.dispose();engine=null;scene=null;gateMeshes=[]}}};
+function getSettlementScreenBounds(){
+ if(!engine||!scene||!camera)return[];
+ camera.computeWorldMatrix(true);
+ const width=engine.getRenderWidth(),height=engine.getRenderHeight();
+ const viewport=camera.viewport.toGlobal(width,height),transform=scene.getTransformMatrix();
+ return settlementAnchors.map(({meshes},index)=>{
+  let left=Infinity,top=Infinity,right=-Infinity,bottom=-Infinity,depthMin=Infinity,depthMax=-Infinity;
+  for(const mesh of meshes){
+   mesh.computeWorldMatrix(true);
+   const bounds=mesh.getBoundingInfo().boundingBox,min=bounds.minimumWorld,max=bounds.maximumWorld;
+   for(let x=0;x<2;x++)for(let y=0;y<2;y++)for(let z=0;z<2;z++){
+    const point=new BABYLON.Vector3(x?max.x:min.x,y?max.y:min.y,z?max.z:min.z);
+    const projected=BABYLON.Vector3.Project(point,BABYLON.Matrix.Identity(),transform,viewport);
+    left=Math.min(left,projected.x);right=Math.max(right,projected.x);
+    top=Math.min(top,projected.y);bottom=Math.max(bottom,projected.y);
+    depthMin=Math.min(depthMin,projected.z);depthMax=Math.max(depthMax,projected.z);
+   }
+  }
+  const visibleWidth=Math.max(0,Math.min(right,width)-Math.max(left,0));
+  const visibleHeight=Math.max(0,Math.min(bottom,height)-Math.max(top,0));
+  return{index,left,top,right,bottom,depthMin,depthMax,visible:depthMax>=0&&depthMin<=1&&visibleWidth>=24&&visibleHeight>=24};
+ });
+}
+root.HarvestWorld3D={start,focusLevel,get ready(){return!!scene},get assetsReady(){return assetsReady},get activeLevel(){return activeLevel},get cameraPosition(){return camera?camera.position.asArray():null},get cameraTarget(){return camera?camera.target.asArray():null},get gatePositions(){return gateMeshes.map(item=>item.group.position.asArray())},get settlementPositions(){return settlementAnchors.map(item=>item.anchor.position.asArray())},get settlementScreenBounds(){return getSettlementScreenBounds()},get farmsteadLoaded(){return farmsteadLoaded},get terrainLoaded(){return terrainLoaded},get settlementLoaded(){return settlementLoaded},get settlementMeshCount(){return settlementMeshCount},get terrainMeshCount(){return terrainMeshCount},get farmsteadMeshCount(){return farmsteadMeshCount},get gateCount(){return gateMeshes.length},dispose(){if(scene&&camera)scene.stopAnimation(camera);if(camera)camera.overrideCloneAlphaBetaRadius=null;farmsteadMeshCount=0;terrainMeshCount=0;settlementMeshCount=0;settlementAnchors=[];camera=null;if(engine){engine.stopRenderLoop();engine.dispose();engine=null;scene=null;gateMeshes=[]}}};
 })(window);

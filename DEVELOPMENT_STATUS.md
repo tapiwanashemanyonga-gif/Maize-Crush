@@ -311,3 +311,12 @@ Complete physical Android WebView validation on a modest/older phone and a curre
 - Corrected both camera animations to pass `undefined` for the optional easing function and the completion callback in its documented argument position. The final callback now runs only after both target and position animations complete, then reapplies the exact destination camera position and clears the override. Starting or disposing the scene also stops in-flight camera animations.
 - The browser QA failure is recorded in run `43604224127`; gameplay tests (141/141), Android debug APK and unsigned release candidate passed on head `3ced950be8ceb76862ba60caf0949433bff6d52f`. The updated animation code is not yet validated.
 - Next step: rerun tests, APK/release builds and phone/tablet browser QA on the corrected commit; inspect screenshots at levels 1 and 3 before merging PR #130.
+
+
+### Level-3 settlement framing — screen-space verification added (CI pending)
+
+- Inspected the latest PR #130 browser artifact `14118112732` on head `a8c824a78dbac45e820acf48332ae05456c11cf3`. The initial 390×844 map showed the roadside farmstead, but the level-3 focused screenshot did not show a house; at 1024×768 the settlement was only partly visible at the left edge.
+- The previous camera test checked only that a settlement anchor was within 18 world units of gate 3. That did not prove the authored buildings were actually inside the camera viewport.
+- Moved the western settlement anchor from 12.5 to 4.5 world units west of the road centreline while retaining the 0.72 scale and road-facing rotation. This places the main house closer to the camera centreline while keeping the yard beside, not across, the road.
+- Added projected screen-space bounds for the imported settlement meshes and made mobile/tablet browser QA fail unless at least one settlement model has a meaningful visible area after the camera follows level 3. The existing camera travel and 39-unit radius checks remain in place.
+- Next step: run the complete PR checks, inspect refreshed level-3 screenshots at 390×844 and 1024×768, and merge PR #130 only if the actual homes are visible and every required workflow passes on the same head. Physical Android validation remains outstanding.

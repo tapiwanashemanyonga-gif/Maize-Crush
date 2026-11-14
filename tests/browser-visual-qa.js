@@ -131,6 +131,8 @@ async function enterGameFromJourney(page, verify = false) {
       const position = world.cameraPosition;
       const gate = world.gatePositions[2];
       const settlements = world.settlementPositions;
+      const settlementScreenBounds = world.settlementScreenBounds;
+      const visibleSettlementCount = settlementScreenBounds.filter(bounds => bounds.visible).length;
       const nearestSettlement = Math.min(...settlements.map(point => Math.hypot(point[0] - gate[0], point[2] - gate[2])));
       return {
         activeLevel: world.activeLevel,
@@ -138,6 +140,8 @@ async function enterGameFromJourney(page, verify = false) {
         cameraTarget: target,
         gate,
         settlements,
+        settlementScreenBounds,
+        visibleSettlementCount,
         nearestSettlement,
         radius: Math.hypot(position[0] - target[0], position[1] - target[1], position[2] - target[2])
       };
@@ -149,7 +153,8 @@ async function enterGameFromJourney(page, verify = false) {
         Math.abs(targetShift) < 50 ||
         Math.abs(positionShift - targetShift) > 1 ||
         Math.abs(focusCheck.radius - 39) > 1 ||
-        focusCheck.nearestSettlement > 18) {
+        focusCheck.nearestSettlement > 18 ||
+        focusCheck.visibleSettlementCount < 1) {
       throw new Error("Harvest Trail camera did not follow the current road level and frame its settlement: " + JSON.stringify(focusCheck));
     }
     await page.screenshot({
