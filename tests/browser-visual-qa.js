@@ -94,6 +94,9 @@ async function enterGameFromJourney(page, verify = false) {
       terrainLoaded: !!window.HarvestWorld3D?.terrainLoaded,
       settlementLoaded: !!window.HarvestWorld3D?.settlementLoaded,
       settlementMeshCount: Number(window.HarvestWorld3D?.settlementMeshCount || 0),
+      terrainMeshCount: Number(window.HarvestWorld3D?.terrainMeshCount || 0),
+      farmsteadMeshCount: Number(window.HarvestWorld3D?.farmsteadMeshCount || 0),
+      gateCount: Number(window.HarvestWorld3D?.gateCount || 0),
       canvas: !!document.querySelector("#harvest-world-canvas"),
       fallbackHidden: !!document.querySelector("#harvest-world-fallback")?.hidden,
       title: document.querySelector("#level-map h2")?.textContent?.trim(),
@@ -105,7 +108,7 @@ async function enterGameFromJourney(page, verify = false) {
       perspective: getComputedStyle(document.querySelector("#level-map .map-world-levels")).perspective,
       play: document.querySelector("#map-play-current")?.textContent?.trim()
     }));
-    if (!journey.threeD || !journey.farmsteadLoaded || !journey.terrainLoaded || !journey.settlementLoaded || journey.settlementMeshCount < 1 || journey.settlementMeshCount > 24 || !journey.canvas || !journey.fallbackHidden || journey.title !== "Harvest Trail" || journey.chapters < 1 || journey.markers !== 4 || !journey.road || journey.roadLayers < 5 || !journey.vehicle || journey.perspective === "none" || !/^▶ Play Level 1$/.test(journey.play || "")) {
+    if (!journey.threeD || !journey.farmsteadLoaded || !journey.terrainLoaded || !journey.settlementLoaded || journey.settlementMeshCount < 1 || journey.settlementMeshCount > 24 || journey.terrainMeshCount < 1 || journey.terrainMeshCount > 12 || journey.farmsteadMeshCount < 1 || journey.farmsteadMeshCount > 12 || journey.gateCount !== 4 || !journey.canvas || !journey.fallbackHidden || journey.title !== "Harvest Trail" || journey.chapters < 1 || journey.markers !== 4 || !journey.road || journey.roadLayers < 5 || !journey.vehicle || journey.perspective === "none" || !/^▶ Play Level 1$/.test(journey.play || "")) {
       throw new Error("Harvest Trail launch screen is incomplete: " + JSON.stringify(journey));
     }
   }
@@ -115,6 +118,16 @@ async function enterGameFromJourney(page, verify = false) {
     fullPage: false,
     animations: "disabled"
   });
+  if (verify && (mapViewport === "390x844" || mapViewport === "1024x768")) {
+    await page.evaluate(() => window.HarvestWorld3D.focusLevel(3, false));
+    await wait(500);
+    await page.screenshot({
+      path: path.join(OUTPUT, "harvest-trail-3d-settlement-" + mapViewport + ".png"),
+      fullPage: false,
+      animations: "disabled"
+    });
+    await page.evaluate(() => window.HarvestWorld3D.focusLevel(1, false));
+  }
   await page.locator("#map-play-current").click();
   await page.waitForFunction(() => { const map=document.querySelector("#level-map"); return !!map && !map.open; }, null, {timeout:3000});
 }
@@ -627,7 +640,7 @@ async function runViewport(browser, profile, viewport) {
     localStorage.setItem("maize-crush-tutorial-seen", "true");
   });
   await page.goto(BASE_URL, { waitUntil: "networkidle", timeout: 30000 });
-  await enterGameFromJourney(page);
+  await enterGameFromJourney(page, true);
   await page.locator("#game-board .crop-tile").first().waitFor({ state: "visible", timeout: 15000 });
   await page.waitForFunction(() => document.querySelectorAll("#game-board .crop-tile").length === 64);
 

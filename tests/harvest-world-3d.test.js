@@ -14,7 +14,7 @@ test("3D Harvest World is a Babylon scene shared with Android", () => {
  assert.equal(android, web, "Android 3D runtime must match browser runtime");
  assert.equal(androidGame, game, "Android game progression must match browser progression");
  assert.equal(androidHtml, html, "Android HTML must match browser HTML");
- for (const feature of ["BABYLON.Engine", "level-gate-", "ArcRotateCamera", "onSelectLevel", "ImportMeshAsync", "harvest-world-farmstead.glb", "harvest-world-terrain.glb", "harvest-world-settlement.glb", "terrainLoaded", "settlementLoaded", "settlementMeshCount", "Promise.all"]) {
+ for (const feature of ["BABYLON.Engine", "level-gate-", "ArcRotateCamera", "onSelectLevel", "ImportMeshAsync", "harvest-world-farmstead.glb", "harvest-world-terrain.glb", "harvest-world-settlement.glb", "terrainLoaded", "settlementLoaded", "settlementMeshCount", "terrainMeshCount", "farmsteadMeshCount", "gateCount", "Promise.all"]) {
   assert.ok(web.includes(feature), "3D scene is missing " + feature);
  }
  assert.match(html, /src="\.\/vendor\/babylon\.js"/);
@@ -29,6 +29,11 @@ test("3D Harvest World is a Babylon scene shared with Android", () => {
  assert.ok(terrainBuilder.includes("Continuous asphalt road surface"));
  assert.ok(terrainBuilder.includes("Sculpted Zimbabwe countryside terrain"));
  assert.ok(terrainBuilder.includes("terrain_height"));
+ assert.ok(terrainBuilder.includes("verts.append((x, -z, broad + undulation - .5))"));
+ assert.ok(terrainBuilder.includes("MAX_TERRAIN_MESHES = 12"));
+ const farmsteadBuilder = fs.readFileSync(path.join(root, "scripts/build_harvest_world_assets.py"), "utf8");
+ assert.ok(farmsteadBuilder.includes("MAX_FARMSTEAD_MESHES = 12"));
+ assert.ok(farmsteadBuilder.includes("bpy.ops.object.join()"));
  const settlementBuilder = fs.readFileSync(path.join(root, "scripts/build_harvest_world_settlement.py"), "utf8");
  for (const feature of ["Main homestead", "Second dwelling", "Traditional thatched grain-store roof", "Elevated galvanized water tank", "Community borehole", "Homestead fence rail"]) assert.ok(settlementBuilder.includes(feature), "settlement model is missing " + feature);
  assert.ok(web.includes("blender-authored-rural-settlement-west"));

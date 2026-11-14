@@ -1,7 +1,7 @@
 (function(root){
 "use strict";
 const LEVEL_GAP=18;
-let engine=null,scene=null,camera=null,gateMeshes=[],activeLevel=1,pageStart=1,resizeBound=false,assetsReady=false,farmsteadLoaded=false,terrainLoaded=false,settlementLoaded=false,settlementMeshCount=0;
+let engine=null,scene=null,camera=null,gateMeshes=[],activeLevel=1,pageStart=1,resizeBound=false,assetsReady=false,farmsteadLoaded=false,terrainLoaded=false,settlementLoaded=false,farmsteadMeshCount=0,terrainMeshCount=0,settlementMeshCount=0;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 function mat(name,color,roughness){
  const m=new BABYLON.StandardMaterial(name,scene);m.diffuseColor=BABYLON.Color3.FromHexString(color);m.specularColor=new BABYLON.Color3(.12,.12,.12);m.roughness=roughness||.9;return m;
@@ -23,7 +23,7 @@ function createGate(level,point){
  return group;
 }
 function buildWorld(startLevel){
- assetsReady=false;farmsteadLoaded=false;terrainLoaded=false;settlementLoaded=false;settlementMeshCount=0;
+ assetsReady=false;farmsteadLoaded=false;terrainLoaded=false;settlementLoaded=false;farmsteadMeshCount=0;terrainMeshCount=0;settlementMeshCount=0;
  pageStart=Math.floor((Math.max(1,Number(startLevel)||1)-1)/4)*4+1;
  scene=new BABYLON.Scene(engine);scene.clearColor=new BABYLON.Color4(.48,.76,.91,1);scene.fogMode=BABYLON.Scene.FOGMODE_EXP2;scene.fogColor=new BABYLON.Color3(.48,.76,.91);scene.fogDensity=.006;
  const hemi=new BABYLON.HemisphericLight("sky-light",new BABYLON.Vector3(0,1,0),scene);hemi.intensity=.82;
@@ -35,9 +35,10 @@ function buildWorld(startLevel){
    const anchor=new BABYLON.TransformNode(anchorName,scene);
    anchor.position.copyFrom(position);anchor.scaling.setAll(scale);
    result.meshes.forEach(mesh=>{if(mesh.name!=="__root__")mesh.parent=anchor});
-   if(anchorName.includes("rural-settlement")){
-    settlementMeshCount+=result.meshes.filter(mesh=>mesh.name!=="__root__"&&typeof mesh.getTotalVertices==="function"&&mesh.getTotalVertices()>0).length;
-   }
+   const geometryCount=result.meshes.filter(mesh=>mesh.name!=="__root__"&&typeof mesh.getTotalVertices==="function"&&mesh.getTotalVertices()>0).length;
+   if(anchorName.includes("zimbabwe-terrain"))terrainMeshCount=geometryCount;
+   else if(anchorName.includes("zimbabwe-farmstead"))farmsteadMeshCount=geometryCount;
+   else if(anchorName.includes("rural-settlement"))settlementMeshCount+=geometryCount;
    return true;
   }).catch(error=>{console.warn("Authored world asset unavailable:",filename,error);return false});
  };
@@ -70,5 +71,5 @@ function start(canvasId,level){
  if(engine){engine.dispose();engine=null;scene=null;gateMeshes=[]}
  try{engine=new BABYLON.Engine(canvas,true,{preserveDrawingBuffer:false,stencil:true,antialias:true,powerPreference:"high-performance"});buildWorld(level||1);focusLevel(level||pageStart,false);engine.runRenderLoop(()=>{if(scene)scene.render()});if(!resizeBound){window.addEventListener("resize",()=>engine&&engine.resize());resizeBound=true}return true}catch(error){console.error("3D Harvest World failed:",error);return false}
 }
-root.HarvestWorld3D={start,focusLevel,get ready(){return!!scene},get assetsReady(){return assetsReady},get farmsteadLoaded(){return farmsteadLoaded},get terrainLoaded(){return terrainLoaded},get settlementLoaded(){return settlementLoaded},get settlementMeshCount(){return settlementMeshCount},dispose(){settlementMeshCount=0;if(engine){engine.stopRenderLoop();engine.dispose();engine=null;scene=null;gateMeshes=[]}}};
+root.HarvestWorld3D={start,focusLevel,get ready(){return!!scene},get assetsReady(){return assetsReady},get farmsteadLoaded(){return farmsteadLoaded},get terrainLoaded(){return terrainLoaded},get settlementLoaded(){return settlementLoaded},get settlementMeshCount(){return settlementMeshCount},get terrainMeshCount(){return terrainMeshCount},get farmsteadMeshCount(){return farmsteadMeshCount},get gateCount(){return gateMeshes.length},dispose(){farmsteadMeshCount=0;terrainMeshCount=0;settlementMeshCount=0;if(engine){engine.stopRenderLoop();engine.dispose();engine=null;scene=null;gateMeshes=[]}}};
 })(window);
