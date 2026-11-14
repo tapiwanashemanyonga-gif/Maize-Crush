@@ -355,6 +355,19 @@ async function useFreshField(page) {
   if (await page.locator("body").evaluate(body => body.classList.contains("tools-open"))) await page.locator("#tools-toggle-button").click();
 }
 
+async function dismissResultDialogs(page) {
+  for (const [dialog, closeButton] of [
+    ["#level-complete-dialog", "#level-complete-close"],
+    ["#level-failed-dialog", "#level-failed-close"]
+  ]) {
+    const isOpen = await page.locator(dialog).evaluate(element => !!element && (element.open || element.hasAttribute("open"))).catch(() => false);
+    if (isOpen) {
+      await page.locator(closeButton).click();
+      await page.locator(dialog).waitFor({ state: "hidden", timeout: 5000 });
+    }
+  }
+}
+
 async function runLongSessionSoak(page, profile) {
   const client = await page.context().newCDPSession(page);
   await client.send("Performance.enable");
@@ -376,6 +389,7 @@ async function runLongSessionSoak(page, profile) {
   // Read the current opening move budget from the game engine so the soak stays
   // valid when the difficulty curve is intentionally rebalanced.
   const openingMoves = await page.evaluate(() => { const match = document.querySelector("#level-label").textContent.match(/Level\s+(\d+)/); const level = match ? Number(match[1]) : 1; return window.MaizeCrush.movesForLevel(level); });
+  await dismissResultDialogs(page);
   await page.locator("#restart-button").click();
   await page.waitForFunction((expectedMoves) =>
     Number(document.querySelector("#moves-value").textContent) === expectedMoves &&
@@ -395,6 +409,7 @@ async function runLongSessionSoak(page, profile) {
 
   while (harvests < 20 && rounds < maxRounds) {
     if (rounds > 0) {
+      await dismissResultDialogs(page);
       await page.locator("#restart-button").click();
       await page.waitForFunction((expectedMoves) =>
         Number(document.querySelector("#moves-value").textContent) === expectedMoves &&
@@ -592,7 +607,6 @@ async function runViewport(browser, profile, viewport) {
     localStorage.setItem("maize-crush-tutorial-seen", "true");
   });
   await page.goto(BASE_URL, { waitUntil: "networkidle", timeout: 30000 });
-  await page.screenshot({path:path.join(OUTPUT,profile+"-harvest-trail-map.png"),fullPage:false,animations:"disabled"});
   await enterGameFromJourney(page);
   await page.locator("#game-board .crop-tile").first().waitFor({ state: "visible", timeout: 15000 });
   await page.waitForFunction(() => document.querySelectorAll("#game-board .crop-tile").length === 64);
@@ -608,8 +622,16 @@ async function runViewport(browser, profile, viewport) {
     boardBottom: document.querySelector("#game-board").getBoundingClientRect().bottom,
     actionsBottom: document.querySelector(".action-row").getBoundingClientRect().bottom,
     boardRatio: document.querySelector("#game-board").getBoundingClientRect().width / document.querySelector("#game-board").getBoundingClientRect().height,
-    actionButtonRows: Array.from(new Set(Array.from(document.querySelectorAll(".action-row button:not([hidden])")).map(button => Math.round(button.getBoundingClientRect().top)))),
-    actionButtonHeights: Array.from(document.querySelectorAll(".action-row button:not([hidden])")).map(button => button.getBoundingClientRect().height)
+    actionButtonRows: Array.from(new Set(Array.from(document.querySelectorAll(".action-row button")).filter(button => {
+      const style = getComputedStyle(button);
+      const rect = button.getBoundingClientRect();
+      return !button.hidden && style.display !== "none" && style.visibility !== "hidden" && rect.width > 0 && rect.height > 0;
+    }).map(button => Math.round(button.getBoundingClientRect().top)))),
+    actionButtonHeights: Array.from(document.querySelectorAll(".action-row button")).filter(button => {
+      const style = getComputedStyle(button);
+      const rect = button.getBoundingClientRect();
+      return !button.hidden && style.display !== "none" && style.visibility !== "hidden" && rect.width > 0 && rect.height > 0;
+    }).map(button => button.getBoundingClientRect().height)
   }));
   if (dimensions.documentWidth > dimensions.viewportWidth + 2) {
     throw new Error(profile + " layout overflows horizontally: " + JSON.stringify(dimensions));
