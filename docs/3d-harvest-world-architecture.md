@@ -86,3 +86,19 @@ Known release blockers:
 - The scene is an initial 3D proof, not the final art direction. Lighting, terrain silhouettes, house detail, road furniture, regional transitions, frame-rate and memory budgets still need a dedicated polish pass.
 
 Do not merge this proof as a production release until the release blockers above are addressed or explicitly accepted and documented.
+
+## Blender-authored environment asset milestone
+
+The next art-quality milestone introduces a real Blender-authored GLB asset rather than relying only on Babylon primitive meshes.
+
+Source of truth:
+- `scripts/build_harvest_world_assets.py` builds the Zimbabwe farmstead scene in Blender.
+- The generated web asset is `assets/harvest-world-farmstead.glb`.
+- The exact same GLB is copied to `android/app/src/main/assets/assets/harvest-world-farmstead.glb`.
+- The Babylon glTF loader is pinned and packaged locally beside the Babylon engine. The app does not need a CDN to load the model.
+
+The farmstead scene includes a plaster farmhouse with pitched corrugated roof, veranda, framed windows, front door and chimney; a raised water tank; a round grain store; red-earth maize garden with fencing; a msasa tree; and stepping stones.
+
+CI generates the GLB using headless Blender before web publishing, Android builds and browser QA. It verifies the web and Android files are byte-identical. Browser QA waits for the imported GLB and fails if the authored model does not load. The procedural farmhouse remains as a fallback for runtime import failures.
+
+This is an authored asset milestone, not the final environment art pass. Next art tasks are terrain and road-side prop models, multiple house variants, improved vegetation, shadows, texture atlases and mobile performance profiling.
