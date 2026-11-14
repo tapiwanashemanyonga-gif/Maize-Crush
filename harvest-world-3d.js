@@ -6,14 +6,14 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 function mat(name,color,roughness){
  const m=new BABYLON.StandardMaterial(name,scene);m.diffuseColor=BABYLON.Color3.FromHexString(color);m.specularColor=new BABYLON.Color3(.12,.12,.12);m.roughness=roughness||.9;return m;
 }
-function box(name,pos,size,material,rotationY){
- const m=BABYLON.MeshBuilder.CreateBox(name,{width:size[0],height:size[1],depth:size[2]},scene);m.position.copyFrom(pos);m.material=material;if(rotationY)m.rotation.y=rotationY;return m;
+function box(name,pos,size,material,rotationY,rotationZ){
+ const m=BABYLON.MeshBuilder.CreateBox(name,{width:size[0],height:size[1],depth:size[2]},scene);m.position.copyFrom(pos);m.material=material;if(rotationY)m.rotation.y=rotationY;if(rotationZ)m.rotation.z=rotationZ;return m;
 }
 function buildHouse(x,z,scale){
  const wall=mat("home-wall-"+x,"#e8d6ae"),roof=mat("home-roof-"+x,"#a84f35"),dark=mat("home-dark-"+x,"#563b2b"),glass=mat("home-glass-"+x,"#6bb7c8");
  box("farmhouse-walls",new BABYLON.Vector3(x,1.5,z),[4*scale,3*scale,3.5*scale],wall);
- const left=box("farmhouse-roof-left",new BABYLON.Vector3(x-1.05*scale,3.25*scale,z),[2.5*scale,.22*scale,4.1*scale],roof,-.48);
- const right=box("farmhouse-roof-right",new BABYLON.Vector3(x+1.05*scale,3.25*scale,z),[2.5*scale,.22*scale,4.1*scale],roof,.48);
+ const left=box("farmhouse-roof-left",new BABYLON.Vector3(x-1.05*scale,3.25*scale,z),[2.5*scale,.22*scale,4.1*scale],roof,0,-.48);
+ const right=box("farmhouse-roof-right",new BABYLON.Vector3(x+1.05*scale,3.25*scale,z),[2.5*scale,.22*scale,4.1*scale],roof,0,.48);
  box("farmhouse-door",new BABYLON.Vector3(x,0.85*scale,z-1.78*scale),[.8*scale,1.7*scale,.08*scale],dark);
  for(const dx of [-1.25,1.25])box("farmhouse-window",new BABYLON.Vector3(x+dx*scale,1.85*scale,z-1.79*scale),[.7*scale,.65*scale,.08*scale],glass);
  box("farmhouse-chimney",new BABYLON.Vector3(x+1.15*scale,4*scale,z+.55*scale),[.42*scale,1.2*scale,.42*scale],dark);
