@@ -1,7 +1,7 @@
 (function(root){
 "use strict";
 const LEVEL_GAP=18;
-let engine=null,scene=null,camera=null,gateMeshes=[],activeLevel=1,resizeBound=false;
+let engine=null,scene=null,camera=null,gateMeshes=[],activeLevel=1,pageStart=1,resizeBound=false;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 function mat(name,color,roughness){
  const m=new BABYLON.StandardMaterial(name,scene);m.diffuseColor=BABYLON.Color3.FromHexString(color);m.specularColor=new BABYLON.Color3(.12,.12,.12);m.roughness=roughness||.9;return m;
@@ -20,7 +20,7 @@ function buildHouse(x,z,scale){
 }
 function createGate(level,point){
  const wood=mat("gate-wood-"+level,"#80512f"),gold=mat("gate-gold-"+level,"#f6c653"),stone=mat("gate-stone-"+level,"#d9d0b6");
- const group=new BABYLON.TransformNode("level-gate-"+level,scene);group.position.copyFrom(point);
+ const group=new BABYLON.TransformNode("level-gate-"+level,scene);group.position.copyFrom(point);group.metadata={level};
  const postA=box("gate-post",new BABYLON.Vector3(-1.25,1.25,0),[.34,2.5,.34],wood);postA.parent=group;
  const postB=box("gate-post",new BABYLON.Vector3(1.25,1.25,0),[.34,2.5,.34],wood);postB.parent=group;
  const beam=box("gate-beam",new BABYLON.Vector3(0,2.45,0),[2.9,.38,.42],gold);beam.parent=group;
@@ -31,7 +31,8 @@ function createGate(level,point){
  gateMeshes.push({level,group,sign,posts:[postA,postB,beam,base]});
  return group;
 }
-function buildWorld(){
+function buildWorld(startLevel){
+ pageStart=Math.floor((Math.max(1,Number(startLevel)||1)-1)/4)*4+1;
  scene=new BABYLON.Scene(engine);scene.clearColor=new BABYLON.Color4(.48,.76,.91,1);scene.fogMode=BABYLON.Scene.FOGMODE_EXP2;scene.fogColor=new BABYLON.Color3(.48,.76,.91);scene.fogDensity=.006;
  const hemi=new BABYLON.HemisphericLight("sky-light",new BABYLON.Vector3(0,1,0),scene);hemi.intensity=.82;
  const sun=new BABYLON.DirectionalLight("sunlight",new BABYLON.Vector3(-.55,-1,.35),scene);sun.position=new BABYLON.Vector3(30,55,-20);sun.intensity=1.05;
@@ -53,13 +54,14 @@ function buildWorld(){
  const riverPath=[new BABYLON.Vector3(34,.04,4),new BABYLON.Vector3(39,.04,25),new BABYLON.Vector3(34,.04,45),new BABYLON.Vector3(40,.04,67),new BABYLON.Vector3(36,.04,92),new BABYLON.Vector3(43,.04,125)];
  const river=BABYLON.MeshBuilder.CreateTube("river-valley",{path:riverPath,radius:2.6,tessellation:12},scene);river.material=riverMat;
  const gatePoints=[new BABYLON.Vector3(0,0,2),new BABYLON.Vector3(-7,0,36),new BABYLON.Vector3(8,0,73),new BABYLON.Vector3(5,0,112)];
- gatePoints.forEach((p,i)=>createGate(i+1,p));
+ gatePoints.forEach((p,i)=>createGate(pageStart+i,p));
+ scene.onPointerObservable.add(info=>{if(info.type!==BABYLON.PointerEventTypes.POINTERTAP)return;const pick=scene.pick(scene.pointerX,scene.pointerY);if(!pick||!pick.hit||!pick.pickedMesh)return;let node=pick.pickedMesh;while(node&&!node.metadata?.level)node=node.parent;if(node&&node.metadata.level<=activeLevel&&typeof root.HarvestWorld3D.onSelectLevel==="function")root.HarvestWorld3D.onSelectLevel(node.metadata.level)});
  camera=new BABYLON.ArcRotateCamera("harvest-follow-camera",Math.PI*1.5,1.05,39,new BABYLON.Vector3(0,0,16),scene);camera.lowerRadiusLimit=25;camera.upperRadiusLimit=65;camera.lowerBetaLimit=.65;camera.upperBetaLimit=1.28;camera.panningSensibility=75;camera.wheelPrecision=45;camera.attachControl(engine.getRenderingCanvas(),true);
  scene.onBeforeRenderObservable.add(()=>{const t=performance.now()*.00025;sun.direction=new BABYLON.Vector3(-.55,-1,.35+Math.sin(t)*.04)});
 }
 function focusLevel(level,animate){
- activeLevel=clamp(Number(level)||1,1,gateMeshes.length);
- const gate=gateMeshes[activeLevel-1];if(!gate||!camera)return;
+ activeLevel=clamp(Number(level)||pageStart,pageStart,pageStart+gateMeshes.length-1);
+ const gate=gateMeshes[activeLevel-pageStart];if(!gate||!camera)return;
  const target=gate.group.position.add(new BABYLON.Vector3(0,0,0));
  if(animate){BABYLON.Animation.CreateAndStartAnimation("road-camera-drive",camera,"target",30,42,camera.target.clone(),target, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);}
  else camera.setTarget(target);
@@ -68,7 +70,7 @@ function focusLevel(level,animate){
 function start(canvasId,level){
  const canvas=document.getElementById(canvasId);if(!canvas||!root.BABYLON)return false;
  if(engine){engine.dispose();engine=null;scene=null;gateMeshes=[]}
- try{engine=new BABYLON.Engine(canvas,true,{preserveDrawingBuffer:false,stencil:true,antialias:true,powerPreference:"high-performance"});buildWorld();focusLevel(level||1,false);engine.runRenderLoop(()=>{if(scene)scene.render()});if(!resizeBound){window.addEventListener("resize",()=>engine&&engine.resize());resizeBound=true}return true}catch(error){console.error("3D Harvest World failed:",error);return false}
+ try{engine=new BABYLON.Engine(canvas,true,{preserveDrawingBuffer:false,stencil:true,antialias:true,powerPreference:"high-performance"});buildWorld(level||1);focusLevel(level||pageStart,false);engine.runRenderLoop(()=>{if(scene)scene.render()});if(!resizeBound){window.addEventListener("resize",()=>engine&&engine.resize());resizeBound=true}return true}catch(error){console.error("3D Harvest World failed:",error);return false}
 }
 root.HarvestWorld3D={start,focusLevel,get ready(){return!!scene},dispose(){if(engine){engine.stopRenderLoop();engine.dispose();engine=null;scene=null;gateMeshes=[]}}};
 })(window);
