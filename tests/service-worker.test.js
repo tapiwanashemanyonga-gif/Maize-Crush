@@ -16,7 +16,7 @@ test("the browser registers one authoritative offline service worker", () => {
 
 test("offline worker uses a new cache version and retires the legacy cache", () => {
   const worker = read("sw.js");
-  assert.match(worker, /CACHE_NAME = "maize-crush-shell-v20"/);
+  assert.match(worker, /CACHE_NAME = "maize-crush-shell-v21"/);
   assert.match(worker, /key.startsWith\("maize-crush-shell-"\) && key !== CACHE_NAME/);
   assert.match(worker, /key === "maize-crush-shell-v16"/);
   assert.match(worker, /key === "maize-crush-v2"/);
@@ -40,6 +40,7 @@ test("original Zimbabwe harvest crop artwork contains all six accessible sprite 
   }
   assert.ok(read("sw.js").includes('"./crop-art.svg"'));
   assert.ok(read("sw.js").includes('"./assets/harvest-world.svg"'));
+  assert.ok(read("sw.js").includes('"./vendor/babylon.js"'));
   assert.match(read("assets/harvest-world.svg"), /Zimbabwean countryside/);
 });
 
