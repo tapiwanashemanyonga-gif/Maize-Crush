@@ -97,6 +97,19 @@ async function enterGameFromJourney(page, verify = false) {
     if (journey.title !== "Harvest Trail" || journey.chapters < 1 || journey.markers !== 4 || !journey.road || journey.roadLayers < 5 || !journey.vehicle || journey.perspective === "none" || !/^▶ Play Level 1$/.test(journey.play || "")) {
       throw new Error("Harvest Trail launch screen is incomplete: " + JSON.stringify(journey));
     }
+    const mapFit = await page.evaluate(() => {
+      const map=document.querySelector("#level-map"),bounds=element=>{const r=element.getBoundingClientRect();return{top:r.top,bottom:r.bottom,left:r.left,right:r.right,width:r.width,height:r.height}};
+      const selectors=[".map-head",".level-map-status",".map-legend","#map-play-current","#level-map-list",".map-world-group",".map-world-header",".map-world-levels",".level-map-navigation"];
+      const regions=selectors.map(selector=>({selector,...bounds(map.querySelector(selector))}));
+      const group=map.querySelector(".map-world-group"),levels=map.querySelector(".map-world-levels");
+      const markers=Array.from(map.querySelectorAll(".map-level")).map(bounds);
+      return{viewport:{width:innerWidth,height:innerHeight},dialog:bounds(map),scrollHeight:map.scrollHeight,clientHeight:map.clientHeight,overflow:getComputedStyle(map).overflowY,regions,markers,
+        markerCount:markers.length,allRegionsVisible:regions.every(r=>r.top>=bounds(map).top-1&&r.bottom<=bounds(map).bottom+1),
+        allMarkersVisible:markers.every(r=>r.top>=bounds(levels).top-1&&r.bottom<=bounds(levels).bottom+1)};
+    });
+    if(mapFit.scrollHeight>mapFit.clientHeight+2||mapFit.overflow==="auto"||!mapFit.allRegionsVisible||!mapFit.allMarkersVisible||mapFit.markerCount!==4){
+      throw new Error("Harvest Trail requires scrolling or clips its road/level stops: "+JSON.stringify(mapFit));
+    }
   }
   await page.locator("#map-play-current").click();
   await page.waitForFunction(() => { const map=document.querySelector("#level-map"); return !!map && !map.open; }, null, {timeout:3000});
