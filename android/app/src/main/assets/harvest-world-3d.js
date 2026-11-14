@@ -52,18 +52,13 @@ function buildWorld(startLevel){
  const farmsteadPromise=loadAuthoredAsset("harvest-world-farmstead.glb","blender-authored-zimbabwe-farmstead",new BABYLON.Vector3(-19,.02,18),.82).then(ok=>{farmsteadLoaded=ok;return ok});
  Promise.all([terrainPromise,farmsteadPromise]).then(()=>{assetsReady=true});
  buildHouse(21,53,.85);buildHouse(-22,93,.95);
- if(BABYLON.SceneLoader&&BABYLON.SceneLoader.ImportMeshAsync){
-  BABYLON.SceneLoader.ImportMeshAsync("","./assets/","harvest-world-farmstead.glb",scene).then(result=>{
-   const anchor=new BABYLON.TransformNode("blender-authored-zimbabwe-farmstead",scene);anchor.position.set(-19,.02,18);anchor.scaling.setAll(.82);
-   result.meshes.forEach(mesh=>{if(mesh.name!=="__root__")mesh.parent=anchor});farmsteadLoaded=true;assetsReady=true;
-  }).catch(error=>{console.warn("Blender farmstead model unavailable; retaining procedural scenery",error);buildHouse(-19,18,1.05);assetsReady=true});
- }else{buildHouse(-19,18,1.05);assetsReady=true}
  const riverMat=mat("river-water","#43a9c3",.25);
  const riverPath=[new BABYLON.Vector3(34,.04,4),new BABYLON.Vector3(39,.04,25),new BABYLON.Vector3(34,.04,45),new BABYLON.Vector3(40,.04,67),new BABYLON.Vector3(36,.04,92),new BABYLON.Vector3(43,.04,125)];
  const river=BABYLON.MeshBuilder.CreateTube("river-valley",{path:riverPath,radius:2.6,tessellation:12},scene);river.material=riverMat;
  // Place physical level gates directly beside the winding Blender road.
  const roadX=z=>9.5*Math.sin((z+8)*.043)+2.2*Math.sin(z*.095);
- const gatePoints=[2,36,73,112].map(z=>new BABYLON.Vector3(roadX(z)+4.8,0,z));
+ const terrainHeight=(x,z)=>1.1*Math.sin(z*.035+x*.018)+.65*Math.cos(x*.055-z*.021)+.22*Math.sin(x*.19+z*.11)*Math.cos(z*.16)-.5;
+ const gatePoints=[2,36,73,112].map(z=>new BABYLON.Vector3(roadX(z)+4.8,terrainHeight(roadX(z)+4.8,z)+.28,z));
  gatePoints.forEach((p,i)=>createGate(pageStart+i,p));
  scene.onPointerObservable.add(info=>{if(info.type!==BABYLON.PointerEventTypes.POINTERTAP)return;const pick=scene.pick(scene.pointerX,scene.pointerY);if(!pick||!pick.hit||!pick.pickedMesh)return;let node=pick.pickedMesh;while(node&&!node.metadata?.level)node=node.parent;if(node&&node.metadata.level<=activeLevel&&typeof root.HarvestWorld3D.onSelectLevel==="function")root.HarvestWorld3D.onSelectLevel(node.metadata.level)});
  camera=new BABYLON.ArcRotateCamera("harvest-follow-camera",Math.PI*1.5,1.05,39,new BABYLON.Vector3(0,0,16),scene);camera.lowerRadiusLimit=25;camera.upperRadiusLimit=65;camera.lowerBetaLimit=.65;camera.upperBetaLimit=1.28;camera.panningSensibility=75;camera.wheelPrecision=45;camera.attachControl(engine.getRenderingCanvas(),true);
