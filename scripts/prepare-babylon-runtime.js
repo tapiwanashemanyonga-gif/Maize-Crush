@@ -2,6 +2,11 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const source = path.resolve(__dirname, "../node_modules/babylonjs/babylon.js");
+const loaderSource = path.resolve(__dirname, "../node_modules/babylonjs-loaders/babylonjs.loaders.min.js");
+const loaderTargets = [
+  path.resolve(__dirname, "../vendor/babylonjs.loaders.min.js"),
+  path.resolve(__dirname, "../android/app/src/main/assets/vendor/babylonjs.loaders.min.js")
+];
 const targets = [
   path.resolve(__dirname, "../vendor/babylon.js"),
   path.resolve(__dirname, "../android/app/src/main/assets/vendor/babylon.js")
@@ -15,4 +20,7 @@ for (const target of targets) {
   fs.mkdirSync(path.dirname(target), { recursive: true });
   fs.writeFileSync(target, bytes);
 }
-console.log("Prepared local Babylon.js runtime:", bytes.length, "bytes");
+if (!fs.existsSync(loaderSource)) throw new Error("Pinned Babylon.js glTF loader package is missing.");
+const loaderBytes = fs.readFileSync(loaderSource);
+for (const target of loaderTargets) { fs.mkdirSync(path.dirname(target), { recursive: true }); fs.writeFileSync(target, loaderBytes); }
+console.log("Prepared local Babylon.js runtime and glTF loader:", bytes.length, "+", loaderBytes.length, "bytes");
