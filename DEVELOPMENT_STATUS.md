@@ -193,26 +193,16 @@ Use the approved vibrant fantasy-farming tokens to introduce original world scen
 - Validation pending: gameplay regression checks, browser visual QA, Android builds and release-candidate parity. No physical-device result is claimed.
 
 
-## Stronger opening challenge — stage 6 in progress
+## Stage 6 — stronger opening challenge (verified and merged)
 
-- Based on the verified Stage 5 merge `5bf5260b107dc5de2ab49e983ee15ab07ff94d40`.
-- Audited the existing first 20 score goals, move budgets and eight rotating objective types. The opening chapter previously began at 500 points and 20 moves, with objective difficulty staying flat across the first seven levels.
-- Raised the first-level score target to 650 and set a smoother opening score progression through level 20 (ending at 6,500). Reduced the opening move budget to 18, then increased it gradually to 28 by level 20.
-- Kept the established objective scaling rules intact after regression review; added regression coverage for the opening eight objective targets and move budgets.
-- Browser and Android WebView game engines and service workers are updated together; offline cache advanced from v6 to v7.
-- Preserved the 8×8 board, connect-not-swap and diagonal path rules, crop roster, save/checkpoint format, boosters, achievements, endless level support, Android identity and offline operation.
-- Validation pending on this PR: gameplay/security regression suite, browser phone/tablet visual QA, Android debug/APK and release-candidate asset-parity workflows. No physical-device test is claimed.
-
-- CI correction: keep the established objective scaling bands intact; the opening challenge is rebalanced through score goals and move budgets, not by unexpectedly changing unrelated objective progression. Browser soak now reads the current displayed level before checking its restart move budget.
-
-
-## Stage 6 corrective follow-up — validation required
-
-- PR #83 was automatically merged by GitHub as `6762dfa27c5e2fa0442f83c4d508b3604fc8a876` before its failing checks were resolved. Its checks did fail; this is not a verified release.
-- Corrective branch restores the established objective scaling formula while retaining the new opening score goals and move budgets.
-- Browser long-session QA now derives the expected restart move count from the currently displayed level, rather than assuming the player is still on level 1 after earlier gameplay interactions.
-- Browser and Android WebView game engines remain byte-identical. Corrective PR and fresh CI validation are required before Stage 6 can be considered complete.
-
+- Corrective PR [#85](https://github.com/tapiwanashemanyonga-gif/Maize-Crush/pull/85) was squash-merged to `main` as `2954fc5f7c09a81852f66eb40d482e9192bbe497`.
+- The first 20 score goals rise from 650 to 6,500 points; move budgets progress from 18 to 28.
+- Existing objective scaling bands and the eight-objective sequence were retained. The change rebalances score goals and move budgets without altering unrelated objective progression.
+- Browser long-session QA now reads the currently displayed level before checking its restart move count.
+- Browser and Android WebView game engines remain byte-identical; offline cache is v7.
+- PR-head validation passed gameplay regression checks, Android APK, Android debug build, browser visual QA and release-candidate checks. The optional emulator diagnostic was skipped. No physical-device result is claimed.
+- PR #83 had been merged by GitHub despite failing checks; PR #85 corrected the regressions and passed fresh validation before Stage 6 was marked complete.
+- PR #86 attempted to update this history but became stale after subsequent mainline work; it is superseded by the current documentation update.
 
 ## Stage 8 — research-led viewport-fitted gameplay HUD (in review)
 
