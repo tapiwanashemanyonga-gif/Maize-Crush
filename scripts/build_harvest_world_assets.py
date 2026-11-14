@@ -43,7 +43,7 @@ for x in [-3.98,3.98]:
 for side in [-1,1]:
     a=Vector((0,0,6.25)); b=Vector((0,side*3.35,3.8)); mid=(a+b)/2
     vec=b-a; o=cube("Deep corrugated roof plane",mid,(8.9,vec.length,.18),red,.035)
-    o.rotation_euler[0]=math.atan2(vec.y,vec.z)
+    o.rotation_euler[0]=math.atan2(vec.z,vec.y)
     # fine raised seams suggest corrugated metal roofing
     for x in [i*.42 for i in range(-9,10)]:
         start=Vector((x,0,6.35)); end=Vector((x,side*3.32,3.86)); beam("Roof raised seam",start,end,.035,roofdark)
