@@ -17,6 +17,10 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+      - name: Install pinned Babylon.js runtime
+        run: npm install --no-save --no-package-lock --ignore-scripts babylonjs@9.36.0
+      - name: Prepare local web and Android 3D runtime
+        run: node scripts/prepare-babylon-runtime.js
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
