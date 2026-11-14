@@ -17,7 +17,9 @@ test("3D Harvest World is a Babylon scene shared with Android", () => {
  for (const feature of ["BABYLON.Engine", "CreateRibbon", "continuous-asphalt-road", "farmhouse-walls", "river-valley", "level-gate-", "ArcRotateCamera", "onSelectLevel"]) {
   assert.ok(web.includes(feature), "3D scene is missing " + feature);
  }
- assert.match(html, /cdn\.babylonjs\.com\/babylon\.js/);
+ assert.match(html, /src="\.\/vendor\/babylon\.js"/);
+ assert.doesNotMatch(html, /cdn\.babylonjs\.com/);
+ assert.match(fs.readFileSync(path.join(root, "scripts/prepare-babylon-runtime.js"), "utf8"), /babylonjs\/babylon\.js/);
  assert.match(html, /harvest-world-canvas/);
  assert.match(game, /HarvestWorld3D\.focusLevel\(level,true\)/);
 });
