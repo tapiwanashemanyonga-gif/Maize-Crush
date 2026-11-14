@@ -19,7 +19,7 @@ test("Harvest Trail uses a moving perspective road with a current-level vehicle"
     assert.ok(browserGame.includes(layer), "missing road layer: " + layer);
   }
   assert.match(browserGame, /className="road-vehicle"/);
-  assert.match(browserGame, /stopPositions=\[\{x:18,y:80\}/);
+  assert.match(browserGame, /stopPositions=\\[\\{x:18,y:68\\}/);
   assert.match(browserCss, /perspective:1000px/);
   assert.match(browserCss, /@keyframes harvest-road-flow/);
   assert.match(browserCss, /@keyframes road-vehicle-drive/);
