@@ -33,10 +33,16 @@ jobs:
         run: node scripts/prepare-babylon-runtime.js
       - name: Install Blender for authored environment models
         run: sudo apt-get update && sudo apt-get install -y blender python3-numpy
-      - name: Generate Blender farmstead model for web and Android
-        run: blender --background --python scripts/build_harvest_world_assets.py
-      - name: Verify exported farmstead GLB and Android mirror
-        run: test -s assets/harvest-world-farmstead.glb && cmp assets/harvest-world-farmstead.glb android/app/src/main/assets/assets/harvest-world-farmstead.glb
+      - name: Generate Blender-authored world models for web and Android
+        shell: bash
+        run: |
+          set -euo pipefail
+          blender --background --python scripts/build_harvest_world_assets.py
+          blender --background --python scripts/build_harvest_world_terrain.py
+          test -s assets/harvest-world-farmstead.glb
+          test -s assets/harvest-world-terrain.glb
+          cmp assets/harvest-world-farmstead.glb android/app/src/main/assets/assets/harvest-world-farmstead.glb
+          cmp assets/harvest-world-terrain.glb android/app/src/main/assets/assets/harvest-world-terrain.glb
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
