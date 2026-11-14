@@ -14,7 +14,7 @@ test("3D Harvest World is a Babylon scene shared with Android", () => {
  assert.equal(android, web, "Android 3D runtime must match browser runtime");
  assert.equal(androidGame, game, "Android game progression must match browser progression");
  assert.equal(androidHtml, html, "Android HTML must match browser HTML");
- for (const feature of ["BABYLON.Engine", "level-gate-", "ArcRotateCamera", "onSelectLevel", "ImportMeshAsync", "harvest-world-farmstead.glb", "harvest-world-terrain.glb", "terrainLoaded", "Promise.all"]) {
+ for (const feature of ["BABYLON.Engine", "level-gate-", "ArcRotateCamera", "onSelectLevel", "ImportMeshAsync", "harvest-world-farmstead.glb", "harvest-world-terrain.glb", "harvest-world-settlement.glb", "terrainLoaded", "settlementLoaded", "settlementMeshCount", "terrainMeshCount", "farmsteadMeshCount", "gateCount", "settlementAnchors", "cameraPosition", "cameraTarget", "gatePositions", "settlementPositions", "settlementScreenBounds", "getSettlementScreenBounds", "BABYLON.Vector3.Project", "overrideCloneAlphaBetaRadius", "Promise.all"]) {
   assert.ok(web.includes(feature), "3D scene is missing " + feature);
  }
  assert.match(html, /src="\.\/vendor\/babylon\.js"/);
@@ -29,9 +29,42 @@ test("3D Harvest World is a Babylon scene shared with Android", () => {
  assert.ok(terrainBuilder.includes("Continuous asphalt road surface"));
  assert.ok(terrainBuilder.includes("Sculpted Zimbabwe countryside terrain"));
  assert.ok(terrainBuilder.includes("terrain_height"));
+ assert.ok(terrainBuilder.includes("verts.append((x, -z, broad + undulation - .5))"));
+ assert.ok(terrainBuilder.includes("MAX_TERRAIN_MESHES = 12"));
+ const farmsteadBuilder = fs.readFileSync(path.join(root, "scripts/build_harvest_world_assets.py"), "utf8");
+ assert.ok(farmsteadBuilder.includes("MAX_FARMSTEAD_MESHES = 12"));
+ assert.ok(farmsteadBuilder.includes("bpy.ops.object.join()"));
+ const settlementBuilder = fs.readFileSync(path.join(root, "scripts/build_harvest_world_settlement.py"), "utf8");
+ for (const feature of ["Main homestead", "Second dwelling", "Traditional thatched grain-store roof", "Elevated galvanized water tank", "Community borehole", "Homestead fence rail"]) assert.ok(settlementBuilder.includes(feature), "settlement model is missing " + feature);
+ assert.ok(web.includes("blender-authored-rural-settlement-west"));
+ assert.ok(web.includes("blender-authored-rural-settlement-east"));
+ assert.ok(web.includes("settlementEastZ=38,settlementEastX=roadX(settlementEastZ)+12.5"));
+ assert.ok(web.includes("settlementWestZ=74,settlementWestX=roadX(settlementWestZ)-4.5"));
+ assert.ok(web.includes("farmsteadZ=14,farmsteadX=roadX(farmsteadZ)+11.5"));
+ assert.ok(web.includes("camera.setTarget(target,false,false,true)"));
+ assert.ok(web.includes("camera.setPosition(target.add(offset))"));
+ assert.ok(web.includes("camera.overrideCloneAlphaBetaRadius=true"));
+ assert.ok(web.includes("road-camera-drive-target"));
+ assert.ok(web.includes("road-camera-drive-position"));
+ assert.ok(web.includes("finishedAnimations===2"));
+ assert.ok(web.includes("camera.setPosition(endPosition)"));
+ assert.ok(web.includes("ANIMATIONLOOPMODE_CONSTANT,undefined,finish"));
+ assert.match(settlementBuilder, /MAX_SETTLEMENT_MESHES = 12/);
+ assert.ok(settlementBuilder.includes("bpy.ops.object.join()"), "settlement geometry must be batched by material");
+ assert.ok(settlementBuilder.includes("material-batched meshes"));
+ assert.ok(!web.includes("buildHouse("), "procedural roadside houses must be replaced by the authored settlement model");
+ assert.doesNotMatch(web, /river-valley/);
  const browserWorkflow = fs.readFileSync(path.join(root, ".github/workflows/android-layout-smoke.yml"), "utf8");
  assert.equal((browserWorkflow.match(/blender --background --python scripts\/build_harvest_world_terrain.py/g) || []).length, 2, "both Android build and browser QA jobs must generate the terrain GLB");
+ assert.equal((browserWorkflow.match(/test_harvest_world_glb.py/g) || []).length, 2, "both Android build and browser QA jobs must validate the generated GLBs");
+ for (const workflowName of ["android-apk.yml", "android-release-candidate.yml", "android-signed-release.yml", "publish-web-preview.yml"]) {
+  const workflow = fs.readFileSync(path.join(root, ".github/workflows", workflowName), "utf8");
+  assert.ok(workflow.includes("test_harvest_world_glb.py"), workflowName + " must validate generated GLB geometry");
+  assert.ok(workflow.includes("scripts/build_harvest_world_terrain.py"), workflowName + " must generate the 3D terrain");
+ }
+ assert.ok(fs.readFileSync(path.join(root, ".github/workflows/android-signed-release.yml"), "utf8").includes("babylonjs-loaders@9.36.0"));
  assert.ok(fs.readFileSync(path.join(root, "sw.js"), "utf8").includes("harvest-world-terrain.glb"));
+ assert.ok(fs.readFileSync(path.join(root, "sw.js"), "utf8").includes("harvest-world-settlement.glb"));
  assert.equal(fs.readFileSync(path.join(root, "android/app/src/main/assets/sw.js"), "utf8"), fs.readFileSync(path.join(root, "sw.js"), "utf8"));
  assert.match(fs.readFileSync(path.join(root, "scripts/prepare-babylon-runtime.js"), "utf8"), /babylonjs-loaders/);
 });

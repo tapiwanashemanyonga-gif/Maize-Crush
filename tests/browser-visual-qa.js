@@ -82,12 +82,21 @@ async function enterGameFromJourney(page, verify = false) {
     const state = await page.evaluate(() => ({mapExists:!!document.querySelector("#level-map"),mapOpen:!!document.querySelector("#level-map")?.open,tutorialOpen:!!document.querySelector("#tutorial-dialog")?.open,tutorialSeen:localStorage.getItem("maize-crush-tutorial-seen"),mapButton:!!document.querySelector("#level-map-button")}));
     throw new Error("Harvest Trail did not open automatically: " + JSON.stringify(state));
   }
+  await page.waitForFunction(() => {
+    const world = window.HarvestWorld3D;
+    return !!world?.ready && !!world?.assetsReady && !!world?.farmsteadLoaded &&
+      !!world?.terrainLoaded && !!world?.settlementLoaded;
+  }, null, { timeout: 30000 });
   if (verify) {
-    await page.waitForFunction(() => !!window.HarvestWorld3D?.ready && !!window.HarvestWorld3D?.assetsReady, null, { timeout: 30000 });
     const journey = await page.evaluate(() => ({
       threeD: !!window.HarvestWorld3D?.ready,
       farmsteadLoaded: !!window.HarvestWorld3D?.farmsteadLoaded,
       terrainLoaded: !!window.HarvestWorld3D?.terrainLoaded,
+      settlementLoaded: !!window.HarvestWorld3D?.settlementLoaded,
+      settlementMeshCount: Number(window.HarvestWorld3D?.settlementMeshCount || 0),
+      terrainMeshCount: Number(window.HarvestWorld3D?.terrainMeshCount || 0),
+      farmsteadMeshCount: Number(window.HarvestWorld3D?.farmsteadMeshCount || 0),
+      gateCount: Number(window.HarvestWorld3D?.gateCount || 0),
       canvas: !!document.querySelector("#harvest-world-canvas"),
       fallbackHidden: !!document.querySelector("#harvest-world-fallback")?.hidden,
       title: document.querySelector("#level-map h2")?.textContent?.trim(),
@@ -99,9 +108,61 @@ async function enterGameFromJourney(page, verify = false) {
       perspective: getComputedStyle(document.querySelector("#level-map .map-world-levels")).perspective,
       play: document.querySelector("#map-play-current")?.textContent?.trim()
     }));
-    if (!journey.threeD || !journey.farmsteadLoaded || !journey.terrainLoaded || !journey.canvas || !journey.fallbackHidden || journey.title !== "Harvest Trail" || journey.chapters < 1 || journey.markers !== 4 || !journey.road || journey.roadLayers < 5 || !journey.vehicle || journey.perspective === "none" || !/^▶ Play Level 1$/.test(journey.play || "")) {
+    if (!journey.threeD || !journey.farmsteadLoaded || !journey.terrainLoaded || !journey.settlementLoaded || journey.settlementMeshCount < 1 || journey.settlementMeshCount > 24 || journey.terrainMeshCount < 1 || journey.terrainMeshCount > 12 || journey.farmsteadMeshCount < 1 || journey.farmsteadMeshCount > 12 || journey.gateCount !== 4 || !journey.canvas || !journey.fallbackHidden || journey.title !== "Harvest Trail" || journey.chapters < 1 || journey.markers !== 4 || !journey.road || journey.roadLayers < 5 || !journey.vehicle || journey.perspective === "none" || !/^▶ Play Level 1$/.test(journey.play || "")) {
       throw new Error("Harvest Trail launch screen is incomplete: " + JSON.stringify(journey));
     }
+  }
+  const mapViewport = await page.evaluate(() => `${innerWidth}x${innerHeight}`);
+  await page.screenshot({
+    path: path.join(OUTPUT, "harvest-trail-3d-" + mapViewport + ".png"),
+    fullPage: false,
+    animations: "disabled"
+  });
+  if (verify && (mapViewport === "390x844" || mapViewport === "1024x768")) {
+    const beforeFocus = await page.evaluate(() => ({
+      cameraPosition: window.HarvestWorld3D.cameraPosition,
+      cameraTarget: window.HarvestWorld3D.cameraTarget
+    }));
+    await page.evaluate(() => window.HarvestWorld3D.focusLevel(3, false));
+    await wait(500);
+    const focusCheck = await page.evaluate(() => {
+      const world = window.HarvestWorld3D;
+      const target = world.cameraTarget;
+      const position = world.cameraPosition;
+      const gate = world.gatePositions[2];
+      const settlements = world.settlementPositions;
+      const settlementScreenBounds = world.settlementScreenBounds;
+      const visibleSettlementCount = settlementScreenBounds.filter(bounds => bounds.visible).length;
+      const nearestSettlement = Math.min(...settlements.map(point => Math.hypot(point[0] - gate[0], point[2] - gate[2])));
+      return {
+        activeLevel: world.activeLevel,
+        cameraPosition: position,
+        cameraTarget: target,
+        gate,
+        settlements,
+        settlementScreenBounds,
+        visibleSettlementCount,
+        nearestSettlement,
+        radius: Math.hypot(position[0] - target[0], position[1] - target[1], position[2] - target[2])
+      };
+    });
+    const targetShift = focusCheck.cameraTarget[2] - beforeFocus.cameraTarget[2];
+    const positionShift = focusCheck.cameraPosition[2] - beforeFocus.cameraPosition[2];
+    if (focusCheck.activeLevel !== 3 ||
+        Math.abs(focusCheck.cameraTarget[2] - focusCheck.gate[2]) > 0.5 ||
+        Math.abs(targetShift) < 50 ||
+        Math.abs(positionShift - targetShift) > 1 ||
+        Math.abs(focusCheck.radius - 39) > 1 ||
+        focusCheck.nearestSettlement > 18 ||
+        focusCheck.visibleSettlementCount < 1) {
+      throw new Error("Harvest Trail camera did not follow the current road level and frame its settlement: " + JSON.stringify(focusCheck));
+    }
+    await page.screenshot({
+      path: path.join(OUTPUT, "harvest-trail-3d-settlement-" + mapViewport + ".png"),
+      fullPage: false,
+      animations: "disabled"
+    });
+    await page.evaluate(() => window.HarvestWorld3D.focusLevel(1, false));
   }
   await page.locator("#map-play-current").click();
   await page.waitForFunction(() => { const map=document.querySelector("#level-map"); return !!map && !map.open; }, null, {timeout:3000});
@@ -615,7 +676,7 @@ async function runViewport(browser, profile, viewport) {
     localStorage.setItem("maize-crush-tutorial-seen", "true");
   });
   await page.goto(BASE_URL, { waitUntil: "networkidle", timeout: 30000 });
-  await enterGameFromJourney(page);
+  await enterGameFromJourney(page, true);
   await page.locator("#game-board .crop-tile").first().waitFor({ state: "visible", timeout: 15000 });
   await page.waitForFunction(() => document.querySelectorAll("#game-board .crop-tile").length === 64);
 

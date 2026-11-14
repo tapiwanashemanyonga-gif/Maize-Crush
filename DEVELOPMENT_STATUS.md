@@ -278,3 +278,52 @@ Complete physical Android WebView validation on a modest/older phone and a curre
 - Verified mainline artifacts: Android debug APK, 76,260 bytes (workflow 43432186959); unsigned APK/AAB release candidate bundle, 125,008 bytes (workflow 43432186891); browser screenshots/results, 4,380,272 bytes (workflow 43432187316). These artifacts are build/QA evidence, not a signed public release.
 - The optional emulator diagnostic was skipped. Browser keyboard checks do not replace testing with an external keyboard, TalkBack or touch gestures on physical Android devices. No production signing credentials were added, and no signing or publishing was performed.
 - Next milestone: physical-device validation of the full objective/progression set and modest-device performance before considering release signing.
+
+## 3D Zimbabwe Harvest Trail — authored terrain and rural settlement
+
+- PR [#129](https://github.com/tapiwanashemanyonga-gif/Maize-Crush/pull/129) was merged to `main` as `1f78573795b2ac5482b18dece1e24ce4a7f89cb2`. Its Blender source builds a sculpted Zimbabwe countryside, continuous winding asphalt road and red-earth shoulders, raised centre markings, granite kopjes, msasa trees and cultivated field plots. The resulting GLB is generated in CI and mirrored byte-for-byte into Android WebView assets; the Babylon.js road map uses physical level gates on the terrain.
+- PR [#130](https://github.com/tapiwanashemanyonga-gif/Maize-Crush/pull/130) adds a Blender-authored rural settlement model: two differently sized homes with plaster walls, corrugated roofs and verandas; a round grain store; elevated water tank; community borehole; kraal fencing; kitchen garden; firewood stack and washing line. Two instances are positioned against the sculpted terrain. The remaining procedural roadside houses and placeholder river tube are removed.
+- The settlement GLB is generated from `scripts/build_harvest_world_settlement.py` in the Android, release-candidate, signed-release and web/browser workflows. Geometry is batched by material with a maximum 12-mesh budget, checked for valid GLB structure and byte-identical web/Android copies, and added to offline service-worker cache v26.
+- At code head `a57be07f9167aa51f689acc1025dd2edb2205045`, PR #130's gameplay checks, Android debug APK, unsigned release candidate and browser visual QA all completed successfully (runs `43602439356`, `43602439367`, `43602439347`, `43602439361`). The optional emulator diagnostic was skipped. README art direction now explicitly calls for authentic Zimbabwean homesteads while avoiding cartoon/stereotyped hut clip-art.
+- This is CI/browser evidence only. Physical Android WebView, low-memory performance and sustained play on modest devices remain release gates. Production signing credentials have not been added; no signing or publishing is authorized.
+- Visual review of the PR #130 browser artifact showed that the settlement GLBs loaded but their roadside buildings were too far from the mobile camera framing to read clearly. PR #130 remains open while the homesteads are repositioned beside the road, the camera is made to follow the active level without zooming out, and browser QA asserts camera travel, stable radius and settlement proximity. Revalidate and merge only when all required checks pass on the exact updated head.
+
+
+## 3D Harvest Trail visual framing correction — in progress
+
+- Inspected PR #130's actual browser screenshots from artifact `14116892735` at 390×844 and 1024×768. The terrain and winding road rendered, and the settlement GLBs loaded, but the homes were outside the useful mobile camera framing. A green CI result alone was not enough to accept the requested real-house presentation.
+- The camera's previous `setTarget` path rebuilt its radius/angles from the old fixed camera position. Focusing a later level could therefore zoom out rather than travel along the road. The correction preserves alpha/beta/radius while animating or setting the target, so camera position follows the active level.
+- The Blender-authored farmstead and two settlement instances are being moved to roadside positions near levels 1–3. Browser QA will verify that focusing level 3 moves camera position and target together, preserves the 39-unit radius, and places an authored settlement within 18 world units of the selected gate; it also captures the phone/tablet settlement views.
+- Previous documentation-aligned PR head `a9d1b55c7522f5a7281425119a2f9cf4297740a1` passed 141/141 gameplay tests, Android debug APK, unsigned release candidate and browser visual QA. Those checks predate this framing correction and are not evidence for the new code.
+- Next step: run the full PR workflows on the framing-fix commit, inspect the refreshed screenshots, then merge PR #130 only if the houses are visibly framed and every required check passes. Physical Android and modest-device validation remain release gates.
+
+
+### Camera-follow regression found and corrected
+
+- The first framing-fix browser run caught a real camera bug: the selected level target moved to gate 3, but the camera position stayed at the initial gate and its measured distance expanded to 106.8 world units instead of the intended 39. The new assertion failed rather than accepting a zoomed-out view.
+- The correction now moves the camera target and position by the same road delta during animation. Instant focus updates preserve the current camera offset and explicitly set the corresponding position. This keeps the camera at its intended radius while travelling along the road.
+- The failure was recorded from browser QA run `43603734644` on head `a29e07619d4f27ee2a6c5d3fe962027ac66f8ae1`; gameplay tests (141/141), Android debug APK and unsigned release candidate passed on that head. The browser failure blocks PR #130 merge until a fresh run proves camera travel and settlement framing.
+
+
+### Babylon animation API correction
+
+- The camera-follow browser run on head `3ced950be8ceb76862ba60caf0949433bff6d52f` verified that instant focus now keeps the camera at the intended 39-unit radius and moves it with the selected level. The animated path then exposed a Babylon.js API misuse: the numeric speed value `1` was passed in the easing-function slot, producing `f.ease is not a function` on tablet.
+- Corrected both camera animations to pass `undefined` for the optional easing function and the completion callback in its documented argument position. The final callback now runs only after both target and position animations complete, then reapplies the exact destination camera position and clears the override. Starting or disposing the scene also stops in-flight camera animations.
+- The browser QA failure is recorded in run `43604224127`; gameplay tests (141/141), Android debug APK and unsigned release candidate passed on head `3ced950be8ceb76862ba60caf0949433bff6d52f`. The updated animation code is not yet validated.
+- Next step: rerun tests, APK/release builds and phone/tablet browser QA on the corrected commit; inspect screenshots at levels 1 and 3 before merging PR #130.
+
+
+### Level-3 settlement framing — screen-space verification added (CI pending)
+
+- Inspected the latest PR #130 browser artifact `14118112732` on head `a8c824a78dbac45e820acf48332ae05456c11cf3`. The initial 390×844 map showed the roadside farmstead, but the level-3 focused screenshot did not show a house; at 1024×768 the settlement was only partly visible at the left edge.
+- The previous camera test checked only that a settlement anchor was within 18 world units of gate 3. That did not prove the authored buildings were actually inside the camera viewport.
+- Moved the western settlement anchor from 12.5 to 4.5 world units west of the road centreline while retaining the 0.72 scale and road-facing rotation. This places the main house closer to the camera centreline while keeping the yard beside, not across, the road.
+- Added projected screen-space bounds for the imported settlement meshes and made mobile/tablet browser QA fail unless at least one settlement model has a meaningful visible area after the camera follows level 3. The existing camera travel and 39-unit radius checks remain in place.
+- Next step: run the complete PR checks, inspect refreshed level-3 screenshots at 390×844 and 1024×768, and merge PR #130 only if the actual homes are visible and every required workflow passes on the same head. Physical Android validation remains outstanding.
+
+
+### CI correction — keep the browser and Android 3D runtime in parity
+
+- The first validation run for screen-space settlement framing, workflow `43605996459` on head `b3cfa5389da3bb3800d6c89d8e9c54236d576104`, failed one of 141 Node tests at `tests/harvest-world-3d.test.js:14`. The browser 3D runtime had the new camera projection and west-settlement position, but the Android WebView copy and the exact-position regression expectation were still on the previous version.
+- This was a parity/test-maintenance failure, not a gameplay-engine failure. Mirrored the updated runtime byte-for-byte into Android, updated the expected west-settlement offset to `-4.5`, and added regression checks for the screen-space projection API.
+- Next step: rerun gameplay tests, Android APK/release candidate builds and mobile/tablet browser QA on the corrected commit; inspect new screenshots before merging PR #130.
