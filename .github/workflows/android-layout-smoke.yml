@@ -88,7 +88,6 @@ jobs:
           set -euo pipefail
           blender --background --python scripts/build_harvest_world_assets.py
           test -s assets/harvest-world-farmstead.glb
-        run: blender --background --python scripts/build_harvest_world_assets.py
       - name: Install Chromium and Linux browser dependencies
         run: npx playwright install --with-deps chromium
       - name: Run mobile and tablet visual and interaction checks
