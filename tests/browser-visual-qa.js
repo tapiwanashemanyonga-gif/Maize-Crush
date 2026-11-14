@@ -119,8 +119,39 @@ async function enterGameFromJourney(page, verify = false) {
     animations: "disabled"
   });
   if (verify && (mapViewport === "390x844" || mapViewport === "1024x768")) {
+    const beforeFocus = await page.evaluate(() => ({
+      cameraPosition: window.HarvestWorld3D.cameraPosition,
+      cameraTarget: window.HarvestWorld3D.cameraTarget
+    }));
     await page.evaluate(() => window.HarvestWorld3D.focusLevel(3, false));
     await wait(500);
+    const focusCheck = await page.evaluate(() => {
+      const world = window.HarvestWorld3D;
+      const target = world.cameraTarget;
+      const position = world.cameraPosition;
+      const gate = world.gatePositions[2];
+      const settlements = world.settlementPositions;
+      const nearestSettlement = Math.min(...settlements.map(point => Math.hypot(point[0] - gate[0], point[2] - gate[2])));
+      return {
+        activeLevel: world.activeLevel,
+        cameraPosition: position,
+        cameraTarget: target,
+        gate,
+        settlements,
+        nearestSettlement,
+        radius: Math.hypot(position[0] - target[0], position[1] - target[1], position[2] - target[2])
+      };
+    });
+    const targetShift = focusCheck.cameraTarget[2] - beforeFocus.cameraTarget[2];
+    const positionShift = focusCheck.cameraPosition[2] - beforeFocus.cameraPosition[2];
+    if (focusCheck.activeLevel !== 3 ||
+        Math.abs(focusCheck.cameraTarget[2] - focusCheck.gate[2]) > 0.5 ||
+        Math.abs(targetShift) < 50 ||
+        Math.abs(positionShift - targetShift) > 1 ||
+        Math.abs(focusCheck.radius - 39) > 1 ||
+        focusCheck.nearestSettlement > 18) {
+      throw new Error("Harvest Trail camera did not follow the current road level and frame its settlement: " + JSON.stringify(focusCheck));
+    }
     await page.screenshot({
       path: path.join(OUTPUT, "harvest-trail-3d-settlement-" + mapViewport + ".png"),
       fullPage: false,
