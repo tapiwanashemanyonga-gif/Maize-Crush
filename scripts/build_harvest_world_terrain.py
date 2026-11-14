@@ -42,7 +42,7 @@ def mesh_object(name, verts, faces, mat):
 
 # Sculpted rolling ground: a real triangulated terrain mesh with broad low hills.
 verts, faces = [], []
-nx, nz = 49, 81
+nx, nz = 49, 95
 for j in range(nz):
     z = -18 + j * 2.0
     for i in range(nx):
@@ -146,8 +146,8 @@ for idx in range(9):
         row_curve.bevel_resolution = 1
         spline = row_curve.splines.new("POLY")
         spline.points.add(1)
-        for point, xx in zip(spline.points, (x - 7 + row * 3.5, x - 7 + row * 3.5)):
-            point.co = (xx, .32, z - 4.5, 1)
+        for point, zz in zip(spline.points, (z - 4.5, z + 4.5)):
+            point.co = (x - 7 + row * 3.5, .32, zz, 1)
         obj = bpy.data.objects.new("Raised maize planting row", row_curve)
         bpy.context.collection.objects.link(obj)
         obj.data.materials.append(foliage)
