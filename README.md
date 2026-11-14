@@ -39,6 +39,8 @@ The repository is structured as a static site and includes a root `index.html`. 
 
 ### Harvest Trail art-direction roadmap
 
+- Build the level journey as a perspective 3D-style road trip: a wide winding asphalt road, visible shoulders and lane markings, raised level stops, a moving current-level vehicle marker, and scenery that advances with the player.
+- Keep the road map clear and uncluttered, with one compact road segment and four visible level stops per map page; fit the scene to phone and tablet screens.
 - Keep Zimbabwean landscapes recognisable and grounded in local natural scenery: granite kopjes, distinctive trees, maize and crop fields, rivers, hills and open skies.
 - Do not use hut, homestead, or generic village-building illustrations as roadmap scenery. The Harvest Trail should feel like Zimbabwe through its landforms, vegetation and crops—not stereotyped buildings.
 
