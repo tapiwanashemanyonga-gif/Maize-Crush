@@ -16,7 +16,7 @@ test("the browser registers one authoritative offline service worker", () => {
 
 test("offline worker uses a new cache version and retires the legacy cache", () => {
   const worker = read("sw.js");
-  assert.match(worker, /CACHE_NAME = "maize-crush-shell-v24"/);
+  assert.match(worker, /CACHE_NAME = "maize-crush-shell-v25"/);
   assert.match(worker, /key.startsWith\("maize-crush-shell-"\) && key !== CACHE_NAME/);
   assert.ok(worker.includes('"./assets/harvest-world-settlement.glb"'), "new settlement GLB must be cached for offline play");
   assert.match(worker, /key === "maize-crush-shell-v16"/);
