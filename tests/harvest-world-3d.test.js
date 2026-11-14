@@ -14,7 +14,7 @@ test("3D Harvest World is a Babylon scene shared with Android", () => {
  assert.equal(android, web, "Android 3D runtime must match browser runtime");
  assert.equal(androidGame, game, "Android game progression must match browser progression");
  assert.equal(androidHtml, html, "Android HTML must match browser HTML");
- for (const feature of ["BABYLON.Engine", "level-gate-", "ArcRotateCamera", "onSelectLevel", "ImportMeshAsync", "harvest-world-farmstead.glb", "harvest-world-terrain.glb", "harvest-world-settlement.glb", "terrainLoaded", "settlementLoaded", "settlementMeshCount", "terrainMeshCount", "farmsteadMeshCount", "gateCount", "settlementAnchors", "cameraPosition", "cameraTarget", "gatePositions", "settlementPositions", "overrideCloneAlphaBetaRadius", "Promise.all"]) {
+ for (const feature of ["BABYLON.Engine", "level-gate-", "ArcRotateCamera", "onSelectLevel", "ImportMeshAsync", "harvest-world-farmstead.glb", "harvest-world-terrain.glb", "harvest-world-settlement.glb", "terrainLoaded", "settlementLoaded", "settlementMeshCount", "terrainMeshCount", "farmsteadMeshCount", "gateCount", "settlementAnchors", "cameraPosition", "cameraTarget", "gatePositions", "settlementPositions", "settlementScreenBounds", "getSettlementScreenBounds", "BABYLON.Vector3.Project", "overrideCloneAlphaBetaRadius", "Promise.all"]) {
   assert.ok(web.includes(feature), "3D scene is missing " + feature);
  }
  assert.match(html, /src="\.\/vendor\/babylon\.js"/);
@@ -39,7 +39,7 @@ test("3D Harvest World is a Babylon scene shared with Android", () => {
  assert.ok(web.includes("blender-authored-rural-settlement-west"));
  assert.ok(web.includes("blender-authored-rural-settlement-east"));
  assert.ok(web.includes("settlementEastZ=38,settlementEastX=roadX(settlementEastZ)+12.5"));
- assert.ok(web.includes("settlementWestZ=74,settlementWestX=roadX(settlementWestZ)-12.5"));
+ assert.ok(web.includes("settlementWestZ=74,settlementWestX=roadX(settlementWestZ)-4.5"));
  assert.ok(web.includes("farmsteadZ=14,farmsteadX=roadX(farmsteadZ)+11.5"));
  assert.ok(web.includes("camera.setTarget(target,false,false,true)"));
  assert.ok(web.includes("camera.setPosition(target.add(offset))"));

@@ -320,3 +320,10 @@ Complete physical Android WebView validation on a modest/older phone and a curre
 - Moved the western settlement anchor from 12.5 to 4.5 world units west of the road centreline while retaining the 0.72 scale and road-facing rotation. This places the main house closer to the camera centreline while keeping the yard beside, not across, the road.
 - Added projected screen-space bounds for the imported settlement meshes and made mobile/tablet browser QA fail unless at least one settlement model has a meaningful visible area after the camera follows level 3. The existing camera travel and 39-unit radius checks remain in place.
 - Next step: run the complete PR checks, inspect refreshed level-3 screenshots at 390×844 and 1024×768, and merge PR #130 only if the actual homes are visible and every required workflow passes on the same head. Physical Android validation remains outstanding.
+
+
+### CI correction — keep the browser and Android 3D runtime in parity
+
+- The first validation run for screen-space settlement framing, workflow `43605996459` on head `b3cfa5389da3bb3800d6c89d8e9c54236d576104`, failed one of 141 Node tests at `tests/harvest-world-3d.test.js:14`. The browser 3D runtime had the new camera projection and west-settlement position, but the Android WebView copy and the exact-position regression expectation were still on the previous version.
+- This was a parity/test-maintenance failure, not a gameplay-engine failure. Mirrored the updated runtime byte-for-byte into Android, updated the expected west-settlement offset to `-4.5`, and added regression checks for the screen-space projection API.
+- Next step: rerun gameplay tests, Android APK/release candidate builds and mobile/tablet browser QA on the corrected commit; inspect new screenshots before merging PR #130.
