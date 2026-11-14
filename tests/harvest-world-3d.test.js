@@ -14,7 +14,7 @@ test("3D Harvest World is a Babylon scene shared with Android", () => {
  assert.equal(android, web, "Android 3D runtime must match browser runtime");
  assert.equal(androidGame, game, "Android game progression must match browser progression");
  assert.equal(androidHtml, html, "Android HTML must match browser HTML");
- for (const feature of ["BABYLON.Engine", "CreateRibbon", "continuous-asphalt-road", "farmhouse-walls", "river-valley", "level-gate-", "ArcRotateCamera", "onSelectLevel"]) {
+ for (const feature of ["BABYLON.Engine", "CreateRibbon", "continuous-asphalt-road", "farmhouse-walls", "river-valley", "level-gate-", "ArcRotateCamera", "onSelectLevel", "ImportMeshAsync", "harvest-world-farmstead.glb"]) {
   assert.ok(web.includes(feature), "3D scene is missing " + feature);
  }
  assert.match(html, /src="\.\/vendor\/babylon\.js"/);
