@@ -68,11 +68,17 @@ function focusLevel(level,animate){
  const target=gate.group.position.add(new BABYLON.Vector3(0,0,0));
  if(animate){
   scene.stopAnimation(camera);
+  const startTarget=camera.target.clone(),startPosition=camera.position.clone();
+  const delta=target.subtract(startTarget),endPosition=startPosition.add(delta);
   camera.overrideCloneAlphaBetaRadius=true;
-  BABYLON.Animation.CreateAndStartAnimation("road-camera-drive",camera,"target",30,42,camera.target.clone(),target,BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT,1,()=>{camera.overrideCloneAlphaBetaRadius=null});
+  const finish=()=>{camera.overrideCloneAlphaBetaRadius=null};
+  BABYLON.Animation.CreateAndStartAnimation("road-camera-drive-target",camera,"target",30,42,startTarget,target,BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT,1,finish);
+  BABYLON.Animation.CreateAndStartAnimation("road-camera-drive-position",camera,"position",30,42,startPosition,endPosition,BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT,1,finish);
  }else{
+  const offset=camera.position.subtract(camera.target);
   camera.overrideCloneAlphaBetaRadius=null;
   camera.setTarget(target,false,false,true);
+  camera.setPosition(target.add(offset));
  }
  gateMeshes.forEach(item=>{item.group.scaling.setAll(item.level===activeLevel?1.12:1);item.sign.material.emissiveColor=item.level===activeLevel?new BABYLON.Color3(.5,.34,.08):new BABYLON.Color3(.08,.08,.08)});
 }
