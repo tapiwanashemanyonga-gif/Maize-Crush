@@ -303,3 +303,11 @@ Complete physical Android WebView validation on a modest/older phone and a curre
 - The first framing-fix browser run caught a real camera bug: the selected level target moved to gate 3, but the camera position stayed at the initial gate and its measured distance expanded to 106.8 world units instead of the intended 39. The new assertion failed rather than accepting a zoomed-out view.
 - The correction now moves the camera target and position by the same road delta during animation. Instant focus updates preserve the current camera offset and explicitly set the corresponding position. This keeps the camera at its intended radius while travelling along the road.
 - The failure was recorded from browser QA run `43603734644` on head `a29e07619d4f27ee2a6c5d3fe962027ac66f8ae1`; gameplay tests (141/141), Android debug APK and unsigned release candidate passed on that head. The browser failure blocks PR #130 merge until a fresh run proves camera travel and settlement framing.
+
+
+### Babylon animation API correction
+
+- The camera-follow browser run on head `3ced950be8ceb76862ba60caf0949433bff6d52f` verified that instant focus now keeps the camera at the intended 39-unit radius and moves it with the selected level. The animated path then exposed a Babylon.js API misuse: the numeric speed value `1` was passed in the easing-function slot, producing `f.ease is not a function` on tablet.
+- Corrected both camera animations to pass `undefined` for the optional easing function and the completion callback in its documented argument position. The final callback now runs only after both target and position animations complete, then reapplies the exact destination camera position and clears the override. Starting or disposing the scene also stops in-flight camera animations.
+- The browser QA failure is recorded in run `43604224127`; gameplay tests (141/141), Android debug APK and unsigned release candidate passed on head `3ced950be8ceb76862ba60caf0949433bff6d52f`. The updated animation code is not yet validated.
+- Next step: rerun tests, APK/release builds and phone/tablet browser QA on the corrected commit; inspect screenshots at levels 1 and 3 before merging PR #130.

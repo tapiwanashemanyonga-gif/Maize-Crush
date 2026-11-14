@@ -71,9 +71,13 @@ function focusLevel(level,animate){
   const startTarget=camera.target.clone(),startPosition=camera.position.clone();
   const delta=target.subtract(startTarget),endPosition=startPosition.add(delta);
   camera.overrideCloneAlphaBetaRadius=true;
-  const finish=()=>{camera.overrideCloneAlphaBetaRadius=null};
-  BABYLON.Animation.CreateAndStartAnimation("road-camera-drive-target",camera,"target",30,42,startTarget,target,BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT,1,finish);
-  BABYLON.Animation.CreateAndStartAnimation("road-camera-drive-position",camera,"position",30,42,startPosition,endPosition,BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT,1,finish);
+  let finishedAnimations=0;
+  const finish=()=>{
+   finishedAnimations++;
+   if(finishedAnimations===2&&camera){camera.setPosition(endPosition);camera.overrideCloneAlphaBetaRadius=null;}
+  };
+  BABYLON.Animation.CreateAndStartAnimation("road-camera-drive-target",camera,"target",30,42,startTarget,target,BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT,undefined,finish);
+  BABYLON.Animation.CreateAndStartAnimation("road-camera-drive-position",camera,"position",30,42,startPosition,endPosition,BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT,undefined,finish);
  }else{
   const offset=camera.position.subtract(camera.target);
   camera.overrideCloneAlphaBetaRadius=null;
@@ -84,8 +88,8 @@ function focusLevel(level,animate){
 }
 function start(canvasId,level){
  const canvas=document.getElementById(canvasId);if(!canvas||!root.BABYLON)return false;
- if(engine){engine.dispose();engine=null;scene=null;gateMeshes=[]}
+ if(engine){if(scene&&camera)scene.stopAnimation(camera);engine.dispose();engine=null;scene=null;camera=null;gateMeshes=[]}
  try{engine=new BABYLON.Engine(canvas,true,{preserveDrawingBuffer:false,stencil:true,antialias:true,powerPreference:"high-performance"});buildWorld(level||1);focusLevel(level||pageStart,false);engine.runRenderLoop(()=>{if(scene)scene.render()});if(!resizeBound){window.addEventListener("resize",()=>engine&&engine.resize());resizeBound=true}return true}catch(error){console.error("3D Harvest World failed:",error);return false}
 }
-root.HarvestWorld3D={start,focusLevel,get ready(){return!!scene},get assetsReady(){return assetsReady},get activeLevel(){return activeLevel},get cameraPosition(){return camera?camera.position.asArray():null},get cameraTarget(){return camera?camera.target.asArray():null},get gatePositions(){return gateMeshes.map(item=>item.group.position.asArray())},get settlementPositions(){return settlementAnchors.map(anchor=>anchor.position.asArray())},get farmsteadLoaded(){return farmsteadLoaded},get terrainLoaded(){return terrainLoaded},get settlementLoaded(){return settlementLoaded},get settlementMeshCount(){return settlementMeshCount},get terrainMeshCount(){return terrainMeshCount},get farmsteadMeshCount(){return farmsteadMeshCount},get gateCount(){return gateMeshes.length},dispose(){farmsteadMeshCount=0;terrainMeshCount=0;settlementMeshCount=0;settlementAnchors=[];camera=null;if(engine){engine.stopRenderLoop();engine.dispose();engine=null;scene=null;gateMeshes=[]}}};
+root.HarvestWorld3D={start,focusLevel,get ready(){return!!scene},get assetsReady(){return assetsReady},get activeLevel(){return activeLevel},get cameraPosition(){return camera?camera.position.asArray():null},get cameraTarget(){return camera?camera.target.asArray():null},get gatePositions(){return gateMeshes.map(item=>item.group.position.asArray())},get settlementPositions(){return settlementAnchors.map(anchor=>anchor.position.asArray())},get farmsteadLoaded(){return farmsteadLoaded},get terrainLoaded(){return terrainLoaded},get settlementLoaded(){return settlementLoaded},get settlementMeshCount(){return settlementMeshCount},get terrainMeshCount(){return terrainMeshCount},get farmsteadMeshCount(){return farmsteadMeshCount},get gateCount(){return gateMeshes.length},dispose(){if(scene&&camera)scene.stopAnimation(camera);if(camera)camera.overrideCloneAlphaBetaRadius=null;farmsteadMeshCount=0;terrainMeshCount=0;settlementMeshCount=0;settlementAnchors=[];camera=null;if(engine){engine.stopRenderLoop();engine.dispose();engine=null;scene=null;gateMeshes=[]}}};
 })(window);

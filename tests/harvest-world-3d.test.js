@@ -46,6 +46,9 @@ test("3D Harvest World is a Babylon scene shared with Android", () => {
  assert.ok(web.includes("camera.overrideCloneAlphaBetaRadius=true"));
  assert.ok(web.includes("road-camera-drive-target"));
  assert.ok(web.includes("road-camera-drive-position"));
+ assert.ok(web.includes("finishedAnimations===2"));
+ assert.ok(web.includes("camera.setPosition(endPosition)"));
+ assert.ok(web.includes("ANIMATIONLOOPMODE_CONSTANT,undefined,finish"));
  assert.match(settlementBuilder, /MAX_SETTLEMENT_MESHES = 12/);
  assert.ok(settlementBuilder.includes("bpy.ops.object.join()"), "settlement geometry must be batched by material");
  assert.ok(settlementBuilder.includes("material-batched meshes"));
