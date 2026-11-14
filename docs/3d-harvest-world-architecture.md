@@ -66,3 +66,23 @@ A premium, readable, colourful 3D Zimbabwean countryside viewed from a cinematic
 - Map fits the viewport without vertical scrolling on phones and tablets.
 - Same visual scene runs in browser and Android WebView, with essential assets available offline.
 - Puzzle gameplay and saved progress remain compatible.
+
+## Implementation status — first engine proof
+
+The first Babylon.js scene is now integrated behind the existing Harvest Trail dialog on the feature branch.
+
+Implemented in this proof:
+- Babylon.js engine and interactive ArcRotateCamera.
+- A continuous flat asphalt ribbon with shoulders and centre-line dashes.
+- Rolling terrain, cultivated plots, a river, msasa-style trees and three procedurally modelled farmhouses with walls, pitched roofs, doors, windows and chimneys.
+- Four physical roadside level gates with dynamic level-number signs.
+- Gate selection for unlocked levels and camera focus animation when the map is reopened at the newly unlocked level.
+- Matching browser and Android WebView HTML, CSS, gameplay integration and scene runtime.
+
+Known release blockers:
+- Babylon.js is currently loaded from the official CDN. It must be bundled locally before the map can be considered offline-ready or release-ready.
+- The environment currently uses procedural Babylon meshes. Blender-authored, higher-detail GLB buildings and environmental props remain part of the art-quality milestone.
+- The browser visual QA must prove the engine actually renders on mobile and tablet profiles, and the Android build must pass before merge.
+- The scene is an initial 3D proof, not the final art direction. Lighting, terrain silhouettes, house detail, road furniture, regional transitions, frame-rate and memory budgets still need a dedicated polish pass.
+
+Do not merge this proof as a production release until the release blockers above are addressed or explicitly accepted and documented.
