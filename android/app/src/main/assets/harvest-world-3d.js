@@ -1,7 +1,7 @@
 (function(root){
 "use strict";
 const LEVEL_GAP=18;
-let engine=null,scene=null,camera=null,gateMeshes=[],activeLevel=1,pageStart=1,resizeBound=false,assetsReady=false,farmsteadLoaded=false,terrainLoaded=false,settlementLoaded=false,farmsteadMeshCount=0,terrainMeshCount=0,settlementMeshCount=0;
+let engine=null,scene=null,camera=null,gateMeshes=[],settlementAnchors=[],activeLevel=1,pageStart=1,resizeBound=false,assetsReady=false,farmsteadLoaded=false,terrainLoaded=false,settlementLoaded=false,farmsteadMeshCount=0,terrainMeshCount=0,settlementMeshCount=0;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 function mat(name,color,roughness){
  const m=new BABYLON.StandardMaterial(name,scene);m.diffuseColor=BABYLON.Color3.FromHexString(color);m.specularColor=new BABYLON.Color3(.12,.12,.12);m.roughness=roughness||.9;return m;
@@ -23,35 +23,39 @@ function createGate(level,point){
  return group;
 }
 function buildWorld(startLevel){
- assetsReady=false;farmsteadLoaded=false;terrainLoaded=false;settlementLoaded=false;farmsteadMeshCount=0;terrainMeshCount=0;settlementMeshCount=0;
+ assetsReady=false;farmsteadLoaded=false;terrainLoaded=false;settlementLoaded=false;farmsteadMeshCount=0;terrainMeshCount=0;settlementMeshCount=0;settlementAnchors=[];
  pageStart=Math.floor((Math.max(1,Number(startLevel)||1)-1)/4)*4+1;
  scene=new BABYLON.Scene(engine);scene.clearColor=new BABYLON.Color4(.48,.76,.91,1);scene.fogMode=BABYLON.Scene.FOGMODE_EXP2;scene.fogColor=new BABYLON.Color3(.48,.76,.91);scene.fogDensity=.006;
  const hemi=new BABYLON.HemisphericLight("sky-light",new BABYLON.Vector3(0,1,0),scene);hemi.intensity=.82;
  const sun=new BABYLON.DirectionalLight("sunlight",new BABYLON.Vector3(-.55,-1,.35),scene);sun.position=new BABYLON.Vector3(30,55,-20);sun.intensity=1.05;
  // Load the authored Blender landscape and farmstead as local GLB assets.
  // Procedural roadside placeholders are deliberately no longer the primary scenery.
- const loadAuthoredAsset=(filename,anchorName,position,scale)=>{
+ const roadX=z=>9.5*Math.sin((z+8)*.043)+2.2*Math.sin(z*.095);
+ const terrainHeight=(x,z)=>1.1*Math.sin(z*.035+x*.018)+.65*Math.cos(x*.055-z*.021)+.22*Math.sin(x*.19+z*.11)*Math.cos(z*.16)-.5;
+ const loadAuthoredAsset=(filename,anchorName,position,scale,rotationY=0)=>{
   return BABYLON.SceneLoader.ImportMeshAsync("","./assets/",filename,scene).then(result=>{
    const anchor=new BABYLON.TransformNode(anchorName,scene);
-   anchor.position.copyFrom(position);anchor.scaling.setAll(scale);
+   anchor.position.copyFrom(position);anchor.scaling.setAll(scale);anchor.rotation.y=rotationY;
    result.meshes.forEach(mesh=>{if(mesh.name!=="__root__")mesh.parent=anchor});
    const geometryCount=result.meshes.filter(mesh=>mesh.name!=="__root__"&&typeof mesh.getTotalVertices==="function"&&mesh.getTotalVertices()>0).length;
    if(anchorName.includes("zimbabwe-terrain"))terrainMeshCount=geometryCount;
    else if(anchorName.includes("zimbabwe-farmstead"))farmsteadMeshCount=geometryCount;
-   else if(anchorName.includes("rural-settlement"))settlementMeshCount+=geometryCount;
+   else if(anchorName.includes("rural-settlement")){settlementMeshCount+=geometryCount;settlementAnchors.push(anchor);}
    return true;
   }).catch(error=>{console.warn("Authored world asset unavailable:",filename,error);return false});
  };
- // Place authored settlement instances on the same sculpted terrain as the road.
- const terrainHeight=(x,z)=>1.1*Math.sin(z*.035+x*.018)+.65*Math.cos(x*.055-z*.021)+.22*Math.sin(x*.19+z*.11)*Math.cos(z*.16)-.5;
+ // Keep the authored homes close enough to the road to read clearly on narrow phones.
+ // Their yards sit outside the asphalt; the main house and grain store face the journey.
  const terrainPromise=loadAuthoredAsset("harvest-world-terrain.glb","blender-authored-zimbabwe-terrain",new BABYLON.Vector3(0,0,0),1).then(ok=>{terrainLoaded=ok;return ok});
- const farmsteadPromise=loadAuthoredAsset("harvest-world-farmstead.glb","blender-authored-zimbabwe-farmstead",new BABYLON.Vector3(-19,.02,18),.82).then(ok=>{farmsteadLoaded=ok;return ok});
- const settlementEast=loadAuthoredAsset("harvest-world-settlement.glb","blender-authored-rural-settlement-east",new BABYLON.Vector3(25,terrainHeight(25,74),74),.82);
- const settlementWest=loadAuthoredAsset("harvest-world-settlement.glb","blender-authored-rural-settlement-west",new BABYLON.Vector3(-31,terrainHeight(-31,92),92),.72);
+ const farmsteadZ=14,farmsteadX=roadX(farmsteadZ)+11.5;
+ const farmsteadPromise=loadAuthoredAsset("harvest-world-farmstead.glb","blender-authored-zimbabwe-farmstead",new BABYLON.Vector3(farmsteadX,terrainHeight(farmsteadX,farmsteadZ),farmsteadZ),.72).then(ok=>{farmsteadLoaded=ok;return ok});
+ const settlementEastZ=38,settlementEastX=roadX(settlementEastZ)+12.5;
+ const settlementWestZ=74,settlementWestX=roadX(settlementWestZ)-12.5;
+ const settlementEast=loadAuthoredAsset("harvest-world-settlement.glb","blender-authored-rural-settlement-east",new BABYLON.Vector3(settlementEastX,terrainHeight(settlementEastX,settlementEastZ),settlementEastZ),.72);
+ const settlementWest=loadAuthoredAsset("harvest-world-settlement.glb","blender-authored-rural-settlement-west",new BABYLON.Vector3(settlementWestX,terrainHeight(settlementWestX,settlementWestZ),settlementWestZ),.72,Math.PI);
  const settlementPromise=Promise.all([settlementEast,settlementWest]).then(results=>{settlementLoaded=results.every(Boolean);return settlementLoaded});
  Promise.all([terrainPromise,farmsteadPromise,settlementPromise]).then(()=>{assetsReady=true});
  // Place physical level gates directly beside the winding Blender road.
- const roadX=z=>9.5*Math.sin((z+8)*.043)+2.2*Math.sin(z*.095);
  const gatePoints=[2,36,73,112].map(z=>new BABYLON.Vector3(roadX(z)+4.8,terrainHeight(roadX(z)+4.8,z)+.28,z));
  gatePoints.forEach((p,i)=>createGate(pageStart+i,p));
  scene.onPointerObservable.add(info=>{if(info.type!==BABYLON.PointerEventTypes.POINTERTAP)return;const pick=scene.pick(scene.pointerX,scene.pointerY);if(!pick||!pick.hit||!pick.pickedMesh)return;let node=pick.pickedMesh;while(node&&!node.metadata?.level)node=node.parent;if(node&&node.metadata.level<=activeLevel&&typeof root.HarvestWorld3D.onSelectLevel==="function")root.HarvestWorld3D.onSelectLevel(node.metadata.level)});
@@ -62,8 +66,14 @@ function focusLevel(level,animate){
  activeLevel=clamp(Number(level)||pageStart,pageStart,pageStart+gateMeshes.length-1);
  const gate=gateMeshes[activeLevel-pageStart];if(!gate||!camera)return;
  const target=gate.group.position.add(new BABYLON.Vector3(0,0,0));
- if(animate){BABYLON.Animation.CreateAndStartAnimation("road-camera-drive",camera,"target",30,42,camera.target.clone(),target, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);}
- else camera.setTarget(target);
+ if(animate){
+  scene.stopAnimation(camera);
+  camera.overrideCloneAlphaBetaRadius=true;
+  BABYLON.Animation.CreateAndStartAnimation("road-camera-drive",camera,"target",30,42,camera.target.clone(),target,BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT,1,()=>{camera.overrideCloneAlphaBetaRadius=null});
+ }else{
+  camera.overrideCloneAlphaBetaRadius=null;
+  camera.setTarget(target,false,false,true);
+ }
  gateMeshes.forEach(item=>{item.group.scaling.setAll(item.level===activeLevel?1.12:1);item.sign.material.emissiveColor=item.level===activeLevel?new BABYLON.Color3(.5,.34,.08):new BABYLON.Color3(.08,.08,.08)});
 }
 function start(canvasId,level){
@@ -71,5 +81,5 @@ function start(canvasId,level){
  if(engine){engine.dispose();engine=null;scene=null;gateMeshes=[]}
  try{engine=new BABYLON.Engine(canvas,true,{preserveDrawingBuffer:false,stencil:true,antialias:true,powerPreference:"high-performance"});buildWorld(level||1);focusLevel(level||pageStart,false);engine.runRenderLoop(()=>{if(scene)scene.render()});if(!resizeBound){window.addEventListener("resize",()=>engine&&engine.resize());resizeBound=true}return true}catch(error){console.error("3D Harvest World failed:",error);return false}
 }
-root.HarvestWorld3D={start,focusLevel,get ready(){return!!scene},get assetsReady(){return assetsReady},get farmsteadLoaded(){return farmsteadLoaded},get terrainLoaded(){return terrainLoaded},get settlementLoaded(){return settlementLoaded},get settlementMeshCount(){return settlementMeshCount},get terrainMeshCount(){return terrainMeshCount},get farmsteadMeshCount(){return farmsteadMeshCount},get gateCount(){return gateMeshes.length},dispose(){farmsteadMeshCount=0;terrainMeshCount=0;settlementMeshCount=0;if(engine){engine.stopRenderLoop();engine.dispose();engine=null;scene=null;gateMeshes=[]}}};
+root.HarvestWorld3D={start,focusLevel,get ready(){return!!scene},get assetsReady(){return assetsReady},get activeLevel(){return activeLevel},get cameraPosition(){return camera?camera.position.asArray():null},get cameraTarget(){return camera?camera.target.asArray():null},get gatePositions(){return gateMeshes.map(item=>item.group.position.asArray())},get settlementPositions(){return settlementAnchors.map(anchor=>anchor.position.asArray())},get farmsteadLoaded(){return farmsteadLoaded},get terrainLoaded(){return terrainLoaded},get settlementLoaded(){return settlementLoaded},get settlementMeshCount(){return settlementMeshCount},get terrainMeshCount(){return terrainMeshCount},get farmsteadMeshCount(){return farmsteadMeshCount},get gateCount(){return gateMeshes.length},dispose(){farmsteadMeshCount=0;terrainMeshCount=0;settlementMeshCount=0;settlementAnchors=[];camera=null;if(engine){engine.stopRenderLoop();engine.dispose();engine=null;scene=null;gateMeshes=[]}}};
 })(window);
