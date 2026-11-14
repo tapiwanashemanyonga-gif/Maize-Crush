@@ -296,3 +296,10 @@ Complete physical Android WebView validation on a modest/older phone and a curre
 - The Blender-authored farmstead and two settlement instances are being moved to roadside positions near levels 1–3. Browser QA will verify that focusing level 3 moves camera position and target together, preserves the 39-unit radius, and places an authored settlement within 18 world units of the selected gate; it also captures the phone/tablet settlement views.
 - Previous documentation-aligned PR head `a9d1b55c7522f5a7281425119a2f9cf4297740a1` passed 141/141 gameplay tests, Android debug APK, unsigned release candidate and browser visual QA. Those checks predate this framing correction and are not evidence for the new code.
 - Next step: run the full PR workflows on the framing-fix commit, inspect the refreshed screenshots, then merge PR #130 only if the houses are visibly framed and every required check passes. Physical Android and modest-device validation remain release gates.
+
+
+### Camera-follow regression found and corrected
+
+- The first framing-fix browser run caught a real camera bug: the selected level target moved to gate 3, but the camera position stayed at the initial gate and its measured distance expanded to 106.8 world units instead of the intended 39. The new assertion failed rather than accepting a zoomed-out view.
+- The correction now moves the camera target and position by the same road delta during animation. Instant focus updates preserve the current camera offset and explicitly set the corresponding position. This keeps the camera at its intended radius while travelling along the road.
+- The failure was recorded from browser QA run `43603734644` on head `a29e07619d4f27ee2a6c5d3fe962027ac66f8ae1`; gameplay tests (141/141), Android debug APK and unsigned release candidate passed on that head. The browser failure blocks PR #130 merge until a fresh run proves camera travel and settlement framing.
