@@ -14,7 +14,7 @@ test("3D Harvest World is a Babylon scene shared with Android", () => {
  assert.equal(android, web, "Android 3D runtime must match browser runtime");
  assert.equal(androidGame, game, "Android game progression must match browser progression");
  assert.equal(androidHtml, html, "Android HTML must match browser HTML");
- for (const feature of ["BABYLON.Engine", "CreateRibbon", "continuous-asphalt-road", "farmhouse-walls", "river-valley", "level-gate-", "ArcRotateCamera", "onSelectLevel"]) {
+ for (const feature of ["BABYLON.Engine", "CreateRibbon", "continuous-asphalt-road", "farmhouse-walls", "river-valley", "level-gate-", "ArcRotateCamera", "onSelectLevel", "ImportMeshAsync", "harvest-world-farmstead.glb"]) {
   assert.ok(web.includes(feature), "3D scene is missing " + feature);
  }
  assert.match(html, /src="\.\/vendor\/babylon\.js"/);
@@ -22,4 +22,8 @@ test("3D Harvest World is a Babylon scene shared with Android", () => {
  assert.match(fs.readFileSync(path.join(root, "scripts/prepare-babylon-runtime.js"), "utf8"), /babylonjs\/babylon\.js/);
  assert.match(html, /harvest-world-canvas/);
  assert.match(game, /HarvestWorld3D\.focusLevel\(level,true\)/);
+ assert.ok(html.includes("babylonjs.loaders.min.js"));
+ assert.ok(web.includes("harvest-world-farmstead.glb"));
+ assert.ok(fs.readFileSync(path.join(root, "scripts/build_harvest_world_assets.py"), "utf8").includes("export_scene.gltf"));
+ assert.match(fs.readFileSync(path.join(root, "scripts/prepare-babylon-runtime.js"), "utf8"), /babylonjs-loaders/);
 });

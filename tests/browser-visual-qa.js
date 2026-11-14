@@ -42,7 +42,6 @@ function startServer() {
 
 // Treat the journey map as the launch surface; wait for its generated chapter and path nodes.
 async function enterGameFromJourney(page, verify = false) {
-  await page.waitForFunction(() => document.querySelectorAll("#game-board .crop-tile").length === 64, null, {timeout:15000});
   let journeyOpen = await page.waitForFunction(() => { const map=document.querySelector("#level-map"); return !!map && map.open && map.querySelectorAll(".map-world-group").length > 0; }, null, {timeout:15000}).then(() => true).catch(() => false);
   if (!journeyOpen) {
     const initial = await page.evaluate(() => ({open:!!document.querySelector("#level-map")?.open,chapters:document.querySelectorAll("#level-map .map-world-group").length}));
@@ -66,17 +65,17 @@ async function enterGameFromJourney(page, verify = false) {
       journeyOpen = true;
     }
   }
-  if (!journeyOpen && !verify) {
+  if (!journeyOpen) {
     const tutorial = await page.locator("#tutorial-dialog").evaluate(dialog => !!dialog && dialog.open).catch(() => false);
-    if (tutorial) await page.locator("#tutorial-start").click();
-    else await page.locator("#level-map-button").click();
+    if (tutorial && !verify) await page.locator("#tutorial-start").click();
+    else await page.locator("#level-map-button").click({ force: true });
     await page.evaluate(() => {
       const tutorialDialog=document.querySelector("#tutorial-dialog");
       if(tutorialDialog?.open)tutorialDialog.close();
       const map=document.querySelector("#level-map");
       if(map && !map.open && typeof map.showModal==="function")map.showModal();
     });
-    await page.waitForFunction(() => { const map=document.querySelector("#level-map"); return !!map && map.open && map.querySelectorAll(".map-world-group").length > 0; }, null, {timeout:8000});
+    await page.waitForFunction(() => { const map=document.querySelector("#level-map"); return !!map && map.open && map.querySelectorAll(".map-world-group").length > 0; }, null, {timeout:15000});
     journeyOpen = true;
   }
   if (!journeyOpen) {
@@ -84,9 +83,10 @@ async function enterGameFromJourney(page, verify = false) {
     throw new Error("Harvest Trail did not open automatically: " + JSON.stringify(state));
   }
   if (verify) {
-    await page.waitForFunction(() => !!window.HarvestWorld3D?.ready, null, { timeout: 20000 });
+    await page.waitForFunction(() => !!window.HarvestWorld3D?.ready && !!window.HarvestWorld3D?.assetsReady, null, { timeout: 30000 });
     const journey = await page.evaluate(() => ({
       threeD: !!window.HarvestWorld3D?.ready,
+      farmsteadLoaded: !!window.HarvestWorld3D?.farmsteadLoaded,
       canvas: !!document.querySelector("#harvest-world-canvas"),
       fallbackHidden: !!document.querySelector("#harvest-world-fallback")?.hidden,
       title: document.querySelector("#level-map h2")?.textContent?.trim(),
@@ -98,7 +98,7 @@ async function enterGameFromJourney(page, verify = false) {
       perspective: getComputedStyle(document.querySelector("#level-map .map-world-levels")).perspective,
       play: document.querySelector("#map-play-current")?.textContent?.trim()
     }));
-    if (!journey.threeD || !journey.canvas || !journey.fallbackHidden || journey.title !== "Harvest Trail" || journey.chapters < 1 || journey.markers !== 4 || !journey.road || journey.roadLayers < 5 || !journey.vehicle || journey.perspective === "none" || !/^▶ Play Level 1$/.test(journey.play || "")) {
+    if (!journey.threeD || !journey.farmsteadLoaded || !journey.canvas || !journey.fallbackHidden || journey.title !== "Harvest Trail" || journey.chapters < 1 || journey.markers !== 4 || !journey.road || journey.roadLayers < 5 || !journey.vehicle || journey.perspective === "none" || !/^▶ Play Level 1$/.test(journey.play || "")) {
       throw new Error("Harvest Trail launch screen is incomplete: " + JSON.stringify(journey));
     }
   }

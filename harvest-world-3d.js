@@ -1,7 +1,7 @@
 (function(root){
 "use strict";
 const LEVEL_GAP=18;
-let engine=null,scene=null,camera=null,gateMeshes=[],activeLevel=1,pageStart=1,resizeBound=false;
+let engine=null,scene=null,camera=null,gateMeshes=[],activeLevel=1,pageStart=1,resizeBound=false,assetsReady=false,farmsteadLoaded=false;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 function mat(name,color,roughness){
  const m=new BABYLON.StandardMaterial(name,scene);m.diffuseColor=BABYLON.Color3.FromHexString(color);m.specularColor=new BABYLON.Color3(.12,.12,.12);m.roughness=roughness||.9;return m;
@@ -32,6 +32,7 @@ function createGate(level,point){
  return group;
 }
 function buildWorld(startLevel){
+ assetsReady=false;farmsteadLoaded=false;
  pageStart=Math.floor((Math.max(1,Number(startLevel)||1)-1)/4)*4+1;
  scene=new BABYLON.Scene(engine);scene.clearColor=new BABYLON.Color4(.48,.76,.91,1);scene.fogMode=BABYLON.Scene.FOGMODE_EXP2;scene.fogColor=new BABYLON.Color3(.48,.76,.91);scene.fogDensity=.006;
  const hemi=new BABYLON.HemisphericLight("sky-light",new BABYLON.Vector3(0,1,0),scene);hemi.intensity=.82;
@@ -49,7 +50,13 @@ function buildWorld(startLevel){
   const crown=BABYLON.MeshBuilder.CreateSphere("msasa-canopy",{diameter:4.2,segments:8},scene);crown.position.set(x,4,z);crown.scaling.y=.8;crown.material=leaf;
  }
  for(let i=0;i<8;i++){const z=12+i*16;const patch=BABYLON.MeshBuilder.CreateGround("cultivated-field",{width:12,height:10},scene);patch.position.set(i%2?23:-23,.025,z);patch.material=i%2?field:soil}
- buildHouse(-19,18,1.05);buildHouse(21,53,.85);buildHouse(-22,93,.95);
+ buildHouse(21,53,.85);buildHouse(-22,93,.95);
+ if(BABYLON.SceneLoader&&BABYLON.SceneLoader.ImportMeshAsync){
+  BABYLON.SceneLoader.ImportMeshAsync("","./assets/","harvest-world-farmstead.glb",scene).then(result=>{
+   const anchor=new BABYLON.TransformNode("blender-authored-zimbabwe-farmstead",scene);anchor.position.set(-19,.02,18);anchor.scaling.setAll(.82);
+   result.meshes.forEach(mesh=>{if(mesh.name!=="__root__")mesh.parent=anchor});farmsteadLoaded=true;assetsReady=true;
+  }).catch(error=>{console.warn("Blender farmstead model unavailable; retaining procedural scenery",error);buildHouse(-19,18,1.05);assetsReady=true});
+ }else{buildHouse(-19,18,1.05);assetsReady=true}
  const riverMat=mat("river-water","#43a9c3",.25);
  const riverPath=[new BABYLON.Vector3(34,.04,4),new BABYLON.Vector3(39,.04,25),new BABYLON.Vector3(34,.04,45),new BABYLON.Vector3(40,.04,67),new BABYLON.Vector3(36,.04,92),new BABYLON.Vector3(43,.04,125)];
  const river=BABYLON.MeshBuilder.CreateTube("river-valley",{path:riverPath,radius:2.6,tessellation:12},scene);river.material=riverMat;
@@ -72,5 +79,5 @@ function start(canvasId,level){
  if(engine){engine.dispose();engine=null;scene=null;gateMeshes=[]}
  try{engine=new BABYLON.Engine(canvas,true,{preserveDrawingBuffer:false,stencil:true,antialias:true,powerPreference:"high-performance"});buildWorld(level||1);focusLevel(level||pageStart,false);engine.runRenderLoop(()=>{if(scene)scene.render()});if(!resizeBound){window.addEventListener("resize",()=>engine&&engine.resize());resizeBound=true}return true}catch(error){console.error("3D Harvest World failed:",error);return false}
 }
-root.HarvestWorld3D={start,focusLevel,get ready(){return!!scene},dispose(){if(engine){engine.stopRenderLoop();engine.dispose();engine=null;scene=null;gateMeshes=[]}}};
+root.HarvestWorld3D={start,focusLevel,get ready(){return!!scene},get assetsReady(){return assetsReady},get farmsteadLoaded(){return farmsteadLoaded},dispose(){if(engine){engine.stopRenderLoop();engine.dispose();engine=null;scene=null;gateMeshes=[]}}};
 })(window);
