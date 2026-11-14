@@ -21,9 +21,17 @@ jobs:
         with:
           node-version: 20
       - name: Install pinned Babylon.js runtime
-        run: npm install --no-save --no-package-lock --ignore-scripts babylonjs@9.36.0
+        run: npm install --no-save --no-package-lock --ignore-scripts babylonjs@9.36.0 babylonjs-loaders@9.36.0
       - name: Prepare local web and Android 3D runtime
         run: node scripts/prepare-babylon-runtime.js
+      - name: Install Blender for authored environment models
+        run: sudo apt-get update && sudo apt-get install -y blender
+      - name: Generate Blender farmstead model for web and Android
+        run: blender --background --python scripts/build_harvest_world_assets.py
+      - name: Install Blender for authored environment models
+        run: sudo apt-get update && sudo apt-get install -y blender
+      - name: Generate Blender farmstead model for web and Android
+        run: blender --background --python scripts/build_harvest_world_assets.py
       - name: Run gameplay regression tests
         run: npm test
       - name: Test Android UI smoke helper
