@@ -25,7 +25,7 @@ jobs:
       - name: Prepare local web and Android 3D runtime
         run: node scripts/prepare-babylon-runtime.js
       - name: Install Blender for authored environment models
-        run: sudo apt-get update && sudo apt-get install -y blender
+        run: sudo apt-get update && sudo apt-get install -y blender python3-numpy
       - name: Generate Blender farmstead model for web and Android
         run: blender --background --python scripts/build_harvest_world_assets.py
       - name: Verify exported farmstead GLB and Android mirror
