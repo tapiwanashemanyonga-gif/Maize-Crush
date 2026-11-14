@@ -53,13 +53,16 @@ for j in range(nz):
 for j in range(nz - 1):
     for i in range(nx - 1):
         a = j * nx + i
-        faces.append((a, a + 1, a + nx + 1, a + nx))
+        faces.append((a, a + nx, a + nx + 1, a + 1))
 terrain = mesh_object("Sculpted Zimbabwe countryside terrain", verts, faces, grass)
 for p in terrain.data.polygons:
     p.use_smooth = True
 
 def road_x(z):
     return 9.5 * math.sin((z + 8) * .043) + 2.2 * math.sin(z * .095)
+
+def terrain_height(x, z):
+    return 1.1 * math.sin(z * .035 + x * .018) + .65 * math.cos(x * .055 - z * .021) + .22 * math.sin(x * .19 + z * .11) * math.cos(z * .16) - .5
 
 def road_mesh(name, half_width, y_offset, mat):
     verts, faces = [], []
@@ -71,7 +74,7 @@ def road_mesh(name, half_width, y_offset, mat):
         length = math.sqrt(dx * dx + .4 * .4)
         nxv, nzv = .4 / length, -dx / length
         for side in (-1, 1):
-            verts.append((x + nxv * half_width * side, .13 + y_offset, z + nzv * half_width * side))
+            verts.append((x + nxv * half_width * side, terrain_height(x, z) + .22 + y_offset, z + nzv * half_width * side))
     for j in range(steps):
         a = j * 2
         faces.append((a, a + 1, a + 3, a + 2))
@@ -92,7 +95,7 @@ for z in range(-8, 166, 7):
     spline = curve.splines.new("POLY")
     spline.points.add(1)
     for point, zz in zip(spline.points, (z, z + 3.1)):
-        point.co = (road_x(zz), .23, zz, 1)
+        point.co = (road_x(zz), terrain_height(road_x(zz), zz) + .38, zz, 1)
     obj = bpy.data.objects.new("Raised road centre marking", curve)
     bpy.context.collection.objects.link(obj)
     obj.data.materials.append(road_line)
@@ -102,7 +105,7 @@ for idx, (x, z, sx, sy, sz) in enumerate([
     (-29, 18, 9, 5, 8), (31, 47, 11, 6, 10), (-34, 91, 8, 4, 7),
     (34, 128, 10, 5, 9), (-25, 145, 7, 4, 6)
 ]):
-    bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=2, radius=1, location=(x, sy * .2, z))
+    bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=2, radius=1, location=(x, terrain_height(x, z) + sy * .55, z))
     obj = bpy.context.object
     obj.name = "Zimbabwe granite kopje %02d" % idx
     obj.scale = (sx, sy, sz)
@@ -115,13 +118,13 @@ for idx in range(34):
     z = -4 + (idx * 5.1) % 166
     side = -1 if idx % 2 == 0 else 1
     x = road_x(z) + side * (12 + (idx % 4) * 4)
-    bpy.ops.mesh.primitive_cylinder_add(vertices=8, radius=.34, depth=3.8, location=(x, 1.7, z))
+    bpy.ops.mesh.primitive_cylinder_add(vertices=8, radius=.34, depth=3.8, location=(x, terrain_height(x, z) + 1.9, z))
     trunk = bpy.context.object
     trunk.name = "Msasa tree trunk"
     trunk.data.materials.append(bark)
     for cluster in range(3):
         offset_x = (cluster - 1) * 1.05
-        bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=1, radius=1, location=(x + offset_x, 4.0 + (cluster % 2) * .35, z + (cluster - 1) * .65))
+        bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=1, radius=1, location=(x + offset_x, terrain_height(x, z) + 4.0 + (cluster % 2) * .35, z + (cluster - 1) * .65))
         crown = bpy.context.object
         crown.name = "Layered msasa canopy"
         crown.scale = (1.7, 1.25, 1.65)
@@ -132,7 +135,7 @@ for idx in range(9):
     z = 8 + idx * 17
     side = 1 if idx % 2 else -1
     x = road_x(z) + side * 22
-    bpy.ops.mesh.primitive_cube_add(size=1, location=(x, .18, z))
+    bpy.ops.mesh.primitive_cube_add(size=1, location=(x, terrain_height(x, z) + .12, z))
     plot = bpy.context.object
     plot.name = "Zimbabwe cultivated field plot"
     plot.dimensions = (17, .18, 11)
@@ -147,7 +150,7 @@ for idx in range(9):
         spline = row_curve.splines.new("POLY")
         spline.points.add(1)
         for point, zz in zip(spline.points, (z - 4.5, z + 4.5)):
-            point.co = (x - 7 + row * 3.5, .32, zz, 1)
+            point.co = (x - 7 + row * 3.5, terrain_height(x - 7 + row * 3.5, zz) + .28, zz, 1)
         obj = bpy.data.objects.new("Raised maize planting row", row_curve)
         bpy.context.collection.objects.link(obj)
         obj.data.materials.append(foliage)
