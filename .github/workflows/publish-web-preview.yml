@@ -23,6 +23,10 @@ jobs:
     steps:
       - name: Check out game
         uses: actions/checkout@v4
+      - name: Install pinned Babylon.js runtime
+        run: npm install --no-save --no-package-lock --ignore-scripts babylonjs@9.36.0
+      - name: Prepare local web and Android 3D runtime
+        run: node scripts/prepare-babylon-runtime.js
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
