@@ -47,6 +47,13 @@ test("3D Harvest World is a Babylon scene shared with Android", () => {
  assert.doesNotMatch(web, /river-valley/);
  const browserWorkflow = fs.readFileSync(path.join(root, ".github/workflows/android-layout-smoke.yml"), "utf8");
  assert.equal((browserWorkflow.match(/blender --background --python scripts\/build_harvest_world_terrain.py/g) || []).length, 2, "both Android build and browser QA jobs must generate the terrain GLB");
+ assert.equal((browserWorkflow.match(/test_harvest_world_glb.py/g) || []).length, 2, "both Android build and browser QA jobs must validate the generated GLBs");
+ for (const workflowName of ["android-apk.yml", "android-release-candidate.yml", "android-signed-release.yml", "publish-web-preview.yml"]) {
+  const workflow = fs.readFileSync(path.join(root, ".github/workflows", workflowName), "utf8");
+  assert.ok(workflow.includes("test_harvest_world_glb.py"), workflowName + " must validate generated GLB geometry");
+  assert.ok(workflow.includes("scripts/build_harvest_world_terrain.py"), workflowName + " must generate the 3D terrain");
+ }
+ assert.ok(fs.readFileSync(path.join(root, ".github/workflows/android-signed-release.yml"), "utf8").includes("babylonjs-loaders@9.36.0"));
  assert.ok(fs.readFileSync(path.join(root, "sw.js"), "utf8").includes("harvest-world-terrain.glb"));
  assert.ok(fs.readFileSync(path.join(root, "sw.js"), "utf8").includes("harvest-world-settlement.glb"));
  assert.equal(fs.readFileSync(path.join(root, "android/app/src/main/assets/sw.js"), "utf8"), fs.readFileSync(path.join(root, "sw.js"), "utf8"));

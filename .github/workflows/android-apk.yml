@@ -43,6 +43,7 @@ jobs:
           cmp assets/harvest-world-farmstead.glb android/app/src/main/assets/assets/harvest-world-farmstead.glb
           cmp assets/harvest-world-terrain.glb android/app/src/main/assets/assets/harvest-world-terrain.glb
           cmp assets/harvest-world-settlement.glb android/app/src/main/assets/assets/harvest-world-settlement.glb
+          python3 -m unittest discover -s tests -p 'test_harvest_world_glb.py'
 
       - name: Run gameplay tests
         run: npm test
