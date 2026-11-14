@@ -87,6 +87,7 @@ async function enterGameFromJourney(page, verify = false) {
     const journey = await page.evaluate(() => ({
       threeD: !!window.HarvestWorld3D?.ready,
       farmsteadLoaded: !!window.HarvestWorld3D?.farmsteadLoaded,
+      terrainLoaded: !!window.HarvestWorld3D?.terrainLoaded,
       canvas: !!document.querySelector("#harvest-world-canvas"),
       fallbackHidden: !!document.querySelector("#harvest-world-fallback")?.hidden,
       title: document.querySelector("#level-map h2")?.textContent?.trim(),
@@ -98,7 +99,7 @@ async function enterGameFromJourney(page, verify = false) {
       perspective: getComputedStyle(document.querySelector("#level-map .map-world-levels")).perspective,
       play: document.querySelector("#map-play-current")?.textContent?.trim()
     }));
-    if (!journey.threeD || !journey.farmsteadLoaded || !journey.canvas || !journey.fallbackHidden || journey.title !== "Harvest Trail" || journey.chapters < 1 || journey.markers !== 4 || !journey.road || journey.roadLayers < 5 || !journey.vehicle || journey.perspective === "none" || !/^▶ Play Level 1$/.test(journey.play || "")) {
+    if (!journey.threeD || !journey.farmsteadLoaded || !journey.terrainLoaded || !journey.canvas || !journey.fallbackHidden || journey.title !== "Harvest Trail" || journey.chapters < 1 || journey.markers !== 4 || !journey.road || journey.roadLayers < 5 || !journey.vehicle || journey.perspective === "none" || !/^▶ Play Level 1$/.test(journey.play || "")) {
       throw new Error("Harvest Trail launch screen is incomplete: " + JSON.stringify(journey));
     }
   }
