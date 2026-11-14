@@ -1380,3 +1380,165 @@ body.focus-play .crop-tile{width:100%;height:100%;min-width:0;min-height:0;aspec
   body.focus-play .action-row button{flex:1 1 0;min-width:0;min-height:38px;padding:7px 5px;font-size:11px;}
   body.focus-play .meta-actions{flex-wrap:wrap;}
 }
+
+
+/* 3D Harvest Trail: a raised, winding Zimbabwean road with moving lane markings. */
+#level-map.level-map{
+  width:min(calc(100vw - 16px),760px);
+  max-width:760px;
+  max-height:96dvh;
+  padding:clamp(12px,2.4vw,22px);
+  overflow-y:auto;
+  background-image:
+    linear-gradient(180deg,rgba(20,83,64,.08),rgba(10,51,35,.3)),
+    url("./assets/harvest-world.svg");
+  background-size:cover;
+  background-position:center;
+}
+#level-map .map-world-group{
+  position:relative;
+  min-height:390px;
+  margin:10px 0 12px;
+  padding:clamp(12px,2vw,18px);
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.7);
+  border-radius:24px;
+  background:
+    radial-gradient(ellipse at 12% 12%,rgba(255,255,255,.65) 0 2%,transparent 2.8%),
+    radial-gradient(ellipse at 82% 18%,rgba(255,224,119,.8) 0 5%,transparent 5.8%),
+    linear-gradient(180deg,#91d3e5 0%,#c7e6d0 28%,#8fbd72 29%,#679c55 62%,#427747 100%);
+  box-shadow:0 18px 35px rgba(7,39,27,.34),inset 0 1px rgba(255,255,255,.75);
+}
+#level-map .map-world-group::before{
+  content:"";
+  position:absolute;
+  z-index:0;
+  inset:16% -10% 15%;
+  pointer-events:none;
+  background:
+    radial-gradient(ellipse at 12% 70%,#527f51 0 17%,transparent 17.8%),
+    radial-gradient(ellipse at 38% 54%,#7da85d 0 22%,transparent 22.8%),
+    radial-gradient(ellipse at 77% 65%,#477b4b 0 24%,transparent 24.8%),
+    radial-gradient(ellipse at 100% 70%,#91b96b 0 20%,transparent 20.8%);
+  filter:drop-shadow(0 8px 6px rgba(22,66,39,.18));
+}
+#level-map .map-world-group::after{
+  content:"";
+  position:absolute;
+  z-index:0;
+  left:-5%;right:-5%;bottom:-10%;
+  height:38%;
+  pointer-events:none;
+  background:
+    repeating-linear-gradient(100deg,transparent 0 18px,rgba(241,205,104,.48) 19px 21px,transparent 22px 39px),
+    linear-gradient(180deg,rgba(50,105,54,.05),rgba(31,82,44,.42));
+  transform:perspective(300px) rotateX(18deg);
+  transform-origin:bottom;
+}
+#level-map .map-world-header{position:relative;z-index:5;border-color:rgba(35,83,49,.24)}
+#level-map .map-world-header strong{color:#1f6038;font-size:15px;text-shadow:0 1px rgba(255,255,255,.7)}
+#level-map .map-world-header span{color:#315e3a}
+#level-map .map-world-levels{
+  position:relative;
+  display:block;
+  min-height:310px;
+  margin:6px 0 0;
+  padding:0;
+  overflow:visible;
+  perspective:1000px;
+  transform-style:preserve-3d;
+  transform:rotateX(22deg);
+  transform-origin:center 62%;
+}
+#level-map .map-route{
+  position:absolute;
+  z-index:1;
+  inset:0;
+  width:100%;
+  height:100%;
+  overflow:visible;
+  filter:drop-shadow(0 12px 8px rgba(22,54,34,.4));
+}
+#level-map .map-route-shadow{fill:none;stroke:#263b2b;stroke-width:31;stroke-linecap:round;opacity:.72}
+#level-map .map-route-shoulder{fill:none;stroke:#d6c18a;stroke-width:27;stroke-linecap:round}
+#level-map .map-route-asphalt{fill:none;stroke:#3e4545;stroke-width:22;stroke-linecap:round}
+#level-map .map-route-edge{fill:none;stroke:#f4e7bd;stroke-width:1.8;stroke-dasharray:1 0;stroke-linecap:round;opacity:.95}
+#level-map .map-route-line{
+  fill:none;stroke:#ffd968;stroke-width:1.7;stroke-dasharray:3.2 4.8;
+  stroke-linecap:round;filter:drop-shadow(0 1px 1px rgba(15,25,17,.65));
+  animation:harvest-road-flow 2.2s linear infinite;
+}
+#level-map .map-scenery{
+  position:absolute;z-index:2;left:2%;right:2%;top:4%;
+  display:flex;justify-content:space-between;align-items:center;
+  font-size:clamp(20px,3vw,30px);letter-spacing:0;
+  opacity:.98;filter:drop-shadow(0 4px 2px rgba(27,68,38,.38));
+  transform:rotateX(-22deg) translateZ(24px);
+  pointer-events:none;
+}
+#level-map .map-world-levels .map-level{
+  position:absolute;z-index:4;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+  width:clamp(54px,8vw,70px);min-width:0;min-height:clamp(58px,8vw,72px);
+  padding:5px 3px;
+  border:3px solid #fff8dc;border-radius:50%;
+  background:linear-gradient(155deg,#fffdf0,#cbd9c0);
+  color:#315b3b;font-weight:950;
+  box-shadow:0 5px 0 #687d5d,0 10px 18px rgba(18,52,33,.42),inset 0 2px rgba(255,255,255,.9);
+  transform:translate(-50%,-50%) rotateX(-22deg) translateZ(28px);
+  transition:filter .2s ease,box-shadow .2s ease;
+}
+#level-map .map-world-levels .map-level .map-level-objective{font-size:clamp(17px,2.7vw,23px);line-height:1}
+#level-map .map-world-levels .map-level .map-level-number{font-size:clamp(11px,1.8vw,14px);line-height:1.1}
+#level-map .map-world-levels .map-level:not(:disabled){
+  background:linear-gradient(155deg,#fff0a6,#e8a52d);
+  color:#5c3b15;border-color:#fff9df;
+  box-shadow:0 6px 0 #9e6827,0 12px 20px rgba(18,52,33,.45),inset 0 2px rgba(255,255,255,.85);
+}
+#level-map .map-world-levels .map-level:not(:disabled):hover{filter:brightness(1.1)}
+#level-map .map-world-levels .map-level.current-level{
+  border-color:#fff;
+  outline:4px solid rgba(255,255,255,.78);outline-offset:4px;
+  box-shadow:0 0 0 9px rgba(255,213,82,.28),0 7px 0 #a76c22,0 15px 25px rgba(12,42,26,.48);
+  animation:trail-current-pulse 1.4s ease-in-out infinite alternate;
+}
+#level-map .map-world-levels .map-level:disabled{
+  background:linear-gradient(155deg,#dce5d4,#9aa994);
+  color:#657568;border-color:#f3f2e7;opacity:.9;
+}
+#level-map .road-vehicle{
+  position:absolute;z-index:6;
+  font-size:clamp(25px,4vw,36px);line-height:1;
+  transform:translate(-50%,-50%) rotateX(-22deg) translateZ(46px);
+  filter:drop-shadow(0 6px 3px rgba(13,44,25,.55));
+  animation:road-vehicle-drive .72s ease-in-out infinite alternate;
+  pointer-events:none;
+}
+#level-map .map-play-current{
+  position:relative;z-index:6;
+  width:min(100%,430px);min-height:50px;margin:8px auto 10px;
+  border:2px solid #fff4c9;border-radius:16px;
+  background:linear-gradient(135deg,#fff0a8,#f5b83e 58%,#e99a2e);
+  color:#533716;font-size:15px;font-weight:950;
+  box-shadow:0 5px 0 #a76d26,0 10px 20px rgba(25,60,39,.28);
+}
+#level-map .level-map-navigation{position:relative;z-index:5}
+@keyframes harvest-road-flow{to{stroke-dashoffset:-32}}
+@keyframes road-vehicle-drive{from{margin-top:0;filter:drop-shadow(0 5px 2px rgba(13,44,25,.48))}to{margin-top:-5px;filter:drop-shadow(0 9px 4px rgba(13,44,25,.58))}}
+@media(max-width:600px){
+ #level-map.level-map{width:calc(100vw - 10px);max-height:96dvh;padding:11px;border-radius:20px}
+ #level-map .map-world-group{min-height:340px;margin:8px 0 10px;padding:11px;border-radius:19px}
+ #level-map .map-world-levels{min-height:270px}
+ #level-map .map-world-levels .map-level{width:53px;min-height:57px;border-width:2px}
+ #level-map .map-world-levels .map-level .map-level-objective{font-size:18px}
+ #level-map .map-scenery{font-size:20px}
+ #level-map .map-world-header strong{font-size:13px}
+ #level-map .map-play-current{min-height:44px;font-size:13px}
+}
+@media(min-width:700px){
+ #level-map .map-world-group{min-height:420px}
+ #level-map .map-world-levels{min-height:335px}
+}
+@media(prefers-reduced-motion:reduce){
+ #level-map .map-route-line,#level-map .road-vehicle,#level-map .map-world-levels .map-level.current-level{animation:none!important}
+}
