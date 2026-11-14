@@ -355,6 +355,19 @@ async function useFreshField(page) {
   if (await page.locator("body").evaluate(body => body.classList.contains("tools-open"))) await page.locator("#tools-toggle-button").click();
 }
 
+async function dismissResultDialogs(page) {
+  for (const [dialog, closeButton] of [
+    ["#level-complete-dialog", "#level-complete-close"],
+    ["#level-failed-dialog", "#level-failed-close"]
+  ]) {
+    const isOpen = await page.locator(dialog).evaluate(element => !!element && (element.open || element.hasAttribute("open"))).catch(() => false);
+    if (isOpen) {
+      await page.locator(closeButton).click();
+      await page.locator(dialog).waitFor({ state: "hidden", timeout: 5000 });
+    }
+  }
+}
+
 async function runLongSessionSoak(page, profile) {
   const client = await page.context().newCDPSession(page);
   await client.send("Performance.enable");
@@ -376,6 +389,7 @@ async function runLongSessionSoak(page, profile) {
   // Read the current opening move budget from the game engine so the soak stays
   // valid when the difficulty curve is intentionally rebalanced.
   const openingMoves = await page.evaluate(() => { const match = document.querySelector("#level-label").textContent.match(/Level\s+(\d+)/); const level = match ? Number(match[1]) : 1; return window.MaizeCrush.movesForLevel(level); });
+  await dismissResultDialogs(page);
   await page.locator("#restart-button").click();
   await page.waitForFunction((expectedMoves) =>
     Number(document.querySelector("#moves-value").textContent) === expectedMoves &&
@@ -395,6 +409,7 @@ async function runLongSessionSoak(page, profile) {
 
   while (harvests < 20 && rounds < maxRounds) {
     if (rounds > 0) {
+      await dismissResultDialogs(page);
       await page.locator("#restart-button").click();
       await page.waitForFunction((expectedMoves) =>
         Number(document.querySelector("#moves-value").textContent) === expectedMoves &&
