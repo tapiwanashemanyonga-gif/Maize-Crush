@@ -29,6 +29,8 @@ test("3D Harvest World is a Babylon scene shared with Android", () => {
  assert.ok(terrainBuilder.includes("Continuous asphalt road surface"));
  assert.ok(terrainBuilder.includes("Sculpted Zimbabwe countryside terrain"));
  assert.ok(terrainBuilder.includes("terrain_height"));
+ const browserWorkflow = fs.readFileSync(path.join(root, ".github/workflows/android-layout-smoke.yml"), "utf8");
+ assert.equal((browserWorkflow.match(/blender --background --python scripts\/build_harvest_world_terrain.py/g) || []).length, 2, "both Android build and browser QA jobs must generate the terrain GLB");
  assert.ok(fs.readFileSync(path.join(root, "sw.js"), "utf8").includes("harvest-world-terrain.glb"));
  assert.equal(fs.readFileSync(path.join(root, "android/app/src/main/assets/sw.js"), "utf8"), fs.readFileSync(path.join(root, "sw.js"), "utf8"));
  assert.match(fs.readFileSync(path.join(root, "scripts/prepare-babylon-runtime.js"), "utf8"), /babylonjs-loaders/);
