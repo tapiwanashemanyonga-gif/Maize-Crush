@@ -22,4 +22,8 @@ test("3D Harvest World is a Babylon scene shared with Android", () => {
  assert.match(fs.readFileSync(path.join(root, "scripts/prepare-babylon-runtime.js"), "utf8"), /babylonjs\/babylon\.js/);
  assert.match(html, /harvest-world-canvas/);
  assert.match(game, /HarvestWorld3D\.focusLevel\(level,true\)/);
+ assert.match(html, /babylonjs\\.loaders\\.min\\.js/);
+ assert.match(html, /harvest-world-farmstead\\.glb/);
+ assert.match(fs.readFileSync(path.join(root, "scripts/build_harvest_world_assets.py"), "utf8"), /export_scene\\.gltf/);
+ assert.match(fs.readFileSync(path.join(root, "scripts/prepare-babylon-runtime.js"), "utf8"), /babylonjs-loaders/);
 });
