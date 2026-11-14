@@ -1,6 +1,6 @@
 "use strict";
 
-const CACHE_NAME = "maize-crush-shell-v21";
+const CACHE_NAME = "maize-crush-shell-v22";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -8,6 +8,8 @@ const APP_SHELL = [
   "./game.js",
   "./harvest-world-3d.js",
   "./vendor/babylon.js",
+  "./vendor/babylonjs.loaders.min.js",
+  "./assets/harvest-world-farmstead.glb",
   "./crop-art.svg",
   "./assets/harvest-world.svg",
   "./manifest.webmanifest",
