@@ -96,6 +96,37 @@ for loc,scale in [((-10,-1,4.6),(2.2,2.1,1.7)),((-10.9,-.8,4.15),(1.7,1.8,1.35))
 # Path and stone stepping slabs
 for i in range(5):
     cube("Veranda stepping stone",(0,-5.4-i*.85,.12),(1.15,.62,.18),concrete,.08)
+MAX_FARMSTEAD_MESHES = 12
+
+def merge_meshes_by_material():
+    mesh_objects = [obj for obj in bpy.context.scene.objects if obj.type == "MESH"]
+    for obj in mesh_objects:
+        bpy.ops.object.select_all(action="DESELECT")
+        obj.select_set(True)
+        bpy.context.view_layer.objects.active = obj
+        for modifier in list(obj.modifiers):
+            bpy.ops.object.modifier_apply(modifier=modifier.name)
+    groups = {}
+    for obj in mesh_objects:
+        materials = [slot.material for slot in obj.material_slots if slot.material]
+        if len(materials) != 1:
+            raise RuntimeError("Farmstead mesh must have exactly one material: " + obj.name)
+        groups.setdefault(materials[0].name, []).append(obj)
+    for material_name, objects in groups.items():
+        bpy.ops.object.select_all(action="DESELECT")
+        for obj in objects:
+            obj.select_set(True)
+        bpy.context.view_layer.objects.active = objects[0]
+        if len(objects) > 1:
+            bpy.ops.object.join()
+        bpy.context.object.name = "Farmstead | " + material_name
+    final_meshes = [obj for obj in bpy.context.scene.objects if obj.type == "MESH"]
+    if len(final_meshes) > MAX_FARMSTEAD_MESHES:
+        raise RuntimeError("Farmstead draw-call budget exceeded: %d > %d" % (len(final_meshes), MAX_FARMSTEAD_MESHES))
+    return len(final_meshes)
+
+mesh_count = merge_meshes_by_material()
+print("Batched Zimbabwe farmstead into %d material-batched meshes" % mesh_count)
 # Export only this authored scene
 bpy.ops.object.select_all(action="SELECT")
 bpy.ops.export_scene.gltf(filepath=OUT, export_format="GLB", use_selection=True, export_apply=True)

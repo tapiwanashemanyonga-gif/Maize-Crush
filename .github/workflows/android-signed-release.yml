@@ -20,9 +20,27 @@ jobs:
         with:
           node-version: 20
       - name: Install pinned Babylon.js runtime
-        run: npm install --no-save --no-package-lock --ignore-scripts babylonjs@9.36.0
+        run: npm install --no-save --no-package-lock --ignore-scripts babylonjs@9.36.0 babylonjs-loaders@9.36.0
       - name: Prepare local web and Android 3D runtime
         run: node scripts/prepare-babylon-runtime.js
+
+      - name: Install Blender for authored environment models
+        run: sudo apt-get update && sudo apt-get install -y blender python3-numpy
+
+      - name: Generate and validate offline 3D world assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          blender --background --python scripts/build_harvest_world_assets.py
+          blender --background --python scripts/build_harvest_world_terrain.py
+          blender --background --python scripts/build_harvest_world_settlement.py
+          test -s assets/harvest-world-farmstead.glb
+          test -s assets/harvest-world-terrain.glb
+          test -s assets/harvest-world-settlement.glb
+          cmp assets/harvest-world-farmstead.glb android/app/src/main/assets/assets/harvest-world-farmstead.glb
+          cmp assets/harvest-world-terrain.glb android/app/src/main/assets/assets/harvest-world-terrain.glb
+          cmp assets/harvest-world-settlement.glb android/app/src/main/assets/assets/harvest-world-settlement.glb
+          python3 -m unittest discover -s tests -p 'test_harvest_world_glb.py'
 
       - name: Run gameplay regression tests
         run: npm test

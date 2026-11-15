@@ -49,7 +49,7 @@ for j in range(nz):
         x = -48 + i * 2.0
         broad = 1.1 * math.sin(z * .035 + x * .018) + .65 * math.cos(x * .055 - z * .021)
         undulation = .22 * math.sin(x * .19 + z * .11) * math.cos(z * .16)
-        verts.append((x, broad + undulation - .5, z))
+        verts.append((x, -z, broad + undulation - .5))
 for j in range(nz - 1):
     for i in range(nx - 1):
         a = j * nx + i
@@ -74,10 +74,10 @@ def road_mesh(name, half_width, y_offset, mat):
         length = math.sqrt(dx * dx + .4 * .4)
         nxv, nzv = .4 / length, -dx / length
         for side in (-1, 1):
-            verts.append((x + nxv * half_width * side, terrain_height(x, z) + .22 + y_offset, z + nzv * half_width * side))
+            verts.append((x + nxv * half_width * side, -(z + nzv * half_width * side), terrain_height(x, z) + .22 + y_offset))
     for j in range(steps):
         a = j * 2
-        faces.append((a, a + 1, a + 3, a + 2))
+        faces.append((a, a + 2, a + 3, a + 1))
     obj = mesh_object(name, verts, faces, mat)
     for p in obj.data.polygons:
         p.use_smooth = True
@@ -95,7 +95,7 @@ for z in range(-8, 166, 7):
     spline = curve.splines.new("POLY")
     spline.points.add(1)
     for point, zz in zip(spline.points, (z, z + 3.1)):
-        point.co = (road_x(zz), terrain_height(road_x(zz), zz) + .38, zz, 1)
+        point.co = (road_x(zz), -zz, terrain_height(road_x(zz), zz) + .38, 1)
     obj = bpy.data.objects.new("Raised road centre marking", curve)
     bpy.context.collection.objects.link(obj)
     obj.data.materials.append(road_line)
@@ -105,10 +105,10 @@ for idx, (x, z, sx, sy, sz) in enumerate([
     (-29, 18, 9, 5, 8), (31, 47, 11, 6, 10), (-34, 91, 8, 4, 7),
     (34, 128, 10, 5, 9), (-25, 145, 7, 4, 6)
 ]):
-    bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=2, radius=1, location=(x, terrain_height(x, z) + sy * .55, z))
+    bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=2, radius=1, location=(x, -z, terrain_height(x, z) + sy * .55))
     obj = bpy.context.object
     obj.name = "Zimbabwe granite kopje %02d" % idx
-    obj.scale = (sx, sy, sz)
+    obj.scale = (sx, sz, sy)
     obj.data.materials.append(rock if idx % 2 == 0 else rock_light)
     for poly in obj.data.polygons:
         poly.use_smooth = True
@@ -118,16 +118,16 @@ for idx in range(34):
     z = -4 + (idx * 5.1) % 166
     side = -1 if idx % 2 == 0 else 1
     x = road_x(z) + side * (12 + (idx % 4) * 4)
-    bpy.ops.mesh.primitive_cylinder_add(vertices=8, radius=.34, depth=3.8, location=(x, terrain_height(x, z) + 1.9, z))
+    bpy.ops.mesh.primitive_cylinder_add(vertices=8, radius=.34, depth=3.8, location=(x, -z, terrain_height(x, z) + 1.9))
     trunk = bpy.context.object
     trunk.name = "Msasa tree trunk"
     trunk.data.materials.append(bark)
     for cluster in range(3):
         offset_x = (cluster - 1) * 1.05
-        bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=1, radius=1, location=(x + offset_x, terrain_height(x, z) + 4.0 + (cluster % 2) * .35, z + (cluster - 1) * .65))
+        bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=1, radius=1, location=(x + offset_x, -(z + (cluster - 1) * .65), terrain_height(x, z) + 4.0 + (cluster % 2) * .35))
         crown = bpy.context.object
         crown.name = "Layered msasa canopy"
-        crown.scale = (1.7, 1.25, 1.65)
+        crown.scale = (1.7, 1.65, 1.25)
         crown.data.materials.append(foliage if cluster != 1 else foliage_light)
 
 # Cultivated fields form visible geometric plots alongside the route.
@@ -135,10 +135,10 @@ for idx in range(9):
     z = 8 + idx * 17
     side = 1 if idx % 2 else -1
     x = road_x(z) + side * 22
-    bpy.ops.mesh.primitive_cube_add(size=1, location=(x, terrain_height(x, z) + .12, z))
+    bpy.ops.mesh.primitive_cube_add(size=1, location=(x, -z, terrain_height(x, z) + .12))
     plot = bpy.context.object
     plot.name = "Zimbabwe cultivated field plot"
-    plot.dimensions = (17, .18, 11)
+    plot.dimensions = (17, 11, .18)
     bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
     plot.data.materials.append(field_gold if idx % 2 else red_soil)
     # Parallel raised crop rows, deliberately sparse and shared-material.
@@ -150,11 +150,50 @@ for idx in range(9):
         spline = row_curve.splines.new("POLY")
         spline.points.add(1)
         for point, zz in zip(spline.points, (z - 4.5, z + 4.5)):
-            point.co = (x - 7 + row * 3.5, terrain_height(x - 7 + row * 3.5, zz) + .28, zz, 1)
+            point.co = (x - 7 + row * 3.5, -zz, terrain_height(x - 7 + row * 3.5, zz) + .28, 1)
         obj = bpy.data.objects.new("Raised maize planting row", row_curve)
         bpy.context.collection.objects.link(obj)
         obj.data.materials.append(foliage)
 
+# Blender is Z-up; the GLB exporter converts Z-up to Babylon's Y-up.
+# Road distance uses Blender -Y so it becomes positive Babylon world Z.
+MAX_TERRAIN_MESHES = 12
+
+def merge_meshes_by_material():
+    for obj in list(bpy.context.scene.objects):
+        if obj.type == "CURVE":
+            bpy.ops.object.select_all(action="DESELECT")
+            obj.select_set(True)
+            bpy.context.view_layer.objects.active = obj
+            bpy.ops.object.convert(target="MESH")
+    mesh_objects = [obj for obj in bpy.context.scene.objects if obj.type == "MESH"]
+    for obj in mesh_objects:
+        bpy.ops.object.select_all(action="DESELECT")
+        obj.select_set(True)
+        bpy.context.view_layer.objects.active = obj
+        for modifier in list(obj.modifiers):
+            bpy.ops.object.modifier_apply(modifier=modifier.name)
+    groups = {}
+    for obj in mesh_objects:
+        materials = [slot.material for slot in obj.material_slots if slot.material]
+        if len(materials) != 1:
+            raise RuntimeError("Terrain mesh must have exactly one material: " + obj.name)
+        groups.setdefault(materials[0].name, []).append(obj)
+    for material_name, objects in groups.items():
+        bpy.ops.object.select_all(action="DESELECT")
+        for obj in objects:
+            obj.select_set(True)
+        bpy.context.view_layer.objects.active = objects[0]
+        if len(objects) > 1:
+            bpy.ops.object.join()
+        bpy.context.object.name = "Terrain | " + material_name
+    final_meshes = [obj for obj in bpy.context.scene.objects if obj.type == "MESH"]
+    if len(final_meshes) > MAX_TERRAIN_MESHES:
+        raise RuntimeError("Terrain draw-call budget exceeded: %d > %d" % (len(final_meshes), MAX_TERRAIN_MESHES))
+    return len(final_meshes)
+
+mesh_count = merge_meshes_by_material()
+print("Batched Zimbabwe countryside into %d material-batched meshes" % mesh_count)
 # Export the terrain, road and countryside dressing as one offline GLB.
 bpy.ops.object.select_all(action="SELECT")
 bpy.ops.export_scene.gltf(filepath=OUT, export_format="GLB", use_selection=True, export_apply=True)
