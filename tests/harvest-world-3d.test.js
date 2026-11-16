@@ -31,6 +31,10 @@ test("3D Harvest World is a Babylon scene shared with Android", () => {
  assert.ok(terrainBuilder.includes("terrain_height"));
  assert.ok(terrainBuilder.includes("verts.append((x, -z, broad + undulation - .5))"));
  assert.ok(terrainBuilder.includes("MAX_TERRAIN_MESHES = 12"));
+ assert.ok(terrainBuilder.includes("Rural timber electricity pole"), "terrain must include rural power poles");
+ assert.ok(terrainBuilder.includes("Sagging overhead rural power cable"), "terrain must include overhead power lines");
+ assert.ok(terrainBuilder.includes("Weathered rural fence post"), "terrain must include roadside rural fencing");
+ assert.ok(terrainBuilder.includes("Rural timber fence rail"), "rural fencing must have rails");
  const farmsteadBuilder = fs.readFileSync(path.join(root, "scripts/build_harvest_world_assets.py"), "utf8");
  assert.ok(farmsteadBuilder.includes("MAX_FARMSTEAD_MESHES = 12"));
  assert.ok(farmsteadBuilder.includes("bpy.ops.object.join()"));
