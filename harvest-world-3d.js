@@ -1,8 +1,10 @@
 (function(root){
 "use strict";
 const LEVEL_GAP=18;
-let engine=null,scene=null,camera=null,gateMeshes=[],settlementAnchors=[],activeLevel=1,pageStart=1,resizeBound=false,assetsReady=false,farmsteadLoaded=false,terrainLoaded=false,settlementLoaded=false,farmsteadMeshCount=0,terrainMeshCount=0,settlementMeshCount=0;
+let engine=null,scene=null,camera=null,gateMeshes=[],settlementAnchors=[],tractor=null,tractorWheels=[],activeLevel=1,pageStart=1,resizeBound=false,assetsReady=false,farmsteadLoaded=false,terrainLoaded=false,settlementLoaded=false,farmsteadMeshCount=0,terrainMeshCount=0,settlementMeshCount=0;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const roadX=z=>9.5*Math.sin((z+8)*.043)+2.2*Math.sin(z*.095);
+const terrainHeight=(x,z)=>1.1*Math.sin(z*.035+x*.018)+.65*Math.cos(x*.055-z*.021)+.22*Math.sin(x*.19+z*.11)*Math.cos(z*.16)-.5;
 function mat(name,color,roughness){
  const m=new BABYLON.StandardMaterial(name,scene);m.diffuseColor=BABYLON.Color3.FromHexString(color);m.specularColor=new BABYLON.Color3(.12,.12,.12);m.roughness=roughness||.9;return m;
 }
@@ -22,6 +24,47 @@ function createGate(level,point){
  gateMeshes.push({level,group,sign,posts:[postA,postB,beam,base]});
  return group;
 }
+function createTractor(position){
+ const group=new BABYLON.TransformNode("harvest-progress-tractor",scene);
+ const green=mat("tractor-enamel","#3e8b42",.38),darkGreen=mat("tractor-shadow","#245c32",.55),rubber=mat("tractor-tyres","#202522",.96),hub=mat("tractor-wheel-hubs","#c7c9b8",.48),glass=mat("tractor-cab-glass","#9bd9df",.28),metal=mat("tractor-metal","#aab5a5",.5),lamp=mat("tractor-headlights","#fff0a8",.25);
+ glass.alpha=.72;
+ const chassis=box("tractor-chassis",new BABYLON.Vector3(0,.62,0),[1.28,.34,2.15],darkGreen);chassis.parent=group;
+ const bonnet=box("tractor-bonnet",new BABYLON.Vector3(0,1.02,.62),[1.12,.72,1.02],green);bonnet.parent=group;
+ const nose=box("tractor-front-grille",new BABYLON.Vector3(0,.94,1.15),[.78,.42,.08],metal);nose.parent=group;
+ const cabBase=box("tractor-cab-base",new BABYLON.Vector3(0,1.46,-.38),[1.05,.12,.98],darkGreen);cabBase.parent=group;
+ const cabRoof=box("tractor-cab-roof",new BABYLON.Vector3(0,2.43,-.38),[1.34,.16,1.25],green);cabRoof.parent=group;
+ const rearGlass=box("tractor-cab-rear-glass",new BABYLON.Vector3(0,1.94,-.91),[.94,.78,.055],glass);rearGlass.parent=group;
+ const frontGlass=box("tractor-cab-front-glass",new BABYLON.Vector3(0,1.94,.16),[.94,.78,.055],glass);frontGlass.parent=group;
+ const sideGlassA=box("tractor-cab-side-left",new BABYLON.Vector3(-.53,1.94,-.38),[.055,.78,.96],glass);sideGlassA.parent=group;
+ const sideGlassB=box("tractor-cab-side-right",new BABYLON.Vector3(.53,1.94,-.38),[.055,.78,.96],glass);sideGlassB.parent=group;
+ const exhaust=box("tractor-exhaust",new BABYLON.Vector3(-.39,1.63,.82),[.09,.62,.09],metal);exhaust.parent=group;
+ const lightA=box("tractor-headlight-left",new BABYLON.Vector3(-.39,1.18,1.205),[.2,.18,.06],lamp);lightA.parent=group;
+ const lightB=box("tractor-headlight-right",new BABYLON.Vector3(.39,1.18,1.205),[.2,.18,.06],lamp);lightB.parent=group;
+ const seat=box("tractor-seat",new BABYLON.Vector3(0,1.38,-.52),[.42,.14,.38],darkGreen);seat.parent=group;
+ tractorWheels=[];
+ for(const side of [-1,1]){
+  for(const axle of [-1,1]){
+   const rear=axle<0,diameter=rear?1.02:.66;
+   const wheel=BABYLON.MeshBuilder.CreateCylinder("tractor-wheel",{diameter,height:.28,tessellation:16},scene);
+   wheel.rotation.z=Math.PI/2;wheel.position.set(side*(rear?.78:.7),diameter/2,axle<0?-.78:.72);wheel.material=rubber;wheel.parent=group;
+   const wheelHub=BABYLON.MeshBuilder.CreateCylinder("tractor-wheel-hub",{diameter:diameter*.43,height:.3,tessellation:12},scene);
+   wheelHub.rotation.z=Math.PI/2;wheelHub.position.copyFrom(wheel.position);wheelHub.material=hub;wheelHub.parent=group;
+   tractorWheels.push(wheel);
+  }
+ }
+ group.position.copyFrom(position);tractor=group;return group;
+}
+function moveTractor(position,animate){
+ if(!tractor)return;
+ scene.stopAnimation(tractor);tractorWheels.forEach(wheel=>scene.stopAnimation(wheel));
+ if(!animate){tractor.position.copyFrom(position);return;}
+ const start=tractor.position.clone();
+ BABYLON.Animation.CreateAndStartAnimation("tractor-road-journey",tractor,"position",30,42,start,position,BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+ tractorWheels.forEach((wheel,index)=>{
+  const spin=wheel.rotation.x;
+  BABYLON.Animation.CreateAndStartAnimation("tractor-wheel-roll-"+index,wheel,"rotation.x",30,42,spin,spin-Math.PI*2,BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+ });
+}
 function buildWorld(startLevel){
  assetsReady=false;farmsteadLoaded=false;terrainLoaded=false;settlementLoaded=false;farmsteadMeshCount=0;terrainMeshCount=0;settlementMeshCount=0;settlementAnchors=[];
  pageStart=Math.floor((Math.max(1,Number(startLevel)||1)-1)/4)*4+1;
@@ -30,8 +73,6 @@ function buildWorld(startLevel){
  const sun=new BABYLON.DirectionalLight("sunlight",new BABYLON.Vector3(-.55,-1,.35),scene);sun.position=new BABYLON.Vector3(30,55,-20);sun.intensity=1.05;
  // Load the authored Blender landscape and farmstead as local GLB assets.
  // Procedural roadside placeholders are deliberately no longer the primary scenery.
- const roadX=z=>9.5*Math.sin((z+8)*.043)+2.2*Math.sin(z*.095);
- const terrainHeight=(x,z)=>1.1*Math.sin(z*.035+x*.018)+.65*Math.cos(x*.055-z*.021)+.22*Math.sin(x*.19+z*.11)*Math.cos(z*.16)-.5;
  const loadAuthoredAsset=(filename,anchorName,position,scale,rotationY=0)=>{
   return BABYLON.SceneLoader.ImportMeshAsync("","./assets/",filename,scene).then(result=>{
    const anchor=new BABYLON.TransformNode(anchorName,scene);
@@ -59,6 +100,8 @@ function buildWorld(startLevel){
  // Place physical level gates directly beside the winding Blender road.
  const gatePoints=[2,36,73,112].map(z=>new BABYLON.Vector3(roadX(z)+4.8,terrainHeight(roadX(z)+4.8,z)+.28,z));
  gatePoints.forEach((p,i)=>createGate(pageStart+i,p));
+ const firstRoadZ=gatePoints[0].z-4.8,firstRoadX=roadX(firstRoadZ);
+ createTractor(new BABYLON.Vector3(firstRoadX,terrainHeight(firstRoadX,firstRoadZ)+.08,firstRoadZ));
  scene.onPointerObservable.add(info=>{if(info.type!==BABYLON.PointerEventTypes.POINTERTAP)return;const pick=scene.pick(scene.pointerX,scene.pointerY);if(!pick||!pick.hit||!pick.pickedMesh)return;let node=pick.pickedMesh;while(node&&!node.metadata?.level)node=node.parent;if(node&&node.metadata.level<=activeLevel&&typeof root.HarvestWorld3D.onSelectLevel==="function")root.HarvestWorld3D.onSelectLevel(node.metadata.level)});
  camera=new BABYLON.ArcRotateCamera("harvest-follow-camera",Math.PI*1.5,1.05,39,new BABYLON.Vector3(0,0,16),scene);camera.lowerRadiusLimit=25;camera.upperRadiusLimit=65;camera.lowerBetaLimit=.65;camera.upperBetaLimit=1.28;camera.panningSensibility=75;camera.wheelPrecision=45;camera.attachControl(engine.getRenderingCanvas(),true);
  scene.onBeforeRenderObservable.add(()=>{const t=performance.now()*.00025;sun.direction=new BABYLON.Vector3(-.55,-1,.35+Math.sin(t)*.04)});
@@ -67,6 +110,9 @@ function focusLevel(level,animate){
  activeLevel=clamp(Number(level)||pageStart,pageStart,pageStart+gateMeshes.length-1);
  const gate=gateMeshes[activeLevel-pageStart];if(!gate||!camera)return;
  const target=gate.group.position.add(new BABYLON.Vector3(0,0,0));
+ const tractorZ=gate.group.position.z-4.8,tractorX=roadX(tractorZ);
+ const tractorTarget=new BABYLON.Vector3(tractorX,terrainHeight(tractorX,tractorZ)+.08,tractorZ);
+ moveTractor(tractorTarget,animate);
  if(animate){
   scene.stopAnimation(camera);
   const startTarget=camera.target.clone(),startPosition=camera.position.clone();
@@ -115,5 +161,5 @@ function getSettlementScreenBounds(){
   return{index,left,top,right,bottom,depthMin,depthMax,visible:depthMax>=0&&depthMin<=1&&visibleWidth>=24&&visibleHeight>=24};
  });
 }
-root.HarvestWorld3D={start,focusLevel,get ready(){return!!scene},get assetsReady(){return assetsReady},get activeLevel(){return activeLevel},get cameraPosition(){return camera?camera.position.asArray():null},get cameraTarget(){return camera?camera.target.asArray():null},get gatePositions(){return gateMeshes.map(item=>item.group.position.asArray())},get settlementPositions(){return settlementAnchors.map(item=>item.anchor.position.asArray())},get settlementScreenBounds(){return getSettlementScreenBounds()},get farmsteadLoaded(){return farmsteadLoaded},get terrainLoaded(){return terrainLoaded},get settlementLoaded(){return settlementLoaded},get settlementMeshCount(){return settlementMeshCount},get terrainMeshCount(){return terrainMeshCount},get farmsteadMeshCount(){return farmsteadMeshCount},get gateCount(){return gateMeshes.length},dispose(){if(scene&&camera)scene.stopAnimation(camera);if(camera)camera.overrideCloneAlphaBetaRadius=null;farmsteadMeshCount=0;terrainMeshCount=0;settlementMeshCount=0;settlementAnchors=[];camera=null;if(engine){engine.stopRenderLoop();engine.dispose();engine=null;scene=null;gateMeshes=[]}}};
+root.HarvestWorld3D={start,focusLevel,get tractorPosition(){return tractor?tractor.position.asArray():null},get tractorVisible(){return!!tractor&&!tractor.isDisposed()},get ready(){return!!scene},get assetsReady(){return assetsReady},get activeLevel(){return activeLevel},get cameraPosition(){return camera?camera.position.asArray():null},get cameraTarget(){return camera?camera.target.asArray():null},get gatePositions(){return gateMeshes.map(item=>item.group.position.asArray())},get settlementPositions(){return settlementAnchors.map(item=>item.anchor.position.asArray())},get settlementScreenBounds(){return getSettlementScreenBounds()},get farmsteadLoaded(){return farmsteadLoaded},get terrainLoaded(){return terrainLoaded},get settlementLoaded(){return settlementLoaded},get settlementMeshCount(){return settlementMeshCount},get terrainMeshCount(){return terrainMeshCount},get farmsteadMeshCount(){return farmsteadMeshCount},get gateCount(){return gateMeshes.length},dispose(){if(scene&&camera)scene.stopAnimation(camera);if(camera)camera.overrideCloneAlphaBetaRadius=null;farmsteadMeshCount=0;terrainMeshCount=0;settlementMeshCount=0;settlementAnchors=[];tractor=null;tractorWheels=[];camera=null;if(engine){engine.stopRenderLoop();engine.dispose();engine=null;scene=null;gateMeshes=[]}}};
 })(window);
