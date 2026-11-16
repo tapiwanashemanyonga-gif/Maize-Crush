@@ -14,7 +14,7 @@ test("3D Harvest World is a Babylon scene shared with Android", () => {
  assert.equal(android, web, "Android 3D runtime must match browser runtime");
  assert.equal(androidGame, game, "Android game progression must match browser progression");
  assert.equal(androidHtml, html, "Android HTML must match browser HTML");
- for (const feature of ["BABYLON.Engine", "level-gate-", "ArcRotateCamera", "onSelectLevel", "ImportMeshAsync", "harvest-world-farmstead.glb", "harvest-world-terrain.glb", "harvest-world-settlement.glb", "terrainLoaded", "settlementLoaded", "settlementMeshCount", "terrainMeshCount", "farmsteadMeshCount", "gateCount", "settlementAnchors", "cameraPosition", "cameraTarget", "gatePositions", "settlementPositions", "settlementScreenBounds", "getSettlementScreenBounds", "BABYLON.Vector3.Project", "overrideCloneAlphaBetaRadius", "Promise.all"]) {
+ for (const feature of ["BABYLON.Engine", "level-gate-", "harvest-progress-tractor", "tractor-road-journey", "tractor-wheel-roll-", "tractorPosition", "tractorVisible", "ArcRotateCamera", "onSelectLevel", "ImportMeshAsync", "harvest-world-farmstead.glb", "harvest-world-terrain.glb", "harvest-world-settlement.glb", "terrainLoaded", "settlementLoaded", "settlementMeshCount", "terrainMeshCount", "farmsteadMeshCount", "gateCount", "settlementAnchors", "cameraPosition", "cameraTarget", "gatePositions", "settlementPositions", "settlementScreenBounds", "getSettlementScreenBounds", "BABYLON.Vector3.Project", "overrideCloneAlphaBetaRadius", "Promise.all"]) {
   assert.ok(web.includes(feature), "3D scene is missing " + feature);
  }
  assert.match(html, /src="\.\/vendor\/babylon\.js"/);
@@ -49,6 +49,10 @@ test("3D Harvest World is a Babylon scene shared with Android", () => {
  assert.ok(web.includes("finishedAnimations===2"));
  assert.ok(web.includes("camera.setPosition(endPosition)"));
  assert.ok(web.includes("ANIMATIONLOOPMODE_CONSTANT,undefined,finish"));
+ assert.ok(web.includes("createTractor(new BABYLON.Vector3(firstRoadX,terrainHeight(firstRoadX,firstRoadZ)+.08,firstRoadZ))"));
+ assert.ok(web.includes("moveTractor(tractorTarget,animate)"));
+ assert.ok(web.includes("tractorWheels.forEach((wheel,index)=>"));
+ assert.ok(web.includes("wheel.rotation.z=Math.PI/2"));
  assert.match(settlementBuilder, /MAX_SETTLEMENT_MESHES = 12/);
  assert.ok(settlementBuilder.includes("bpy.ops.object.join()"), "settlement geometry must be batched by material");
  assert.ok(settlementBuilder.includes("material-batched meshes"));
