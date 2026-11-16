@@ -41,6 +41,7 @@ test("3D Harvest World is a Babylon scene shared with Android", () => {
  assert.ok(web.includes("settlementEastZ=38,settlementEastX=roadX(settlementEastZ)+12.5"));
  assert.ok(web.includes("settlementWestZ=74,settlementWestX=roadX(settlementWestZ)-4.5"));
  assert.ok(web.includes("farmsteadZ=14,farmsteadX=roadX(farmsteadZ)+11.5"));
+ assert.ok(web.includes("const target=gate.group.position.add(new BABYLON.Vector3(-4.8,0,0))"), "camera must centre the asphalt lane rather than the roadside gate");
  assert.ok(web.includes("camera.setTarget(target,false,false,true)"));
  assert.ok(web.includes("camera.setPosition(target.add(offset))"));
  assert.ok(web.includes("camera.overrideCloneAlphaBetaRadius=true"));
