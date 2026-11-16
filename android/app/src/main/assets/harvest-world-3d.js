@@ -109,7 +109,8 @@ function buildWorld(startLevel){
 function focusLevel(level,animate){
  activeLevel=clamp(Number(level)||pageStart,pageStart,pageStart+gateMeshes.length-1);
  const gate=gateMeshes[activeLevel-pageStart];if(!gate||!camera)return;
- const target=gate.group.position.add(new BABYLON.Vector3(0,0,0));
+ // Centre the camera on the asphalt lane, not the roadside gate; this keeps the tractor in-frame on narrow phones.
+ const target=gate.group.position.add(new BABYLON.Vector3(-4.8,0,0));
  const tractorZ=gate.group.position.z-4.8,tractorX=roadX(tractorZ);
  const tractorTarget=new BABYLON.Vector3(tractorX,terrainHeight(tractorX,tractorZ)+.27,tractorZ);
  moveTractor(tractorTarget,animate);
