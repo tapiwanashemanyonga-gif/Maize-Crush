@@ -101,7 +101,7 @@ function buildWorld(startLevel){
  const gatePoints=[2,36,73,112].map(z=>new BABYLON.Vector3(roadX(z)+4.8,terrainHeight(roadX(z)+4.8,z)+.28,z));
  gatePoints.forEach((p,i)=>createGate(pageStart+i,p));
  const firstRoadZ=gatePoints[0].z-4.8,firstRoadX=roadX(firstRoadZ);
- createTractor(new BABYLON.Vector3(firstRoadX,terrainHeight(firstRoadX,firstRoadZ)+.08,firstRoadZ));
+ createTractor(new BABYLON.Vector3(firstRoadX,terrainHeight(firstRoadX,firstRoadZ)+.27,firstRoadZ));
  scene.onPointerObservable.add(info=>{if(info.type!==BABYLON.PointerEventTypes.POINTERTAP)return;const pick=scene.pick(scene.pointerX,scene.pointerY);if(!pick||!pick.hit||!pick.pickedMesh)return;let node=pick.pickedMesh;while(node&&!node.metadata?.level)node=node.parent;if(node&&node.metadata.level<=activeLevel&&typeof root.HarvestWorld3D.onSelectLevel==="function")root.HarvestWorld3D.onSelectLevel(node.metadata.level)});
  camera=new BABYLON.ArcRotateCamera("harvest-follow-camera",Math.PI*1.5,1.05,39,new BABYLON.Vector3(0,0,16),scene);camera.lowerRadiusLimit=25;camera.upperRadiusLimit=65;camera.lowerBetaLimit=.65;camera.upperBetaLimit=1.28;camera.panningSensibility=75;camera.wheelPrecision=45;camera.attachControl(engine.getRenderingCanvas(),true);
  scene.onBeforeRenderObservable.add(()=>{const t=performance.now()*.00025;sun.direction=new BABYLON.Vector3(-.55,-1,.35+Math.sin(t)*.04)});
@@ -111,7 +111,7 @@ function focusLevel(level,animate){
  const gate=gateMeshes[activeLevel-pageStart];if(!gate||!camera)return;
  const target=gate.group.position.add(new BABYLON.Vector3(0,0,0));
  const tractorZ=gate.group.position.z-4.8,tractorX=roadX(tractorZ);
- const tractorTarget=new BABYLON.Vector3(tractorX,terrainHeight(tractorX,tractorZ)+.08,tractorZ);
+ const tractorTarget=new BABYLON.Vector3(tractorX,terrainHeight(tractorX,tractorZ)+.27,tractorZ);
  moveTractor(tractorTarget,animate);
  if(animate){
   scene.stopAnimation(camera);
