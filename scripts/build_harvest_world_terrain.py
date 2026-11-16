@@ -130,6 +130,71 @@ for idx in range(34):
         crown.scale = (1.7, 1.65, 1.25)
         crown.data.materials.append(foliage if cluster != 1 else foliage_light)
 
+# Rural roadside infrastructure: timber power poles, crossarms, insulators and sagging overhead lines.
+# All props reuse existing materials so the exported GLB stays inside the 12-mesh draw-call budget.
+power_poles = []
+for idx, z in enumerate(range(4, 161, 22)):
+    side = -1 if idx % 2 == 0 else 1
+    x = road_x(z) + side * 8.5
+    ground = terrain_height(x, z)
+    bpy.ops.mesh.primitive_cylinder_add(vertices=8, radius=.19, depth=6.2, location=(x, -z, ground + 3.1))
+    pole = bpy.context.object
+    pole.name = "Rural timber electricity pole"
+    pole.data.materials.append(bark)
+    # A simple timber crossarm and three insulator pegs create a recognisable silhouette.
+    bpy.ops.mesh.primitive_cube_add(size=1, location=(x, -z, ground + 5.45))
+    arm = bpy.context.object
+    arm.name = "Power pole crossarm"
+    arm.dimensions = (2.2, .16, .16)
+    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+    arm.data.materials.append(bark)
+    for offset in (-.82, 0, .82):
+        bpy.ops.mesh.primitive_cylinder_add(vertices=8, radius=.09, depth=.34, location=(x + offset, -z, ground + 5.68))
+        insulator = bpy.context.object
+        insulator.name = "Timber crossarm insulator"
+        insulator.data.materials.append(rock_light)
+    power_poles.append((x, -z, ground + 5.85))
+# Sag each wire gently between poles; curves are converted and batched by material at export.
+for idx in range(len(power_poles) - 1):
+    a, b = power_poles[idx], power_poles[idx + 1]
+    curve = bpy.data.curves.new("Overhead rural power line", "CURVE")
+    curve.dimensions = "3D"
+    curve.bevel_depth = .022
+    curve.bevel_resolution = 1
+    spline = curve.splines.new("POLY")
+    spline.points.add(2)
+    for point, co in zip(spline.points, (a, ((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, min(a[2], b[2]) - 1.0), b)):
+        point.co = (*co, 1)
+    wire = bpy.data.objects.new("Sagging overhead rural power cable", curve)
+    bpy.context.collection.objects.link(wire)
+    wire.data.materials.append(bark)
+
+# Weathered post-and-rail fencing follows the edge of two cultivated plots.
+for side, start_z, end_z in [(-1, 18, 62), (1, 86, 130)]:
+    fence_points = []
+    for z in range(start_z, end_z + 1, 5):
+        x = road_x(z) + side * 15.5
+        ground = terrain_height(x, z)
+        bpy.ops.mesh.primitive_cylinder_add(vertices=8, radius=.11, depth=1.45, location=(x, -z, ground + .72))
+        post = bpy.context.object
+        post.name = "Weathered rural fence post"
+        post.data.materials.append(bark)
+        fence_points.append((x, -z, ground + .72))
+    for idx in range(len(fence_points) - 1):
+        a, b = fence_points[idx], fence_points[idx + 1]
+        for height in (-.22, .25):
+            start = Vector((a[0], a[1], a[2] + height))
+            end = Vector((b[0], b[1], b[2] + height))
+            direction = end - start
+            bpy.ops.mesh.primitive_cube_add(size=1, location=(start + end) / 2)
+            rail = bpy.context.object
+            rail.name = "Rural timber fence rail"
+            rail.dimensions = (.09, .09, direction.length)
+            rail.rotation_mode = "QUATERNION"
+            rail.rotation_quaternion = direction.to_track_quat("Z", "Y")
+            bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+            rail.data.materials.append(bark)
+
 # Cultivated fields form visible geometric plots alongside the route.
 for idx in range(9):
     z = 8 + idx * 17
