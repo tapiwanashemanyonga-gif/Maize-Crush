@@ -137,23 +137,23 @@ for idx, z in enumerate(range(4, 161, 22)):
     side = -1 if idx % 2 == 0 else 1
     x = road_x(z) + side * 8.5
     ground = terrain_height(x, z)
-    bpy.ops.mesh.primitive_cylinder_add(vertices=8, radius=.19, depth=9.2, location=(x, -z, ground + 4.6))
+    bpy.ops.mesh.primitive_cylinder_add(vertices=8, radius=.19, depth=6.2, location=(x, -z, ground + 3.1))
     pole = bpy.context.object
     pole.name = "Rural timber electricity pole"
     pole.data.materials.append(bark)
     # A simple timber crossarm and three insulator pegs create a recognisable silhouette.
-    bpy.ops.mesh.primitive_cube_add(size=1, location=(x, -z, ground + 8.35))
+    bpy.ops.mesh.primitive_cube_add(size=1, location=(x, -z, ground + 5.45))
     arm = bpy.context.object
     arm.name = "Power pole crossarm"
     arm.dimensions = (2.2, .16, .16)
     bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
     arm.data.materials.append(bark)
     for offset in (-.82, 0, .82):
-        bpy.ops.mesh.primitive_cylinder_add(vertices=8, radius=.09, depth=.34, location=(x + offset, -z, ground + 8.58))
+        bpy.ops.mesh.primitive_cylinder_add(vertices=8, radius=.09, depth=.34, location=(x + offset, -z, ground + 5.68))
         insulator = bpy.context.object
         insulator.name = "Timber crossarm insulator"
         insulator.data.materials.append(rock_light)
-    power_poles.append((x, -z, ground + 8.75))
+    power_poles.append((x, -z, ground + 5.85))
 # Sag each wire gently between poles; curves are converted and batched by material at export.
 for idx in range(len(power_poles) - 1):
     a, b = power_poles[idx], power_poles[idx + 1]
