@@ -39,7 +39,7 @@ test("3D Harvest World is a Babylon scene shared with Android", () => {
  assert.ok(farmsteadBuilder.includes("MAX_FARMSTEAD_MESHES = 12"));
  assert.ok(farmsteadBuilder.includes("bpy.ops.object.join()"));
  const settlementBuilder = fs.readFileSync(path.join(root, "scripts/build_harvest_world_settlement.py"), "utf8");
- for (const feature of ["Main homestead", "Second dwelling", "Traditional thatched grain-store roof", "Elevated galvanized water tank", "Community borehole", "Homestead fence rail"]) assert.ok(settlementBuilder.includes(feature), "settlement model is missing " + feature);
+ for (const feature of ["Main homestead", "Second dwelling", "Traditional thatched grain-store roof", "Elevated galvanized water tank", "Community borehole", "Homestead fence rail", "Layered msasa orchard canopy", "Ripe orchard fruit", "Poultry coop timber body", "Free-range village hen", "Worn homestead footpath stone"]) assert.ok(settlementBuilder.includes(feature), "settlement model is missing " + feature);
  assert.ok(web.includes("blender-authored-rural-settlement-west"));
  assert.ok(web.includes("blender-authored-rural-settlement-east"));
  assert.ok(web.includes("settlementEastZ=38,settlementEastX=roadX(settlementEastZ)+12.5"));
