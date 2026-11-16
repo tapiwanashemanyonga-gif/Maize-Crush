@@ -49,7 +49,7 @@ test("3D Harvest World is a Babylon scene shared with Android", () => {
  assert.ok(web.includes("finishedAnimations===2"));
  assert.ok(web.includes("camera.setPosition(endPosition)"));
  assert.ok(web.includes("ANIMATIONLOOPMODE_CONSTANT,undefined,finish"));
- assert.ok(web.includes("createTractor(new BABYLON.Vector3(firstRoadX,terrainHeight(firstRoadX,firstRoadZ)+.08,firstRoadZ))"));
+ assert.ok(web.includes("createTractor(new BABYLON.Vector3(firstRoadX,terrainHeight(firstRoadX,firstRoadZ)+.27,firstRoadZ))"));
  assert.ok(web.includes("moveTractor(tractorTarget,animate)"));
  assert.ok(web.includes("tractorWheels.forEach((wheel,index)=>"));
  assert.ok(web.includes("wheel.rotation.z=Math.PI/2"));
