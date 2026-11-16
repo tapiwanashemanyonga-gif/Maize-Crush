@@ -1557,3 +1557,54 @@ body.focus-play .crop-tile{width:100%;height:100%;min-width:0;min-height:0;aspec
 #level-map #map-play-current{position:absolute;z-index:4;right:22px;bottom:22px;box-shadow:0 8px 24px #0008}
 @media(max-width:600px){#level-map.level-map{width:100vw;height:100dvh;max-height:100dvh;border-radius:0;padding:10px}#level-map #level-map-status{left:16px;top:72px}.harvest-world-scene{min-height:180px;border-radius:12px}#level-map #map-play-current{right:16px;bottom:16px}}
 @media(max-height:520px){#level-map .map-head p{display:none}#level-map #level-map-status{top:58px}.harvest-world-scene{min-height:150px}}
+
+
+/* Stage 19 — make the authored 3D road the actual full-screen level journey.
+   Keep the same immersive composition on web and the Android offline build. */
+#level-map.level-map[open]{
+ position:fixed!important;inset:0!important;margin:0!important;
+ width:100vw!important;height:100dvh!important;max-width:none!important;max-height:none!important;
+ min-height:0!important;box-sizing:border-box!important;padding:0!important;
+ border:0!important;border-radius:0!important;overflow:hidden!important;
+ display:block!important;background:#234c36!important;
+}
+#level-map.level-map[open]::backdrop{background:#07180f}
+#level-map .harvest-world-scene{
+ position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
+ min-height:0!important;margin:0!important;border:0!important;border-radius:0!important;
+ box-shadow:none!important;flex:none!important;
+}
+#harvest-world-canvas{width:100%!important;height:100%!important;min-height:0!important}
+#level-map .map-head{
+ position:absolute!important;z-index:6!important;top:max(10px,env(safe-area-inset-top))!important;
+ left:max(12px,env(safe-area-inset-left))!important;right:max(12px,env(safe-area-inset-right))!important;
+ width:auto!important;min-height:48px;padding:8px 10px 8px 14px!important;
+ border:1px solid #ffffff55!important;border-radius:16px!important;
+ background:linear-gradient(100deg,#123c2ddd,#123c2d99)!important;
+ backdrop-filter:blur(12px);box-shadow:0 8px 28px #07180f66!important;
+}
+#level-map .map-head h2{color:#fff3cf!important;font-size:clamp(17px,3.2vw,23px)!important}
+#level-map .map-head .eyebrow{color:#f8d77b!important}
+#level-map .map-head p{display:none!important}
+#level-map #level-map-status{
+ position:absolute!important;z-index:6!important;top:auto!important;
+ left:50%!important;bottom:calc(max(16px,env(safe-area-inset-bottom)) + 66px)!important;
+ transform:translateX(-50%);width:max-content;max-width:calc(100vw - 32px);
+ padding:7px 13px!important;border:1px solid #ffffff35;
+ border-radius:999px;background:#10291edb!important;color:#fff4d2!important;
+ text-align:center;font-size:10px!important;white-space:nowrap;
+}
+#level-map #map-play-current{
+ position:absolute!important;z-index:7!important;left:50%!important;right:auto!important;
+ bottom:max(14px,env(safe-area-inset-bottom))!important;transform:translateX(-50%)!important;
+ width:min(86vw,360px)!important;min-height:48px!important;margin:0!important;
+ border:2px solid #fff0bd!important;border-radius:16px!important;
+ box-shadow:0 8px 24px #0008!important;
+}
+#level-map #map-play-current:active{transform:translate(-50%,2px)!important}
+@media(orientation:landscape) and (max-height:520px){
+ #level-map .map-head{top:6px!important;left:8px!important;right:8px!important;min-height:40px;padding:5px 8px 5px 12px!important}
+ #level-map .map-head h2{font-size:16px!important}
+ #level-map #level-map-status{bottom:58px!important;font-size:9px!important;padding:5px 10px!important}
+ #level-map #map-play-current{bottom:7px!important;min-height:42px!important;width:min(58vw,300px)!important}
+}
