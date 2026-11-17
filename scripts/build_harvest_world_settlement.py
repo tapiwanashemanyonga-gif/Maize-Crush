@@ -134,7 +134,7 @@ for idx, (x, y, height) in enumerate([(-11,-3,5.8),(11,-3.5,6.4),(-11,9,5.2)]):
     if idx == 1:
         for fx,fy,fz in [(-.55,-.42,4.7),(.42,-.5,5.0),(.15,.42,4.55)]:
             bpy.ops.mesh.primitive_uv_sphere_add(segments=10, ring_count=6, radius=.16, location=(x+fx,y+fy,fz))
-            fruit=bpy.context.object; fruit.name="Ripe orchard fruit"; fruit.data.materials.append(brick)
+            fruit=bpy.context.object; fruit.name="Ripe orchard fruit"; fruit.data.materials.append(roof_rust)
 
 # A compact timber chicken run beside the kitchen garden.
 cube("Poultry coop timber body",(5.8,-5.4,.85),(2.8,1.9,1.55),wood_light,.045)
