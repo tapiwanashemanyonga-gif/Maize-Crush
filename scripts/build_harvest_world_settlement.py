@@ -75,10 +75,10 @@ def rural_home(cx, cy, width, depth, wall_height, roof_material, prefix):
         z=.52+course*.22
         for segment in range(9):
             x=cx-width*.46+segment*(width*.92/8)
-            cube(prefix+" exposed brick plinth",(x,front-.025,z),(.48,.10,.18),brick,.018)
+            cube(prefix+" exposed brick plinth",(x,front-.025,z),(.48,.10,.18),roof_rust,.018)
     for side in [-1,1]:
         for course in range(5):
-            cube(prefix+" brick corner pier",(cx+side*(width/2-.10),front-.045,.72+course*.48),(.28,.13,.42),brick,.025)
+            cube(prefix+" brick corner pier",(cx+side*(width/2-.10),front-.045,.72+course*.48),(.28,.13,.42),roof_rust,.025)
     # Timber shutters and stone lintels make each window read as a real opening.
     for dx in [-width*.29,width*.29]:
         for side in [-1,1]:
