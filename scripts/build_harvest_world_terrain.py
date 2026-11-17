@@ -137,6 +137,13 @@ for idx, (x, z, sx, sy, sz) in enumerate([
     obj = bpy.context.object
     obj.name = "Zimbabwe granite kopje %02d" % idx
     obj.scale = (sx, sz, sy)
+    # Break the perfect sphere silhouette into weathered granite shoulders.
+    for vertex in obj.data.vertices:
+        co = vertex.co
+        ridge = math.sin(co.x * 5.1 + idx) * math.cos(co.y * 4.3 - idx * .7)
+        weathering = math.sin(co.z * 7.0 + co.x * 2.2) * .035
+        factor = 1.0 + ridge * .075 + weathering
+        co *= factor
     obj.data.materials.append(rock if idx % 2 == 0 else rock_light)
     for poly in obj.data.polygons:
         poly.use_smooth = True
@@ -152,11 +159,36 @@ for idx in range(34):
     trunk.data.materials.append(bark)
     for cluster in range(3):
         offset_x = (cluster - 1) * 1.05
-        bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=1, radius=1, location=(x + offset_x, -(z + (cluster - 1) * .65), terrain_height(x, z) + 4.0 + (cluster % 2) * .35))
+        bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=2, radius=1, location=(x + offset_x, -(z + (cluster - 1) * .65), terrain_height(x, z) + 3.85 + (cluster % 2) * .42))
         crown = bpy.context.object
-        crown.name = "Layered msasa canopy"
-        crown.scale = (1.7, 1.65, 1.25)
+        crown.name = "Natural irregular msasa canopy"
+        crown.scale = (1.85 + cluster * .12, 1.55 + (cluster % 2) * .18, 1.18 + cluster * .08)
+        for vertex in crown.data.vertices:
+            co = vertex.co
+            breakup = math.sin(co.x * 6.0 + idx) * math.cos(co.y * 5.0 + cluster)
+            co *= 1.0 + breakup * .085
         crown.data.materials.append(foliage if cluster != 1 else foliage_light)
+        for poly in crown.data.polygons:
+            poly.use_smooth = True
+
+# Low indigenous scrub and dry-season grass clumps soften the hard edge between
+# the road verge, fields and open savanna. All foliage reuses the same materials.
+for idx in range(54):
+    z = -5 + (idx * 3.17) % 168
+    side = -1 if idx % 2 == 0 else 1
+    x = road_x(z) + side * (7.6 + (idx % 4) * 1.15)
+    ground = terrain_height(x, z)
+    for cluster in range(3):
+        offset_x = (cluster - 1) * (.38 + (idx % 3) * .08)
+        offset_z = (cluster - 1) * .24
+        bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=1, radius=1, location=(x + offset_x, -(z + offset_z), ground + .34 + (cluster % 2) * .08))
+        shrub = bpy.context.object
+        shrub.name = "Zimbabwe roadside scrub cluster"
+        shrub.scale = (.58 + (idx % 4) * .10, .48 + (cluster % 2) * .10, .42 + (idx % 3) * .07)
+        for vertex in shrub.data.vertices:
+            co = vertex.co
+            co *= 1.0 + math.sin(co.x * 4.0 + idx + cluster) * .055
+        shrub.data.materials.append(foliage if (idx + cluster) % 3 else foliage_light)
 
 # Rural roadside infrastructure: timber power poles, crossarms, insulators and sagging overhead lines.
 # All props reuse existing materials so the exported GLB stays inside the 12-mesh draw-call budget.
