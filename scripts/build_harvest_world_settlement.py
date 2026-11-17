@@ -123,6 +123,40 @@ for layer in range(3):
 for x in [-4,3]:
     cube("Washing line post",(x,-7,1.65),(.12,.12,3.3),wood,.02)
 beam("Washing line",(-4,-7,3),(3,-7,3),.035,metal)
+# Orchard edge: mature indigenous shade trees and a small fruit tree give the yard depth.
+for idx, (x, y, height) in enumerate([(-11,-3,5.8),(11,-3.5,6.4),(-11,9,5.2)]):
+    cylinder("Rural orchard tree trunk",(x,y,height*.34),.24,height*.68,wood,12)
+    for dx,dy,dz,scale in [(0,0,height*.78,(1.65,1.55,1.35)),(-.72,.08,height*.72,(1.2,1.25,1.1)),(.68,-.12,height*.75,(1.25,1.2,1.08))]:
+        bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=2,radius=1,location=(x+dx,y+dy,dz))
+        crown=bpy.context.object; crown.name="Layered msasa orchard canopy"; crown.scale=scale
+        crown.data.materials.append(green if idx != 1 else green)
+    # Small fruit clusters read as detail without creating a separate material.
+    if idx == 1:
+        for fx,fy,fz in [(-.55,-.42,4.7),(.42,-.5,5.0),(.15,.42,4.55)]:
+            bpy.ops.mesh.primitive_uv_sphere_add(segments=10, ring_count=6, radius=.16, location=(x+fx,y+fy,fz))
+            fruit=bpy.context.object; fruit.name="Ripe orchard fruit"; fruit.data.materials.append(roof_rust)
+
+# A compact timber chicken run beside the kitchen garden.
+cube("Poultry coop timber body",(5.8,-5.4,.85),(2.8,1.9,1.55),wood_light,.045)
+cube("Poultry coop dark doorway",(5.8,-6.38,.72),(.62,.045,1.05),wood,.015)
+for side in [-1,1]:
+    beam("Poultry coop pitched roof",(5.8,-4.35,1.65),(5.8+side*1.65,-5.4,2.35),.10,roof_rust)
+    beam("Poultry run corner post",(4.2 if side<0 else 7.4,-7.1,.7),(4.2 if side<0 else 7.4,-7.1,1.4),.09,wood)
+for z in [.55,1.0,1.35]:
+    beam("Poultry run timber rail",(4.2,-7.1,z),(7.4,-7.1,z),.07,wood_light)
+# Three simple hens in the yard, kept low-poly for mobile rendering.
+for x,y in [(4.6,-2.3),(5.45,-2.0),(6.25,-2.5)]:
+    bpy.ops.mesh.primitive_uv_sphere_add(segments=10,ring_count=6,radius=1,location=(x,y,.42))
+    hen=bpy.context.object; hen.name="Free-range village hen"; hen.scale=(.34,.24,.28); hen.data.materials.append(roof_rust)
+    bpy.ops.mesh.primitive_uv_sphere_add(segments=8,ring_count=5,radius=1,location=(x+.22,y,.58))
+    head=bpy.context.object; head.name="Hen head"; head.scale=(.13,.13,.14); head.data.materials.append(roof_rust)
+    beam("Hen leg",(x-.08,y,.22),(x-.08,y,.04),.035,wood)
+    beam("Hen leg",(x+.08,y,.22),(x+.08,y,.04),.035,wood)
+
+# A worn footpath links the main veranda, borehole and gate.
+for idx in range(7):
+    cube("Worn homestead footpath stone",(0,-5.9-idx*.78,.12),(1.05,.48,.16),concrete,.06)
+
 # Batch the authored architecture by material before export. This keeps the
 # two imported homesteads to a predictable, low draw-call budget on Android.
 MAX_SETTLEMENT_MESHES = 12
