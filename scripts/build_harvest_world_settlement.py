@@ -69,6 +69,29 @@ def rural_home(cx, cy, width, depth, wall_height, roof_material, prefix):
         cube(prefix+" blue window",(cx+dx,front-.08,2.05),(.94,.035,.82),glass,.015)
         cube(prefix+" window crossbar",(cx+dx,front-.11,2.05),(.045,.04,.82),wood,.008)
         cube(prefix+" window sill",(cx+dx,front-.12,1.48),(1.34,.22,.09),wood,.015)
+    # Architectural depth: exposed brick plinth, corner piers, framed openings,
+    # timber shutters, a proper doorstep and rainwater goods.
+    for course in range(3):
+        z=.52+course*.22
+        for segment in range(9):
+            x=cx-width*.46+segment*(width*.92/8)
+            cube(prefix+" exposed brick plinth",(x,front-.025,z),(.48,.10,.18),roof_rust,.018)
+    for side in [-1,1]:
+        for course in range(5):
+            cube(prefix+" brick corner pier",(cx+side*(width/2-.10),front-.045,.72+course*.48),(.28,.13,.42),roof_rust,.025)
+    # Timber shutters and stone lintels make each window read as a real opening.
+    for dx in [-width*.29,width*.29]:
+        for side in [-1,1]:
+            cube(prefix+" timber window shutter",(cx+dx+side*.67,front-.12,2.05),(.22,.09,.98),wood_light,.018)
+        cube(prefix+" stone window lintel",(cx+dx,front-.14,2.62),(1.42,.18,.13),concrete,.025)
+    cube(prefix+" stone doorway lintel",(cx,front-.13,2.57),(1.28,.18,.15),concrete,.025)
+    cube(prefix+" raised entrance step",(cx,front-.38,.38),(1.65,.58,.22),concrete,.045)
+    # Continuous eaves gutters and downpipes are shared-material geometry.
+    for side in [-1,1]:
+        gutter_y=cy+side*(depth/2+.40)
+        beam(prefix+" galvanised rain gutter",(cx-width*.54,gutter_y,eave-.04),(cx+width*.54,gutter_y,eave-.04),.11,metal)
+        for xoff in [-width*.48,width*.48]:
+            beam(prefix+" rainwater downpipe",(cx+xoff,gutter_y,eave-.10),(cx+xoff,gutter_y,.42),.075,metal)
     # Veranda roof and two timber supports
     cube(prefix+" veranda slab",(cx,front-.85,.28),(width+.6,1.65,.2),concrete,.04)
     for dx in [-width*.42,width*.42]:
