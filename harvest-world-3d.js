@@ -1,15 +1,16 @@
 (function(root){
 "use strict";
 const LEVEL_GAP=18;
-let engine=null,scene=null,camera=null,gateMeshes=[],settlementAnchors=[],tractor=null,tractorWheels=[],activeLevel=1,pageStart=1,resizeBound=false,assetsReady=false,farmsteadLoaded=false,terrainLoaded=false,settlementLoaded=false,farmsteadMeshCount=0,terrainMeshCount=0,settlementMeshCount=0;
+let engine=null,scene=null,camera=null,shadowGenerator=null,gateMeshes=[],settlementAnchors=[],tractor=null,tractorWheels=[],activeLevel=1,pageStart=1,resizeBound=false,assetsReady=false,farmsteadLoaded=false,terrainLoaded=false,settlementLoaded=false,farmsteadMeshCount=0,terrainMeshCount=0,settlementMeshCount=0;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const roadX=z=>9.5*Math.sin((z+8)*.043)+2.2*Math.sin(z*.095);
 const terrainHeight=(x,z)=>1.1*Math.sin(z*.035+x*.018)+.65*Math.cos(x*.055-z*.021)+.22*Math.sin(x*.19+z*.11)*Math.cos(z*.16)-.5;
 function mat(name,color,roughness){
  const m=new BABYLON.StandardMaterial(name,scene);m.diffuseColor=BABYLON.Color3.FromHexString(color);m.specularColor=new BABYLON.Color3(.12,.12,.12);m.roughness=roughness||.9;return m;
 }
+function castShadow(mesh){mesh.receiveShadows=true;if(shadowGenerator)shadowGenerator.addShadowCaster(mesh,true);return mesh;}
 function box(name,pos,size,material,rotationY,rotationZ){
- const m=BABYLON.MeshBuilder.CreateBox(name,{width:size[0],height:size[1],depth:size[2]},scene);m.position.copyFrom(pos);m.material=material;if(rotationY)m.rotation.y=rotationY;if(rotationZ)m.rotation.z=rotationZ;return m;
+ const m=BABYLON.MeshBuilder.CreateBox(name,{width:size[0],height:size[1],depth:size[2]},scene);m.position.copyFrom(pos);m.material=material;if(rotationY)m.rotation.y=rotationY;if(rotationZ)m.rotation.z=rotationZ;return castShadow(m);
 }
 function createGate(level,point){
  const wood=mat("gate-wood-"+level,"#80512f"),gold=mat("gate-gold-"+level,"#f6c653"),stone=mat("gate-stone-"+level,"#d9d0b6");
@@ -46,7 +47,7 @@ function createTractor(position){
   for(const axle of [-1,1]){
    const rear=axle<0,diameter=rear?1.02:.66;
    const wheel=BABYLON.MeshBuilder.CreateCylinder("tractor-wheel",{diameter,height:.28,tessellation:16},scene);
-   wheel.rotation.z=Math.PI/2;wheel.position.set(side*(rear?.78:.7),diameter/2,axle<0?-.78:.72);wheel.material=rubber;wheel.parent=group;
+   wheel.rotation.z=Math.PI/2;wheel.position.set(side*(rear?.78:.7),diameter/2,axle<0?-.78:.72);wheel.material=rubber;wheel.parent=group;castShadow(wheel);
    const wheelHub=BABYLON.MeshBuilder.CreateCylinder("tractor-wheel-hub",{diameter:diameter*.43,height:.3,tessellation:12},scene);
    wheelHub.rotation.z=Math.PI/2;wheelHub.position.copyFrom(wheel.position);wheelHub.material=hub;wheelHub.parent=group;
    tractorWheels.push(wheel);
@@ -68,9 +69,10 @@ function moveTractor(position,animate){
 function buildWorld(startLevel){
  assetsReady=false;farmsteadLoaded=false;terrainLoaded=false;settlementLoaded=false;farmsteadMeshCount=0;terrainMeshCount=0;settlementMeshCount=0;settlementAnchors=[];
  pageStart=Math.floor((Math.max(1,Number(startLevel)||1)-1)/4)*4+1;
- scene=new BABYLON.Scene(engine);scene.clearColor=new BABYLON.Color4(.48,.76,.91,1);scene.fogMode=BABYLON.Scene.FOGMODE_EXP2;scene.fogColor=new BABYLON.Color3(.48,.76,.91);scene.fogDensity=.006;
- const hemi=new BABYLON.HemisphericLight("sky-light",new BABYLON.Vector3(0,1,0),scene);hemi.intensity=.82;
- const sun=new BABYLON.DirectionalLight("sunlight",new BABYLON.Vector3(-.55,-1,.35),scene);sun.position=new BABYLON.Vector3(30,55,-20);sun.intensity=1.05;
+ scene=new BABYLON.Scene(engine);scene.clearColor=new BABYLON.Color4(.48,.76,.91,1);scene.shadowsEnabled=true;scene.fogMode=BABYLON.Scene.FOGMODE_EXP2;scene.fogColor=new BABYLON.Color3(.48,.76,.91);scene.fogDensity=.006;
+ const hemi=new BABYLON.HemisphericLight("sky-light",new BABYLON.Vector3(0,1,0),scene);hemi.intensity=.68;hemi.groundColor=new BABYLON.Color3(.30,.24,.16);
+ const sun=new BABYLON.DirectionalLight("sunlight",new BABYLON.Vector3(-.55,-1,.35),scene);sun.position=new BABYLON.Vector3(30,55,-20);sun.intensity=1.18;sun.shadowMinZ=1;sun.shadowMaxZ=180;
+ shadowGenerator=new BABYLON.ShadowGenerator(1024,sun);shadowGenerator.useBlurExponentialShadowMap=true;shadowGenerator.blurKernel=18;shadowGenerator.setDarkness(.30);shadowGenerator.bias=.0005;shadowGenerator.normalBias=.025;shadowGenerator.transparencyShadow=true;
  // Load the authored Blender landscape and farmstead as local GLB assets.
  // Procedural roadside placeholders are deliberately no longer the primary scenery.
  const loadAuthoredAsset=(filename,anchorName,position,scale,rotationY=0)=>{
@@ -78,7 +80,7 @@ function buildWorld(startLevel){
    const anchor=new BABYLON.TransformNode(anchorName,scene);
    anchor.position.copyFrom(position);anchor.scaling.setAll(scale);anchor.rotation.y=rotationY;
    const geometryMeshes=result.meshes.filter(mesh=>mesh.name!=="__root__"&&typeof mesh.getTotalVertices==="function"&&mesh.getTotalVertices()>0);
-   geometryMeshes.forEach(mesh=>{mesh.parent=anchor});
+   geometryMeshes.forEach(mesh=>{mesh.parent=anchor;mesh.receiveShadows=true;if(!anchorName.includes("zimbabwe-terrain"))shadowGenerator.addShadowCaster(mesh,true)});
    const geometryCount=geometryMeshes.length;
    if(anchorName.includes("zimbabwe-terrain"))terrainMeshCount=geometryCount;
    else if(anchorName.includes("zimbabwe-farmstead"))farmsteadMeshCount=geometryCount;
@@ -162,5 +164,5 @@ function getSettlementScreenBounds(){
   return{index,left,top,right,bottom,depthMin,depthMax,visible:depthMax>=0&&depthMin<=1&&visibleWidth>=24&&visibleHeight>=24};
  });
 }
-root.HarvestWorld3D={start,focusLevel,get tractorPosition(){return tractor?tractor.position.asArray():null},get tractorVisible(){return!!tractor&&!tractor.isDisposed()},get ready(){return!!scene},get assetsReady(){return assetsReady},get activeLevel(){return activeLevel},get cameraPosition(){return camera?camera.position.asArray():null},get cameraTarget(){return camera?camera.target.asArray():null},get gatePositions(){return gateMeshes.map(item=>item.group.position.asArray())},get settlementPositions(){return settlementAnchors.map(item=>item.anchor.position.asArray())},get settlementScreenBounds(){return getSettlementScreenBounds()},get farmsteadLoaded(){return farmsteadLoaded},get terrainLoaded(){return terrainLoaded},get settlementLoaded(){return settlementLoaded},get settlementMeshCount(){return settlementMeshCount},get terrainMeshCount(){return terrainMeshCount},get farmsteadMeshCount(){return farmsteadMeshCount},get gateCount(){return gateMeshes.length},dispose(){if(scene&&camera)scene.stopAnimation(camera);if(camera)camera.overrideCloneAlphaBetaRadius=null;farmsteadMeshCount=0;terrainMeshCount=0;settlementMeshCount=0;settlementAnchors=[];tractor=null;tractorWheels=[];camera=null;if(engine){engine.stopRenderLoop();engine.dispose();engine=null;scene=null;gateMeshes=[]}}};
+root.HarvestWorld3D={start,focusLevel,get tractorPosition(){return tractor?tractor.position.asArray():null},get tractorVisible(){return!!tractor&&!tractor.isDisposed()},get ready(){return!!scene},get assetsReady(){return assetsReady},get activeLevel(){return activeLevel},get cameraPosition(){return camera?camera.position.asArray():null},get cameraTarget(){return camera?camera.target.asArray():null},get gatePositions(){return gateMeshes.map(item=>item.group.position.asArray())},get settlementPositions(){return settlementAnchors.map(item=>item.anchor.position.asArray())},get settlementScreenBounds(){return getSettlementScreenBounds()},get farmsteadLoaded(){return farmsteadLoaded},get terrainLoaded(){return terrainLoaded},get settlementLoaded(){return settlementLoaded},get settlementMeshCount(){return settlementMeshCount},get terrainMeshCount(){return terrainMeshCount},get farmsteadMeshCount(){return farmsteadMeshCount},get gateCount(){return gateMeshes.length},get shadowsEnabled(){return!!shadowGenerator&&scene&&scene.shadowsEnabled},dispose(){if(scene&&camera)scene.stopAnimation(camera);if(camera)camera.overrideCloneAlphaBetaRadius=null;if(shadowGenerator){shadowGenerator.dispose();shadowGenerator=null}farmsteadMeshCount=0;terrainMeshCount=0;settlementMeshCount=0;settlementAnchors=[];tractor=null;tractorWheels=[];camera=null;if(engine){engine.stopRenderLoop();engine.dispose();engine=null;scene=null;gateMeshes=[]}}};
 })(window);
