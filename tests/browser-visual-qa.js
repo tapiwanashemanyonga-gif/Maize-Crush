@@ -754,6 +754,9 @@ async function runViewport(browser, profile, viewport) {
     diagonal = findDiagonalTriple(tiles);
   }
   if (!diagonal) throw new Error(profile + " could not generate a diagonal matching triple after 10 fresh fields.");
+  // Hint is available before the scoring move; completing an objective may disable it.
+  await page.locator("#hint-button").click();
+  await page.waitForFunction(() => document.querySelectorAll("#game-board .crop-tile.hinted").length >= 3);
   const scoreBefore = Number((await page.locator("#score-value").innerText()).replace(/,/g, ""));
   const movesBefore = Number(await page.locator("#moves-value").innerText());
   await installLayoutProbe(page);
@@ -781,9 +784,7 @@ async function runViewport(browser, profile, viewport) {
   const scoreAfter = Number((await page.locator("#score-value").innerText()).replace(/,/g, ""));
   if (scoreAfter <= scoreBefore) throw new Error(profile + " valid diagonal connection did not increase the score.");
 
-  // Check that the hint and settings controls remain operable.
-  await page.locator("#hint-button").click();
-  await page.waitForFunction(() => document.querySelectorAll("#game-board .crop-tile.hinted").length >= 3);
+  // Check that the settings controls remain operable.
   await page.locator("#tools-toggle-button").click();
   await page.locator("#settings-button").click();
   await page.locator("#settings-dialog").waitFor({ state: "visible" });
