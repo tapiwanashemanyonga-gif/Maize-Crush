@@ -13,8 +13,8 @@ test("3D Harvest World is a Babylon scene shared with Android", () => {
  const styles = fs.readFileSync(path.join(root, "styles.css"), "utf8");
  const androidStyles = fs.readFileSync(path.join(root, "android/app/src/main/assets/styles.css"), "utf8");
  assert.equal(androidStyles, styles, "Android and browser map styles must match");
- assert.match(styles, /#level-map #level-map-status\\{position:relative/);
- assert.doesNotMatch(styles, /#level-map #level-map-status\\{position:absolute/);
+ assert.ok(styles.includes("#level-map #level-map-status{position:relative"), "map status must flow below the heading");
+ assert.ok(!styles.includes("#level-map #level-map-status{position:absolute"), "map status must not overlap the heading");
  const androidHtml = fs.readFileSync(path.join(root, "android/app/src/main/assets/index.html"), "utf8");
  assert.equal(android, web, "Android 3D runtime must match browser runtime");
  assert.equal(androidGame, game, "Android game progression must match browser progression");
