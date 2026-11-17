@@ -31,6 +31,29 @@ foliage = material("Msasa canopy", (.18, .34, .13))
 foliage_light = material("Young msasa leaves", (.36, .47, .18))
 field_gold = material("Golden maize field", (.65, .48, .15))
 
+
+
+def apply_surface_variation(obj, surface):
+    """Bake subtle, mobile-cheap colour breakup into GLB vertex colours."""
+    colors = obj.data.color_attributes.new(name="Color", type="BYTE_COLOR", domain="POINT")
+    for index, vertex in enumerate(obj.data.vertices):
+        x, y, _height = vertex.co
+        z = -y
+        broad = math.sin(x * .115 + z * .071) * math.cos(z * .093 - x * .047)
+        fine = math.sin(x * .31 - z * .27) * math.cos(z * .22 + x * .19)
+        if surface == "grass":
+            dry_patch = max(0.0, broad * .5 + fine * .16)
+            rgba = (0.82 + dry_patch * .18, 0.86 + broad * .09, 0.72 + broad * .06, 1.0)
+        elif surface == "asphalt":
+            wear = broad * .055 + fine * .018
+            rgba = (0.91 + wear, 0.92 + wear, 0.91 + wear, 1.0)
+        elif surface == "shoulder":
+            dust = broad * .10 + fine * .025
+            rgba = (0.91 + dust, 0.86 + dust * .72, 0.76 + dust * .48, 1.0)
+        else:
+            rgba = (1.0, 1.0, 1.0, 1.0)
+        colors.data[index].color = rgba
+
 def mesh_object(name, verts, faces, mat):
     mesh = bpy.data.meshes.new(name + " mesh")
     mesh.from_pydata(verts, [], faces)
@@ -55,6 +78,7 @@ for j in range(nz - 1):
         a = j * nx + i
         faces.append((a, a + nx, a + nx + 1, a + 1))
 terrain = mesh_object("Sculpted Zimbabwe countryside terrain", verts, faces, grass)
+apply_surface_variation(terrain, "grass")
 for p in terrain.data.polygons:
     p.use_smooth = True
 
@@ -79,6 +103,10 @@ def road_mesh(name, half_width, y_offset, mat):
         a = j * 2
         faces.append((a, a + 2, a + 3, a + 1))
     obj = mesh_object(name, verts, faces, mat)
+    if name == "Continuous asphalt road surface":
+        apply_surface_variation(obj, "asphalt")
+    elif name == "Continuous winding red-earth road verge":
+        apply_surface_variation(obj, "shoulder")
     for p in obj.data.polygons:
         p.use_smooth = True
     return obj

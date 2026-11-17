@@ -29,6 +29,12 @@ test("3D Harvest World is a Babylon scene shared with Android", () => {
  assert.ok(terrainBuilder.includes("Continuous asphalt road surface"));
  assert.ok(terrainBuilder.includes("Sculpted Zimbabwe countryside terrain"));
  assert.ok(terrainBuilder.includes("terrain_height"));
+ assert.ok(terrainBuilder.includes("def apply_surface_variation(obj, surface):"), "terrain must bake natural surface colour variation into GLB vertex colours");
+ assert.ok(terrainBuilder.includes('color_attributes.new(name="Color", type="BYTE_COLOR", domain="POINT")'));
+ assert.ok(terrainBuilder.includes('apply_surface_variation(terrain, "grass")'));
+ assert.ok(terrainBuilder.includes('apply_surface_variation(obj, "asphalt")'));
+ assert.ok(terrainBuilder.includes('apply_surface_variation(obj, "shoulder")'));
+ assert.ok(terrainBuilder.includes("dry_patch") && terrainBuilder.includes("wear = broad") && terrainBuilder.includes("dust = broad"));
  assert.ok(terrainBuilder.includes("verts.append((x, -z, broad + undulation - .5))"));
  assert.ok(terrainBuilder.includes("MAX_TERRAIN_MESHES = 12"));
  assert.ok(terrainBuilder.includes("Rural timber electricity pole"), "terrain must include rural power poles");
