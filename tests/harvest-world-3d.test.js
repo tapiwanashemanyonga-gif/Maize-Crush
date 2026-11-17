@@ -64,6 +64,11 @@ test("3D Harvest World is a Babylon scene shared with Android", () => {
  assert.ok(web.includes("moveTractor(tractorTarget,animate)"));
  assert.ok(web.includes("tractorWheels.forEach((wheel,index)=>"));
  assert.ok(web.includes("wheel.rotation.z=Math.PI/2"));
+ for (const detail of ["exposed brick plinth","brick corner pier","timber window shutter","stone window lintel","stone doorway lintel","raised entrance step","galvanised rain gutter","rainwater downpipe"]) {
+  assert.ok(settlementBuilder.includes(detail), "rural house architecture is missing " + detail);
+ }
+ assert.ok(settlementBuilder.includes("for course in range(3)"), "house facade must have layered masonry courses");
+ assert.ok(settlementBuilder.includes("Continuous eaves gutters") || settlementBuilder.includes("eaves gutters"), "houses must include rainwater drainage details");
  assert.match(settlementBuilder, /MAX_SETTLEMENT_MESHES = 12/);
  assert.ok(settlementBuilder.includes("bpy.ops.object.join()"), "settlement geometry must be batched by material");
  assert.ok(settlementBuilder.includes("material-batched meshes"));
