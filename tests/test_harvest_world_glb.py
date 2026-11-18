@@ -63,6 +63,21 @@ class HarvestWorldGlbTests(unittest.TestCase):
         android_path = ROOT / "android" / "app" / "src" / "main" / "assets" / "assets" / "harvest-world-terrain.glb"
         self.assertEqual(web_path.read_bytes(), android_path.read_bytes())
 
+    def test_all_world_glbs_embed_offline_colour_and_surface_textures(self):
+        filenames = (
+            "harvest-world-farmstead.glb",
+            "harvest-world-terrain.glb",
+            "harvest-world-settlement.glb",
+        )
+        for filename in filenames:
+            document = read_glb(ROOT / "assets" / filename)
+            self.assertGreater(len(document.get("images", [])), 0, filename + " must embed packed texture images")
+            self.assertGreater(len(document.get("textures", [])), 0, filename + " must expose glTF textures")
+            self.assertTrue(any("TEXCOORD_0" in primitive.get("attributes", {}) for mesh in document.get("meshes", []) for primitive in mesh.get("primitives", [])), filename + " must include UV coordinates")
+            self.assertTrue(any("baseColorTexture" in material.get("pbrMetallicRoughness", {}) for material in document.get("materials", [])), filename + " must use textured base colour")
+            self.assertTrue(any("normalTexture" in material for material in document.get("materials", [])), filename + " must include surface relief normal maps")
+            self.assertTrue(all(image.get("bufferView") is not None or image.get("uri", "").startswith("data:") for image in document.get("images", [])), filename + " textures must be embedded for offline use")
+
 
 if __name__ == "__main__":
     unittest.main()

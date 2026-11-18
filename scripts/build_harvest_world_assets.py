@@ -1,4 +1,8 @@
-import bpy, math, os, shutil
+import bpy, math, os, shutil, sys
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if os.path.dirname(__file__) not in sys.path:
+    sys.path.insert(0, os.path.dirname(__file__))
+from harvest_world_textures import apply_harvest_textures
 from mathutils import Vector
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -125,6 +129,8 @@ def merge_meshes_by_material():
         raise RuntimeError("Farmstead draw-call budget exceeded: %d > %d" % (len(final_meshes), MAX_FARMSTEAD_MESHES))
     return len(final_meshes)
 
+# Add packed, offline surface maps and UVs before material batching.
+apply_harvest_textures()
 mesh_count = merge_meshes_by_material()
 print("Batched Zimbabwe farmstead into %d material-batched meshes" % mesh_count)
 # Export only this authored scene

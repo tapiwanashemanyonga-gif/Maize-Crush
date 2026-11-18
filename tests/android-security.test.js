@@ -9,9 +9,14 @@ const read = file => fs.readFileSync(path.join(root, file), "utf8");
 test("Android WebView blocks untrusted local and unsupported navigation", () => {
   const activity = read("android/app/src/main/java/com/maizecrush/zimbabweharvest/MainActivity.java");
   assert.ok(activity.includes('setAllowContentAccess(false)'), "content URI access must remain disabled");
+  assert.ok(activity.includes('setAllowFileAccess(false)'), "direct file URL access must remain disabled");
   assert.ok(activity.includes('setAllowFileAccessFromFileURLs(false)'), "file-to-file access must remain disabled");
   assert.ok(activity.includes('setAllowUniversalAccessFromFileURLs(false)'), "file-to-network access must remain disabled");
-  assert.ok(activity.includes('return !url.startsWith("file:///android_asset/");'), "only bundled Android assets may load in the bridge-enabled WebView");
+  assert.ok(activity.includes('new WebViewAssetLoader.Builder()'), "bundled assets must be served through a secure app origin");
+  assert.ok(activity.includes('new WebViewAssetLoader.AssetsPathHandler(this)'), "the secure origin must resolve Android app assets");
+  assert.ok(activity.includes('assetLoader.shouldInterceptRequest(request.getUrl())'), "WebView requests must be intercepted by the local asset loader");
+  assert.ok(activity.includes('"appassets.androidplatform.net".equalsIgnoreCase(uri.getHost())'), "only the trusted local HTTPS origin may navigate inside the WebView");
+  assert.ok(activity.includes('webView.loadUrl("https://appassets.androidplatform.net/assets/index.html")'), "the game must start on the secure local origin");
   assert.ok(activity.includes('"https".equalsIgnoreCase(scheme) || "http".equalsIgnoreCase(scheme)'), "web links must be handled externally");
   assert.ok(activity.includes("// Block unsupported schemes"), "unsupported URL schemes must be blocked");
 });
