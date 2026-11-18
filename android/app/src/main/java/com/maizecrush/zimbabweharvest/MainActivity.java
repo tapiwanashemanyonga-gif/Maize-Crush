@@ -17,6 +17,7 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import androidx.webkit.WebViewAssetLoader;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -47,7 +48,7 @@ public class MainActivity extends Activity {
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
-        settings.setAllowFileAccess(true);
+        settings.setAllowFileAccess(false);
         settings.setAllowContentAccess(false);
         settings.setAllowFileAccessFromFileURLs(false);
         settings.setAllowUniversalAccessFromFileURLs(false);
@@ -56,7 +57,21 @@ public class MainActivity extends Activity {
         settings.setDisplayZoomControls(false);
         settings.setLoadsImagesAutomatically(true);
 
+        final WebViewAssetLoader assetLoader = new WebViewAssetLoader.Builder()
+            .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
+            .build();
+
         webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public android.webkit.WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+                return assetLoader.shouldInterceptRequest(request.getUrl());
+            }
+
+            @Override
+            public android.webkit.WebResourceResponse shouldInterceptRequest(WebView view, String url) {
+                return assetLoader.shouldInterceptRequest(Uri.parse(url));
+            }
+
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 Uri uri = request.getUrl();
@@ -66,12 +81,14 @@ public class MainActivity extends Activity {
                 // The JavaScript backup bridge must only be reachable from bundled,
                 // trusted game assets. Never let a remote or arbitrary local page
                 // take over this WebView.
-                if ("file".equalsIgnoreCase(scheme)) {
-                    return !url.startsWith("file:///android_asset/");
-                }
+                if ("file".equalsIgnoreCase(scheme)) return true;
 
-                // Open web links in the external browser instead of navigating the
-                // WebView that exposes the native backup bridge.
+                // Only the appassets HTTPS origin is allowed inside the bridge-enabled WebView.
+                // WebViewAssetLoader serves bundled files from this secure origin, so Babylon can
+                // fetch local GLB models without enabling file-to-file URL access.
+                if ("https".equalsIgnoreCase(scheme) && "appassets.androidplatform.net".equalsIgnoreCase(uri.getHost())) return false;
+
+                // Open all other web links externally instead of navigating the trusted game origin.
                 if ("https".equalsIgnoreCase(scheme) || "http".equalsIgnoreCase(scheme)) {
                     try {
                         startActivity(new Intent(Intent.ACTION_VIEW, uri));
@@ -137,7 +154,7 @@ public class MainActivity extends Activity {
         }
 
         if (savedInstanceState == null) {
-            webView.loadUrl("file:///android_asset/index.html");
+            webView.loadUrl("https://appassets.androidplatform.net/assets/index.html");
         } else {
             webView.restoreState(savedInstanceState);
         }
