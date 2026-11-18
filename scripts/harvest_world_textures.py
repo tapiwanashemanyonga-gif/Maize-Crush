@@ -71,8 +71,12 @@ def _make_image(name, profile, base, strength, height=False):
             u, v = x / float(size), y / float(size)
             n = _noise(u, v, seed)
             if height:
-                value = .5 + n * .34
-                pixels.extend((value, value, value, 1.0))
+                step = 1.0 / size
+                dx = (_noise(u + step, v, seed) - _noise(u - step, v, seed)) * 2.8
+                dy = (_noise(u, v + step, seed) - _noise(u, v - step, seed)) * 2.8
+                nx, ny, nz = -dx, -dy, 1.0
+                length = math.sqrt(nx * nx + ny * ny + nz * nz)
+                pixels.extend((.5 + .5 * nx / length, .5 + .5 * ny / length, .5 + .5 * nz / length, 1.0))
             else:
                 grain = n * strength
                 pixels.extend((
@@ -115,12 +119,11 @@ def apply_harvest_textures():
         bump_tex.name = "Packed " + profile + " micro relief"
         bump_tex.image = height
         bump_tex.interpolation = "Linear"
-        bump = nodes.new("ShaderNodeBump")
-        bump.name = "Subtle " + profile + " surface relief"
-        bump.inputs["Strength"].default_value = bump_strength
-        bump.inputs["Distance"].default_value = .035
-        links.new(bump_tex.outputs["Color"], bump.inputs["Height"])
-        links.new(bump.outputs["Normal"], shader.inputs["Normal"])
+        normal_map = nodes.new("ShaderNodeNormalMap")
+        normal_map.name = "Subtle " + profile + " surface relief"
+        normal_map.inputs["Strength"].default_value = bump_strength
+        links.new(bump_tex.outputs["Color"], normal_map.inputs["Color"])
+        links.new(normal_map.outputs["Normal"], shader.inputs["Normal"])
         rough = nodes.new("ShaderNodeValue")
         rough.outputs[0].default_value = .82 if profile not in ("metal", "roof") else .58
         links.new(rough.outputs[0], shader.inputs["Roughness"])
