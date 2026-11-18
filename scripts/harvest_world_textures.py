@@ -97,17 +97,21 @@ def apply_harvest_textures():
         profile = _profile_for(material)
         if not profile or not material.use_nodes:
             continue
-        base, colour_strength, bump_strength = TEXTURE_PROFILES[profile]
-        if profile not in profile_images:
-            colour = _make_image("Harvest " + profile + " colour", profile, base, colour_strength)
-            height = _make_image("Harvest " + profile + " micro relief", profile, base, colour_strength, True)
-            profile_images[profile] = (colour, height)
-        colour, height = profile_images[profile]
+        _profile_base, colour_strength, bump_strength = TEXTURE_PROFILES[profile]
         nodes = material.node_tree.nodes
         links = material.node_tree.links
         shader = nodes.get("Principled BSDF")
         if not shader:
             continue
+        # Use each authored material's own tint (e.g. red iron vs. grey zinc).
+        base = tuple(shader.inputs["Base Color"].default_value[:3])
+        image_key = material.name
+        if image_key not in profile_images:
+            colour = _make_image("Harvest " + material.name + " colour", profile + material.name, base, colour_strength)
+            height = _make_image("Harvest " + material.name + " normal", profile + material.name, base, colour_strength, True)
+            height.colorspace_settings.name = "Non-Color"
+            profile_images[image_key] = (colour, height)
+        colour, height = profile_images[image_key]
         # Retain the authored base tint while adding subtle, deterministic texture.
         tex = nodes.new("ShaderNodeTexImage")
         tex.name = "Packed " + profile + " surface colour"
@@ -118,6 +122,7 @@ def apply_harvest_textures():
         bump_tex = nodes.new("ShaderNodeTexImage")
         bump_tex.name = "Packed " + profile + " micro relief"
         bump_tex.image = height
+        bump_tex.image.colorspace_settings.name = "Non-Color"
         bump_tex.interpolation = "Linear"
         normal_map = nodes.new("ShaderNodeNormalMap")
         normal_map.name = "Subtle " + profile + " surface relief"
