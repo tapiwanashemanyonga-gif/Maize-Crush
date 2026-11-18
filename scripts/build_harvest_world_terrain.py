@@ -194,6 +194,36 @@ for idx, (x, z, sx, sy, sz) in enumerate([
     for poly in obj.data.polygons:
         poly.use_smooth = True
 
+# Distant granite ridgelines create a layered Zimbabwean horizon beyond the nearer fields.
+# Both sides share the existing granite material so the terrain draw-call budget is unchanged.
+for side, ridge_name in ((-1, "Western distant Zimbabwe kopje ridgeline"), (1, "Eastern distant Zimbabwe kopje ridgeline")):
+    ridge_verts, ridge_faces = [], []
+    ridge_steps = 25
+    ridge_offsets = (47.5, 55.0, 67.0, 81.0)
+    for step in range(ridge_steps):
+        z = -18 + step * 7.5
+        for section, offset in enumerate(ridge_offsets):
+            x = side * offset
+            ground = terrain_height(x, z)
+            broad_peak = 8.5 + 3.0 * math.sin(z * .043 + side * .8) + 1.8 * math.cos(z * .091 - side)
+            irregularity = 1.4 * math.sin(z * .17 + section * 1.7) + .65 * math.cos(z * .29 - section)
+            if section == 0:
+                height = ground + .2
+            elif section == 1:
+                height = ground + broad_peak * .34 + irregularity * .25
+            elif section == 2:
+                height = ground + broad_peak + irregularity
+            else:
+                height = ground + 1.0 + irregularity * .15
+            ridge_verts.append((x, -z, height))
+    for step in range(ridge_steps - 1):
+        for section in range(len(ridge_offsets) - 1):
+            a = step * len(ridge_offsets) + section
+            ridge_faces.append((a, a + 1, a + len(ridge_offsets) + 1, a + len(ridge_offsets)))
+    ridge = mesh_object(ridge_name, ridge_verts, ridge_faces, rock)
+    for polygon in ridge.data.polygons:
+        polygon.use_smooth = True
+
 # Mature msasa trees: tapered trunks, visible limbs and asymmetrical multi-lobed crowns.
 # Deterministic placement and shared materials keep the GLB offline and mobile-friendly.
 for idx in range(28):
