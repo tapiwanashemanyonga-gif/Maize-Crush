@@ -49,7 +49,7 @@ test("3D Harvest World is a Babylon scene shared with Android", () => {
  assert.ok(textureBuilder.includes("TEXTURE_PROFILES"), "Harvest World must define reusable surface texture profiles");
  assert.ok(textureBuilder.includes("image.pack()"), "surface maps must be packed into GLB files for offline use");
  assert.ok(textureBuilder.includes("bpy.ops.uv.smart_project"), "authored meshes must receive UV coordinates");
- assert.ok(textureBuilder.includes("ShaderNodeBump"), "surface materials must include subtle relief maps");
+ assert.ok(textureBuilder.includes("ShaderNodeNormalMap"), "surface materials must include subtle relief maps");
  assert.ok(textureBuilder.includes("Packed offline Harvest World textures"), "texture generation must report applied material profiles");
  for (const builderPath of ["scripts/build_harvest_world_assets.py", "scripts/build_harvest_world_terrain.py", "scripts/build_harvest_world_settlement.py"]) {
   const builder = fs.readFileSync(path.join(root, builderPath), "utf8");
