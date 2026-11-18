@@ -1,6 +1,6 @@
 # Maize Crush development status
 
-Last reviewed: 2026-11-13
+Last reviewed: 2026-11-18
 
 ## Current verified baseline
 
@@ -353,3 +353,18 @@ Complete physical Android WebView validation on a modest/older phone and a curre
 - At review, `main` was `1e32086b621734b67de0d476cd5be28fd1874c98` (Stage 23); Stage 24 was still an open PR and had not been merged. No source changes outside the architecture builder and its regression test were included in PR #137.
 - Remaining release gates are unchanged: physical testing on a modest/older Android phone and a current phone/tablet, Android TalkBack and keyboard checks, low-memory/sustained-play profiling, and final save/restore, rotation, background-recovery and backup/device-transfer validation. No production signing or publishing has been performed.
 - Next step: keep Stage 24 unmerged until its required checks pass on the final PR head, then merge and proceed with physical-device validation. Do not declare release-signing readiness while device validation remains outstanding.
+
+
+## Harvest World visual progression — Stages 25–28 (reviewed 2026-11-18)
+
+- Stage 25 merged as `3f923f3dd13afd81308557c1b8eb422fe68f39d0`: more natural Zimbabwean savanna scenery.
+- Stage 26 merged as `8f70e269ab2b7db12bee846deb8154534921f441`: deterministic offline surface textures, UVs and packed normal maps for the 3D world.
+- Stage 27 merged as `8efb174aec8b25d25e84824131d5d39df72224da`: branched msasa silhouettes, road drainage and faded edge markings; cap 3D render resolution and stop rendering while the page is hidden. The terrain builder batches by material and enforces the 12-mesh ceiling.
+- Stage 28 PR [#141](https://github.com/tapiwanashemanyonga-gif/Maize-Crush/pull/141) was squash-merged on 2026-11-18 as `6b6bf73bad20716863bb05b054c9ebd8a3259ede`. It adds deterministic western/eastern distant granite kopje ridgelines with a four-depth cross-section and irregular crests. The ridgelines reuse the existing granite material and are batched into the existing terrain material groups; the 12-mesh limit remains enforced. The terrain builder and its regression test were the only PR files changed (33 additions, 0 deletions).
+- PR #141 was validated on exact head `df117b78f45296d3baa64cdf9335075c7032113a`: gameplay regression checks passed 141/141; Android debug APK, unsigned release candidate and browser visual QA all passed. The browser QA artifact `14421616274` contains phone/tablet screenshots and `results.json`: compact mobile 390×844 and tablet 1024×768 passed, including no-swap mismatch rejection, diagonal pointer and keyboard connections, score +30 with one move consumed, and 20 harvests per profile. Chromium heap growth during the soak was 555,732 bytes on mobile and 467,256 bytes on tablet; these browser measurements are not physical Android profiling.
+- Verified PR artifacts: debug APK `14419822522` (7,030,634 bytes); unsigned APK/AAB release-candidate bundle `14420335616` (12,270,203 bytes); browser QA screenshots/results `14421616274` (6,856,336 bytes). These are CI artifacts, not production-signed releases.
+- Post-merge mainline checks run `44318166704` passed on exact code commit `6b6bf73bad20716863bb05b054c9ebd8a3259ede` (141/141). At the time of this log update, Android APK `44318166570`, web preview `44318166515`, browser QA `44318166468`, and release candidate `44318166445` were still in progress; do not treat them as passed until their conclusions are recorded.
+- Mainline browser run `44286105997` on the previous Stage 27 commit `8efb174aec8b25d25e84824131d5d39df72224da` had one initial browser-visual-QA failure: the tablet valid-path move-counter assertion exceeded its 5-second wait after the mobile profile passed. The debug APK, release candidate, Pages deployment and gameplay checks passed on that commit. A failed-job-only retry (attempt 2) was started and remained in progress at review. PR #141's browser QA passed on its own exact head; this does not retroactively change the earlier run's failure.
+- Current source branch: `main`; current code commit at review: `6b6bf73bad20716863bb05b054c9ebd8a3259ede`. The subsequent status-log-only commit intentionally skips CI; no source code or Android assets are changed by that documentation update.
+- Remaining release gates: physical testing on a modest/older Android phone and a current phone/tablet; Android TalkBack and external-keyboard validation; low-memory and sustained-play profiling; save/restore, rotation, background recovery and Android backup/device-transfer validation. No production keystore or signing credentials have been added, and no signing or publishing has occurred.
+- Next step: verify the in-progress post-merge APK, release-candidate, browser QA and Pages workflows, and inspect the failed-job retry. Then prioritise device-class performance validation without repeating already-passed startup/gameplay tests. Do not declare release-signing readiness while physical-device and remaining release checks are outstanding.
