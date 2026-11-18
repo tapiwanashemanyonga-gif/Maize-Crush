@@ -52,7 +52,7 @@ test("3D Harvest World is a Babylon scene shared with Android", () => {
  assert.ok(textureBuilder.includes("ShaderNodeNormalMap"), "surface materials must include subtle relief maps");
  assert.ok(textureBuilder.includes('colorspace_settings.name = "Non-Color"'), "normal maps must use non-colour data");
  assert.ok(textureBuilder.includes("shader.inputs[\"Base Color\"].default_value"), "textures must preserve each authored material tint");
- assert.ok(textureBuilder.includes("Packed offline Harvest World textures"), "texture generation must report applied material profiles");
+ assert.ok(textureBuilder.includes("Applied packed offline Harvest World textures"), "texture generation must report applied material profiles");
  for (const builderPath of ["scripts/build_harvest_world_assets.py", "scripts/build_harvest_world_terrain.py", "scripts/build_harvest_world_settlement.py"]) {
   const builder = fs.readFileSync(path.join(root, builderPath), "utf8");
   assert.ok(builder.includes("from harvest_world_textures import apply_harvest_textures"));
