@@ -1,4 +1,5 @@
 import bpy, math, os, shutil
+from harvest_world_textures import apply_harvest_textures
 from mathutils import Vector
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -217,6 +218,8 @@ def merge_meshes_by_material():
         )
     return len(final_meshes)
 
+# Add packed, offline surface maps and UVs before material batching.
+apply_harvest_textures()
 mesh_count = merge_meshes_by_material()
 print("Batched Zimbabwe rural settlement into %d material-batched meshes" % mesh_count)
 # Export the low-draw-call offline GLB.
