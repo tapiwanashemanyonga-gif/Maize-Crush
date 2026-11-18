@@ -115,9 +115,51 @@ def road_mesh(name, half_width, y_offset, mat):
         p.use_smooth = True
     return obj
 
-# Shoulder underlay, asphalt ribbon and dashed centre line are all 3D meshes.
-road_mesh("Continuous winding red-earth road verge", 5.7, -.02, shoulder)
+# Shoulder underlay, asphalt ribbon and drainage channels follow the winding road.
+road_mesh("Continuous winding red-earth road verge", 6.15, -.02, shoulder)
 road_mesh("Continuous asphalt road surface", 4.25, .04, asphalt)
+
+# Shallow V-shaped storm-water ditches stop the road from looking like a flat ribbon.
+for side in (-1, 1):
+    ditch_verts, ditch_faces = [], []
+    steps = 180
+    for j in range(steps + 1):
+        z = -12 + j
+        x = road_x(z)
+        dx = road_x(min(168, z + .2)) - road_x(max(-12, z - .2))
+        length = math.sqrt(dx * dx + .4 * .4)
+        nxv, nzv = .4 / length, -dx / length
+        for offset, depth in ((6.35, -.03), (7.25, -.34), (8.15, -.03)):
+            px = x + nxv * offset * side
+            pz = z + nzv * offset * side
+            ditch_verts.append((px, -pz, terrain_height(px, pz) + depth))
+    for j in range(steps):
+        a = j * 3
+        ditch_faces.extend(((a, a + 3, a + 4, a + 1), (a + 1, a + 4, a + 5, a + 2)))
+    ditch = mesh_object("Winding rural storm-water drainage ditch", ditch_verts, ditch_faces, red_soil)
+    for polygon in ditch.data.polygons:
+        polygon.use_smooth = True
+
+# Faded white edge lines add a clear, believable road boundary without a city-highway look.
+for side in (-1, 1):
+    curve = bpy.data.curves.new("Faded asphalt edge line curve", "CURVE")
+    curve.dimensions = "3D"
+    curve.bevel_depth = .035
+    curve.bevel_resolution = 1
+    spline = curve.splines.new("POLY")
+    spline.points.add(180)
+    for j, point in enumerate(spline.points):
+        z = -12 + j
+        x = road_x(z)
+        dx = road_x(min(168, z + .2)) - road_x(max(-12, z - .2))
+        length = math.sqrt(dx * dx + .4 * .4)
+        nxv, nzv = .4 / length, -dx / length
+        px = x + nxv * 4.02 * side
+        pz = z + nzv * 4.02 * side
+        point.co = (px, -pz, terrain_height(px, pz) + .305, 1)
+    edge = bpy.data.objects.new("Faded rural asphalt edge marking", curve)
+    bpy.context.collection.objects.link(edge)
+    edge.data.materials.append(road_line)
 for z in range(-8, 166, 7):
     x = road_x(z)
     curve = bpy.data.curves.new("Centre line dash curve", "CURVE")
