@@ -42,6 +42,9 @@ test("3D Harvest World is a Babylon scene shared with Android", () => {
  assert.ok(terrainBuilder.includes("Weathered rural fence post"), "terrain must include roadside rural fencing");
  assert.ok(terrainBuilder.includes("Rural timber fence rail"), "rural fencing must have rails");
  assert.ok(terrainBuilder.includes("Natural irregular msasa canopy"), "tree canopies must have irregular natural silhouettes");
+ assert.ok(terrainBuilder.includes("Tapered mature msasa trunk"), "mature msasa trees must have tapered trunks");
+ assert.ok(terrainBuilder.includes("Forked msasa tree limb"), "msasa trees must show branching structure");
+ assert.ok(terrainBuilder.includes("crown_specs"), "tree crowns must use varied asymmetric lobes");
  assert.ok(terrainBuilder.includes("Zimbabwe roadside scrub cluster"), "roadside landscape must include indigenous scrub clusters");
  assert.ok(terrainBuilder.includes("Break the perfect sphere silhouette into weathered granite shoulders"), "granite kopjes must have weathered non-spherical forms");
  assert.ok(terrainBuilder.includes("MAX_TERRAIN_MESHES = 12"), "natural foliage must remain within the terrain draw-call budget");
