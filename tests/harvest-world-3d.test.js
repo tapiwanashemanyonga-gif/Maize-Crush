@@ -14,7 +14,7 @@ test("3D Harvest World is a Babylon scene shared with Android", () => {
  assert.equal(android, web, "Android 3D runtime must match browser runtime");
  assert.equal(androidGame, game, "Android game progression must match browser progression");
  assert.equal(androidHtml, html, "Android HTML must match browser HTML");
- for (const feature of ["BABYLON.Engine", "BABYLON.ShadowGenerator", "useBlurExponentialShadowMap=true", "shadowGenerator.addShadowCaster(mesh,true)", "scene.shadowsEnabled=true", "get shadowsEnabled()", "level-gate-", "harvest-progress-tractor", "tractor-road-journey", "tractor-wheel-roll-", "tractorPosition", "tractorVisible", "ArcRotateCamera", "onSelectLevel", "ImportMeshAsync", "harvest-world-farmstead.glb", "harvest-world-terrain.glb", "harvest-world-settlement.glb", "terrainLoaded", "settlementLoaded", "settlementMeshCount", "terrainMeshCount", "farmsteadMeshCount", "gateCount", "settlementAnchors", "cameraPosition", "cameraTarget", "gatePositions", "settlementPositions", "settlementScreenBounds", "getSettlementScreenBounds", "BABYLON.Vector3.Project", "overrideCloneAlphaBetaRadius", "Promise.all"]) {
+ for (const feature of ["BABYLON.Engine", "setHardwareScalingLevel(1/renderPixelRatio)", "visibilitychange", "stopRenderLoop()", "get renderPixelRatio()", "BABYLON.ShadowGenerator", "useBlurExponentialShadowMap=true", "shadowGenerator.addShadowCaster(mesh,true)", "scene.shadowsEnabled=true", "get shadowsEnabled()", "level-gate-", "harvest-progress-tractor", "tractor-road-journey", "tractor-wheel-roll-", "tractorPosition", "tractorVisible", "ArcRotateCamera", "onSelectLevel", "ImportMeshAsync", "harvest-world-farmstead.glb", "harvest-world-terrain.glb", "harvest-world-settlement.glb", "terrainLoaded", "settlementLoaded", "settlementMeshCount", "terrainMeshCount", "farmsteadMeshCount", "gateCount", "settlementAnchors", "cameraPosition", "cameraTarget", "gatePositions", "settlementPositions", "settlementScreenBounds", "getSettlementScreenBounds", "BABYLON.Vector3.Project", "overrideCloneAlphaBetaRadius", "Promise.all"]) {
   assert.ok(web.includes(feature), "3D scene is missing " + feature);
  }
  assert.match(html, /src="\.\/vendor\/babylon\.js"/);
@@ -27,6 +27,9 @@ test("3D Harvest World is a Babylon scene shared with Android", () => {
  assert.ok(fs.readFileSync(path.join(root, "scripts/build_harvest_world_assets.py"), "utf8").includes("export_scene.gltf"));
  const terrainBuilder = fs.readFileSync(path.join(root, "scripts/build_harvest_world_terrain.py"), "utf8");
  assert.ok(terrainBuilder.includes("Continuous asphalt road surface"));
+ assert.ok(terrainBuilder.includes("Winding rural storm-water drainage ditch"), "winding road must include shaped roadside drainage");
+ assert.ok(terrainBuilder.includes("Faded rural asphalt edge marking"), "rural asphalt must have subtle edge markings");
+ assert.ok(terrainBuilder.includes("road_mesh(\"Continuous winding red-earth road verge\", 6.15"), "road must have a visible compacted shoulder");
  assert.ok(terrainBuilder.includes("Sculpted Zimbabwe countryside terrain"));
  assert.ok(terrainBuilder.includes("terrain_height"));
  assert.ok(terrainBuilder.includes("def apply_surface_variation(obj, surface):"), "terrain must bake natural surface colour variation into GLB vertex colours");
@@ -42,6 +45,9 @@ test("3D Harvest World is a Babylon scene shared with Android", () => {
  assert.ok(terrainBuilder.includes("Weathered rural fence post"), "terrain must include roadside rural fencing");
  assert.ok(terrainBuilder.includes("Rural timber fence rail"), "rural fencing must have rails");
  assert.ok(terrainBuilder.includes("Natural irregular msasa canopy"), "tree canopies must have irregular natural silhouettes");
+ assert.ok(terrainBuilder.includes("Tapered mature msasa trunk"), "mature msasa trees must have tapered trunks");
+ assert.ok(terrainBuilder.includes("Forked msasa tree limb"), "msasa trees must show branching structure");
+ assert.ok(terrainBuilder.includes("crown_specs"), "tree crowns must use varied asymmetric lobes");
  assert.ok(terrainBuilder.includes("Zimbabwe roadside scrub cluster"), "roadside landscape must include indigenous scrub clusters");
  assert.ok(terrainBuilder.includes("Break the perfect sphere silhouette into weathered granite shoulders"), "granite kopjes must have weathered non-spherical forms");
  assert.ok(terrainBuilder.includes("MAX_TERRAIN_MESHES = 12"), "natural foliage must remain within the terrain draw-call budget");

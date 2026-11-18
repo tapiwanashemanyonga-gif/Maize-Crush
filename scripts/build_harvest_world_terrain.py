@@ -115,9 +115,51 @@ def road_mesh(name, half_width, y_offset, mat):
         p.use_smooth = True
     return obj
 
-# Shoulder underlay, asphalt ribbon and dashed centre line are all 3D meshes.
-road_mesh("Continuous winding red-earth road verge", 5.7, -.02, shoulder)
+# Shoulder underlay, asphalt ribbon and drainage channels follow the winding road.
+road_mesh("Continuous winding red-earth road verge", 6.15, -.02, shoulder)
 road_mesh("Continuous asphalt road surface", 4.25, .04, asphalt)
+
+# Shallow V-shaped storm-water ditches stop the road from looking like a flat ribbon.
+for side in (-1, 1):
+    ditch_verts, ditch_faces = [], []
+    steps = 180
+    for j in range(steps + 1):
+        z = -12 + j
+        x = road_x(z)
+        dx = road_x(min(168, z + .2)) - road_x(max(-12, z - .2))
+        length = math.sqrt(dx * dx + .4 * .4)
+        nxv, nzv = .4 / length, -dx / length
+        for offset, depth in ((6.35, -.03), (7.25, -.34), (8.15, -.03)):
+            px = x + nxv * offset * side
+            pz = z + nzv * offset * side
+            ditch_verts.append((px, -pz, terrain_height(px, pz) + depth))
+    for j in range(steps):
+        a = j * 3
+        ditch_faces.extend(((a, a + 3, a + 4, a + 1), (a + 1, a + 4, a + 5, a + 2)))
+    ditch = mesh_object("Winding rural storm-water drainage ditch", ditch_verts, ditch_faces, red_soil)
+    for polygon in ditch.data.polygons:
+        polygon.use_smooth = True
+
+# Faded white edge lines add a clear, believable road boundary without a city-highway look.
+for side in (-1, 1):
+    curve = bpy.data.curves.new("Faded asphalt edge line curve", "CURVE")
+    curve.dimensions = "3D"
+    curve.bevel_depth = .035
+    curve.bevel_resolution = 1
+    spline = curve.splines.new("POLY")
+    spline.points.add(180)
+    for j, point in enumerate(spline.points):
+        z = -12 + j
+        x = road_x(z)
+        dx = road_x(min(168, z + .2)) - road_x(max(-12, z - .2))
+        length = math.sqrt(dx * dx + .4 * .4)
+        nxv, nzv = .4 / length, -dx / length
+        px = x + nxv * 4.02 * side
+        pz = z + nzv * 4.02 * side
+        point.co = (px, -pz, terrain_height(px, pz) + .305, 1)
+    edge = bpy.data.objects.new("Faded rural asphalt edge marking", curve)
+    bpy.context.collection.objects.link(edge)
+    edge.data.materials.append(road_line)
 for z in range(-8, 166, 7):
     x = road_x(z)
     curve = bpy.data.curves.new("Centre line dash curve", "CURVE")
@@ -152,26 +194,56 @@ for idx, (x, z, sx, sy, sz) in enumerate([
     for poly in obj.data.polygons:
         poly.use_smooth = True
 
-# Msasa trees with clustered canopies. Shared low-poly geometry keeps draw cost modest.
-for idx in range(34):
-    z = -4 + (idx * 5.1) % 166
+# Mature msasa trees: tapered trunks, visible limbs and asymmetrical multi-lobed crowns.
+# Deterministic placement and shared materials keep the GLB offline and mobile-friendly.
+for idx in range(28):
+    z = -4 + (idx * 6.15) % 166
     side = -1 if idx % 2 == 0 else 1
     x = road_x(z) + side * (12 + (idx % 4) * 4)
-    bpy.ops.mesh.primitive_cylinder_add(vertices=8, radius=.34, depth=3.8, location=(x, -z, terrain_height(x, z) + 1.9))
+    ground = terrain_height(x, z)
+    bpy.ops.mesh.primitive_cone_add(vertices=10, radius1=.39, radius2=.20, depth=4.8, location=(x, -z, ground + 2.4))
     trunk = bpy.context.object
-    trunk.name = "Msasa tree trunk"
+    trunk.name = "Tapered mature msasa trunk"
     trunk.data.materials.append(bark)
-    for cluster in range(3):
-        offset_x = (cluster - 1) * 1.05
-        bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=2, radius=1, location=(x + offset_x, -(z + (cluster - 1) * .65), terrain_height(x, z) + 3.85 + (cluster % 2) * .42))
+    # Three limbs emerge at staggered heights and angle into the canopy.
+    for limb in range(3):
+        angle = idx * .71 + limb * (math.tau / 3)
+        start = Vector((x, -z, ground + 1.65 + limb * .48))
+        end = Vector((x + math.cos(angle) * (1.25 + limb * .16),
+                      -z + math.sin(angle) * (1.05 + limb * .12),
+                      ground + 3.35 + limb * .34))
+        direction = end - start
+        bpy.ops.mesh.primitive_cone_add(vertices=8, radius1=.145, radius2=.052,
+                                        depth=direction.length, location=(start + end) / 2)
+        branch = bpy.context.object
+        branch.name = "Forked msasa tree limb"
+        branch.rotation_mode = "QUATERNION"
+        branch.rotation_quaternion = direction.to_track_quat("Z", "Y")
+        branch.data.materials.append(bark)
+    # Four broad side crowns and a smaller crown at the top break the repeated ball-tree silhouette.
+    crown_specs = [
+        (-1.18, -.18, 4.15, 1.62, 1.30, 1.05),
+        (1.12, .16, 4.28, 1.72, 1.34, 1.12),
+        (-.42, -.92, 4.72, 1.35, 1.28, 1.08),
+        (.38, .88, 4.66, 1.42, 1.30, 1.10),
+        (.08, -.04, 5.55, 1.28, 1.18, .98),
+    ]
+    for cluster, spec in enumerate(crown_specs):
+        ox, oy, height, sx, sy, sz = spec
+        bpy.ops.mesh.primitive_ico_sphere_add(
+            subdivisions=2, radius=1,
+            location=(x + ox, -z + oy, ground + height + math.sin(idx + cluster) * .13)
+        )
         crown = bpy.context.object
         crown.name = "Natural irregular msasa canopy"
-        crown.scale = (1.85 + cluster * .12, 1.55 + (cluster % 2) * .18, 1.18 + cluster * .08)
+        crown.scale = (sx * (1 + math.sin(idx * .7 + cluster) * .08),
+                       sy * (1 + math.cos(idx * .5 + cluster) * .07), sz)
         for vertex in crown.data.vertices:
             co = vertex.co
-            breakup = math.sin(co.x * 6.0 + idx) * math.cos(co.y * 5.0 + cluster)
-            co *= 1.0 + breakup * .085
-        crown.data.materials.append(foliage if cluster != 1 else foliage_light)
+            breakup = (math.sin(co.x * 6.0 + idx) * math.cos(co.y * 5.0 + cluster)
+                       + math.sin(co.z * 7.0 + idx * .3) * .35)
+            co *= 1.0 + breakup * .095
+        crown.data.materials.append(foliage if cluster % 3 else foliage_light)
         for poly in crown.data.polygons:
             poly.use_smooth = True
 
