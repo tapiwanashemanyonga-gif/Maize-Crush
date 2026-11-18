@@ -27,6 +27,9 @@ test("3D Harvest World is a Babylon scene shared with Android", () => {
  assert.ok(fs.readFileSync(path.join(root, "scripts/build_harvest_world_assets.py"), "utf8").includes("export_scene.gltf"));
  const terrainBuilder = fs.readFileSync(path.join(root, "scripts/build_harvest_world_terrain.py"), "utf8");
  assert.ok(terrainBuilder.includes("Continuous asphalt road surface"));
+ assert.ok(terrainBuilder.includes("Winding rural storm-water drainage ditch"), "winding road must include shaped roadside drainage");
+ assert.ok(terrainBuilder.includes("Faded rural asphalt edge marking"), "rural asphalt must have subtle edge markings");
+ assert.ok(terrainBuilder.includes("road_mesh(\"Continuous winding red-earth road verge\", 6.15"), "road must have a visible compacted shoulder");
  assert.ok(terrainBuilder.includes("Sculpted Zimbabwe countryside terrain"));
  assert.ok(terrainBuilder.includes("terrain_height"));
  assert.ok(terrainBuilder.includes("def apply_surface_variation(obj, surface):"), "terrain must bake natural surface colour variation into GLB vertex colours");
