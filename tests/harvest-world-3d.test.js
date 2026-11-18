@@ -50,6 +50,9 @@ test("3D Harvest World is a Babylon scene shared with Android", () => {
  assert.ok(terrainBuilder.includes("crown_specs"), "tree crowns must use varied asymmetric lobes");
  assert.ok(terrainBuilder.includes("Zimbabwe roadside scrub cluster"), "roadside landscape must include indigenous scrub clusters");
  assert.ok(terrainBuilder.includes("Break the perfect sphere silhouette into weathered granite shoulders"), "granite kopjes must have weathered non-spherical forms");
+ assert.ok(terrainBuilder.includes("Western distant Zimbabwe kopje ridgeline") && terrainBuilder.includes("Eastern distant Zimbabwe kopje ridgeline"), "Harvest World must include layered distant granite horizons");
+ assert.ok(terrainBuilder.includes("ridge_offsets = (47.5, 55.0, 67.0, 81.0)"), "distant ridgelines must have a multi-depth cross-section");
+ assert.ok(terrainBuilder.includes("Distant granite ridgelines create a layered Zimbabwean horizon"), "distant landscape must provide visible horizon layering");
  assert.ok(terrainBuilder.includes("MAX_TERRAIN_MESHES = 12"), "natural foliage must remain within the terrain draw-call budget");
  const textureBuilder = fs.readFileSync(path.join(root, "scripts/harvest_world_textures.py"), "utf8");
  assert.ok(textureBuilder.includes("TEXTURE_PROFILES"), "Harvest World must define reusable surface texture profiles");
