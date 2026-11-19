@@ -199,18 +199,20 @@ for idx, (x, z, sx, sy, sz) in enumerate([
 for side, ridge_name in ((-1, "Western distant Zimbabwe kopje ridgeline"), (1, "Eastern distant Zimbabwe kopje ridgeline")):
     ridge_verts, ridge_faces = [], []
     ridge_steps = 25
-    ridge_offsets = (17.0, 26.0, 38.0, 50.0)
+    # The western ridge crest sits inside the level-three camera frustum,
+    # rather than behind the camera or below the road-facing sight line.
+    ridge_offsets = (12.0, 18.0, 24.0, 42.0)
     for step in range(ridge_steps):
         z = -18 + step * 7.5
         for section, offset in enumerate(ridge_offsets):
             x = side * offset
             ground = terrain_height(x, z)
-            broad_peak = 15.0 + 3.8 * math.sin(z * .043 + side * .8) + 2.4 * math.cos(z * .091 - side)
+            broad_peak = 12.0 + 3.8 * math.sin(z * .043 + side * .8) + 2.4 * math.cos(z * .091 - side)
             irregularity = 1.4 * math.sin(z * .17 + section * 1.7) + .65 * math.cos(z * .29 - section)
             if section == 0:
                 height = ground + .2
             elif section == 1:
-                height = ground + broad_peak * .34 + irregularity * .25
+                height = ground + broad_peak * .45 + irregularity * .25
             elif section == 2:
                 height = ground + broad_peak + irregularity
             else:
@@ -220,7 +222,7 @@ for side, ridge_name in ((-1, "Western distant Zimbabwe kopje ridgeline"), (1, "
         for section in range(len(ridge_offsets) - 1):
             a = step * len(ridge_offsets) + section
             ridge_faces.append((a, a + 1, a + len(ridge_offsets) + 1, a + len(ridge_offsets)))
-    ridge = mesh_object(ridge_name, ridge_verts, ridge_faces, rock)
+    ridge = mesh_object(ridge_name, ridge_verts, ridge_faces, rock_light)
     for polygon in ridge.data.polygons:
         polygon.use_smooth = True
 

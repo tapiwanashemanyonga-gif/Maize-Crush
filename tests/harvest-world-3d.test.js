@@ -51,7 +51,10 @@ test("3D Harvest World is a Babylon scene shared with Android", () => {
  assert.ok(terrainBuilder.includes("Zimbabwe roadside scrub cluster"), "roadside landscape must include indigenous scrub clusters");
  assert.ok(terrainBuilder.includes("Break the perfect sphere silhouette into weathered granite shoulders"), "granite kopjes must have weathered non-spherical forms");
  assert.ok(terrainBuilder.includes("Western distant Zimbabwe kopje ridgeline") && terrainBuilder.includes("Eastern distant Zimbabwe kopje ridgeline"), "Harvest World must include layered distant granite horizons");
- assert.ok(terrainBuilder.includes("ridge_offsets = (17.0, 26.0, 38.0, 50.0)"), "distant ridgelines must have a multi-depth cross-section");
+ assert.ok(terrainBuilder.includes("ridge_offsets = (12.0, 18.0, 24.0, 42.0)"), "distant ridgelines must place the western crest inside the level-three camera view");
+ assert.ok(terrainBuilder.includes("broad_peak = 12.0 + 3.8") && terrainBuilder.includes("broad_peak * .45"), "kopje crest and shoulder must rise above the road-facing sight line");
+ assert.ok(terrainBuilder.includes("ridge = mesh_object(ridge_name, ridge_verts, ridge_faces, rock_light)"), "distant kopjes must use the existing lighter granite material");
+ assert.ok(web.includes("scene.fogDensity=.0011") && web.includes("getKopjeScreenBounds") && web.includes("get kopjeScreenBounds()"), "runtime must expose the projected kopje horizon and use readable atmospheric fog");
  assert.ok(terrainBuilder.includes("Distant granite ridgelines create a layered Zimbabwean horizon"), "distant landscape must provide visible horizon layering");
  assert.ok(terrainBuilder.includes("nx, nz = 65, 95") && terrainBuilder.includes("x = -64 + i * 2.0"), "terrain footprint must extend beneath the distant kopje horizon");
  assert.ok(terrainBuilder.includes("MAX_TERRAIN_MESHES = 12"), "natural foliage must remain within the terrain draw-call budget");

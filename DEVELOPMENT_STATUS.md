@@ -368,3 +368,11 @@ Complete physical Android WebView validation on a modest/older phone and a curre
 - Current source branch: `main`; current code commit at review: `6b6bf73bad20716863bb05b054c9ebd8a3259ede`. The subsequent status-log-only commit intentionally skips CI; no source code or Android assets are changed by that documentation update.
 - Remaining release gates: physical testing on a modest/older Android phone and a current phone/tablet; Android TalkBack and external-keyboard validation; low-memory and sustained-play profiling; save/restore, rotation, background recovery and Android backup/device-transfer validation. No production keystore or signing credentials have been added, and no signing or publishing has occurred.
 - Next step: verify the in-progress post-merge APK, release-candidate, browser QA and Pages workflows, and inspect the failed-job retry. Then prioritise device-class performance validation without repeating already-passed startup/gameplay tests. Do not declare release-signing readiness while physical-device and remaining release checks are outstanding.
+
+
+## Stage 29 visual correction — in progress (2026-11-19)
+
+- PR [#142](https://github.com/tapiwanashemanyonga-gif/Maize-Crush/pull/142), branch `feature/stage-29-visible-kopje-horizon`, passed its four required PR workflows on head `fec1c7049eb8462922063f3785b747ed74a7bb7b`. The browser artifact was downloaded and inspected; the level-three phone/tablet captures still did not show a clearly readable distant ridge. The draft PR remains unmerged despite green CI.
+- Follow-up moves the western kopje crest into the level-three camera-facing cross-section, uses the existing lighter granite material, and reduces excessive exponential fog density. The browser/Android WebView runtime exposes projected kopje bounds, and browser QA now requires at least one ridge cross-section inside the level-three camera frustum on both compact phone and tablet.
+- This visual correction remains incomplete until regenerated phone/tablet screenshots visibly show a grounded horizon and focused Blender/GLB, Android and browser checks pass on the final branch head.
+- Main remains `bf8fc848e96c4dd4bfe113649ed9045ee9de780f`; no Stage 29 changes have been merged. Physical Android validation, TalkBack, low-memory profiling and final backup/restore/rotation checks remain release gates.
