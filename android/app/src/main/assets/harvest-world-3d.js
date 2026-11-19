@@ -146,14 +146,16 @@ function getKopjeScreenBounds(){
  camera.computeWorldMatrix(true);
  const width=engine.getRenderWidth(),height=engine.getRenderHeight();
  const viewport=camera.viewport.toGlobal(width,height),transform=scene.getTransformMatrix();
- return[-1,1].map(side=>{
+ const depthOffsets=[0,2.5,5,9];
+ const center=Math.round(roadX(82)/2)*2;
+ const xSamples=[-12,-8,-4,0,4,8,12].map(offset=>center+offset);
+ return[80,88].map((ridgeStart,ridgeIndex)=>{
   const projected=[];
-  for(const z of [64.5,72,79.5]){
-   const offsets=[12,18,24,42];
-   for(let section=0;section<offsets.length;section++){
-    const x=side*offsets[section],ground=terrainHeight(x,z);
-    const broadPeak=12.0+3.8*Math.sin(z*.043+side*.8)+2.4*Math.cos(z*.091-side);
-    const irregularity=1.4*Math.sin(z*.17+section*1.7)+.65*Math.cos(z*.29-section);
+  for(const x of xSamples){
+   const broadPeak=7.0+2.6*Math.sin(x*.13+ridgeIndex*.8)+1.4*Math.cos(x*.27-ridgeIndex);
+   for(let section=0;section<depthOffsets.length;section++){
+    const z=ridgeStart+depthOffsets[section],ground=terrainHeight(x,z);
+    const irregularity=1.0*Math.sin(x*.31+ridgeIndex*1.7)+.4*Math.cos(x*.18-ridgeIndex);
     const y=section===0?ground+.2:section===1?ground+broadPeak*.45+irregularity*.25:section===2?ground+broadPeak+irregularity:ground+1.0+irregularity*.15;
     projected.push(BABYLON.Vector3.Project(new BABYLON.Vector3(x,y,z),BABYLON.Matrix.Identity(),transform,viewport));
    }
@@ -163,7 +165,7 @@ function getKopjeScreenBounds(){
   const depthMin=Math.min(...projected.map(point=>point.z)),depthMax=Math.max(...projected.map(point=>point.z));
   const visibleWidth=Math.max(0,Math.min(right,width)-Math.max(left,0));
   const visibleHeight=Math.max(0,Math.min(bottom,height)-Math.max(top,0));
-  return{side,left,top,right,bottom,depthMin,depthMax,visible:depthMax>=0&&depthMin<=1&&visibleWidth>=24&&visibleHeight>=24};
+  return{ridgeStart,left,top,right,bottom,depthMin,depthMax,visible:depthMax>=0&&depthMin<=1&&visibleWidth>=24&&visibleHeight>=24};
  });
 }
 function getSettlementScreenBounds(){

@@ -194,21 +194,23 @@ for idx, (x, z, sx, sy, sz) in enumerate([
     for poly in obj.data.polygons:
         poly.use_smooth = True
 
-# Distant granite ridgelines create a layered Zimbabwean horizon beyond the nearer fields.
-# Both sides share the existing granite material so the terrain draw-call budget is unchanged.
-for side, ridge_name in ((-1, "Western distant Zimbabwe kopje ridgeline"), (1, "Eastern distant Zimbabwe kopje ridgeline")):
+# Distant granite kopjes form a layered horizon across the road ahead.
+# Their cross-sections run across X, with shallow depth slopes along the road.
+# Both ridges reuse the existing lighter granite material and are batched together.
+ridge_depths = (0.0, 2.5, 5.0, 9.0)
+for ridge_index, (ridge_name, ridge_start) in enumerate((
+    ("Western distant Zimbabwe kopje ridgeline", 80.0),
+    ("Eastern distant Zimbabwe kopje ridgeline", 88.0),
+)):
     ridge_verts, ridge_faces = [], []
-    ridge_steps = 25
-    # The western ridge crest sits inside the level-three camera frustum,
-    # rather than behind the camera or below the road-facing sight line.
-    ridge_offsets = (12.0, 18.0, 24.0, 42.0)
+    ridge_steps = 33
     for step in range(ridge_steps):
-        z = -18 + step * 7.5
-        for section, offset in enumerate(ridge_offsets):
-            x = side * offset
+        x = -32 + step * 2.0
+        broad_peak = 7.0 + 2.6 * math.sin(x * .13 + ridge_index * .8) + 1.4 * math.cos(x * .27 - ridge_index)
+        for section, depth in enumerate(ridge_depths):
+            z = ridge_start + depth
             ground = terrain_height(x, z)
-            broad_peak = 12.0 + 3.8 * math.sin(z * .043 + side * .8) + 2.4 * math.cos(z * .091 - side)
-            irregularity = 1.4 * math.sin(z * .17 + section * 1.7) + .65 * math.cos(z * .29 - section)
+            irregularity = 1.0 * math.sin(x * .31 + ridge_index * 1.7) + .4 * math.cos(x * .18 - ridge_index)
             if section == 0:
                 height = ground + .2
             elif section == 1:
@@ -219,9 +221,9 @@ for side, ridge_name in ((-1, "Western distant Zimbabwe kopje ridgeline"), (1, "
                 height = ground + 1.0 + irregularity * .15
             ridge_verts.append((x, -z, height))
     for step in range(ridge_steps - 1):
-        for section in range(len(ridge_offsets) - 1):
-            a = step * len(ridge_offsets) + section
-            ridge_faces.append((a, a + 1, a + len(ridge_offsets) + 1, a + len(ridge_offsets)))
+        for section in range(len(ridge_depths) - 1):
+            a = step * len(ridge_depths) + section
+            ridge_faces.append((a, a + 1, a + len(ridge_depths) + 1, a + len(ridge_depths)))
     ridge = mesh_object(ridge_name, ridge_verts, ridge_faces, rock_light)
     for polygon in ridge.data.polygons:
         polygon.use_smooth = True
