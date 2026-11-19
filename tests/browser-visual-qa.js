@@ -784,6 +784,10 @@ async function runViewport(browser, profile, viewport) {
   const scoreAfter = Number((await page.locator("#score-value").innerText()).replace(/,/g, ""));
   if (scoreAfter <= scoreBefore) throw new Error(profile + " valid diagonal connection did not increase the score.");
 
+  // A successful harvest may open its result dialog; dismiss it before testing
+  // controls underneath the modal so the dialog does not intercept the click.
+  await dismissResultDialogs(page);
+
   // Check that the settings controls remain operable.
   await page.locator("#tools-toggle-button").click();
   await page.locator("#settings-button").click();
