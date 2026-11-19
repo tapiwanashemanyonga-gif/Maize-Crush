@@ -69,11 +69,11 @@ def mesh_object(name, verts, faces, mat):
 
 # Sculpted rolling ground: a real triangulated terrain mesh with broad low hills.
 verts, faces = [], []
-nx, nz = 49, 95
+nx, nz = 65, 95
 for j in range(nz):
     z = -18 + j * 2.0
     for i in range(nx):
-        x = -48 + i * 2.0
+        x = -64 + i * 2.0
         broad = 1.1 * math.sin(z * .035 + x * .018) + .65 * math.cos(x * .055 - z * .021)
         undulation = .22 * math.sin(x * .19 + z * .11) * math.cos(z * .16)
         verts.append((x, -z, broad + undulation - .5))
@@ -199,7 +199,7 @@ for idx, (x, z, sx, sy, sz) in enumerate([
 for side, ridge_name in ((-1, "Western distant Zimbabwe kopje ridgeline"), (1, "Eastern distant Zimbabwe kopje ridgeline")):
     ridge_verts, ridge_faces = [], []
     ridge_steps = 25
-    ridge_offsets = (47.5, 55.0, 67.0, 81.0)
+    ridge_offsets = (29.0, 40.0, 52.0, 64.0)
     for step in range(ridge_steps):
         z = -18 + step * 7.5
         for section, offset in enumerate(ridge_offsets):
