@@ -133,6 +133,8 @@ async function enterGameFromJourney(page, verify = false) {
       const settlements = world.settlementPositions;
       const settlementScreenBounds = world.settlementScreenBounds;
       const visibleSettlementCount = settlementScreenBounds.filter(bounds => bounds.visible).length;
+      const kopjeScreenBounds = world.kopjeScreenBounds;
+      const visibleKopjeCount = kopjeScreenBounds.filter(bounds => bounds.visible).length;
       const nearestSettlement = Math.min(...settlements.map(point => Math.hypot(point[0] - gate[0], point[2] - gate[2])));
       return {
         activeLevel: world.activeLevel,
@@ -142,6 +144,9 @@ async function enterGameFromJourney(page, verify = false) {
         settlements,
         settlementScreenBounds,
         visibleSettlementCount,
+        kopjeScreenBounds,
+        visibleKopjeCount,
+        fogDensity: world.fogDensity,
         nearestSettlement,
         radius: Math.hypot(position[0] - target[0], position[1] - target[1], position[2] - target[2])
       };
@@ -154,8 +159,10 @@ async function enterGameFromJourney(page, verify = false) {
         Math.abs(positionShift - targetShift) > 1 ||
         Math.abs(focusCheck.radius - 39) > 1 ||
         focusCheck.nearestSettlement > 18 ||
-        focusCheck.visibleSettlementCount < 1) {
-      throw new Error("Harvest Trail camera did not follow the current road level and frame its settlement: " + JSON.stringify(focusCheck));
+        focusCheck.visibleSettlementCount < 1 ||
+        focusCheck.visibleKopjeCount < 1 ||
+        focusCheck.fogDensity > 0.0015) {
+      throw new Error("Harvest Trail camera did not follow level 3 and frame its settlement plus visible kopje horizon: " + JSON.stringify(focusCheck));
     }
     await page.screenshot({
       path: path.join(OUTPUT, "harvest-trail-3d-settlement-" + mapViewport + ".png"),
@@ -191,9 +198,12 @@ async function getBoardState(page) {
 async function waitForBoardAnimations(page) {
   await page.waitForFunction(() => {
     const tiles = Array.from(document.querySelectorAll("#game-board .crop-tile"));
+    const restart = document.querySelector("#restart-button");
     return tiles.length === 64 &&
-      tiles.every(tile => tile.getAnimations().every(animation => animation.playState !== "running"));
-  }, null, { timeout: 8000 });
+      tiles.every(tile => tile.getAnimations().every(animation => animation.playState !== "running")) &&
+      !tiles.some(tile => tile.classList.contains("clearing")) &&
+      restart && !restart.disabled;
+  }, null, { timeout: 12000 });
 }
 
 function cropName(label) {
@@ -425,6 +435,10 @@ async function useFreshField(page) {
 }
 
 async function dismissResultDialogs(page) {
+  // A refilled 64-tile board can still be resolving a cascade. Wait for the
+  // game engine to re-enable Restart before deciding whether a result dialog
+  // is present, otherwise a completion modal can open just after this check.
+  await waitForBoardAnimations(page);
   for (const [dialog, closeButton] of [
     ["#level-complete-dialog", "#level-complete-close"],
     ["#level-failed-dialog", "#level-failed-close"]
@@ -784,10 +798,17 @@ async function runViewport(browser, profile, viewport) {
   const scoreAfter = Number((await page.locator("#score-value").innerText()).replace(/,/g, ""));
   if (scoreAfter <= scoreBefore) throw new Error(profile + " valid diagonal connection did not increase the score.");
 
+  // A successful harvest may open its result dialog; dismiss it before testing
+  // controls underneath the modal so the dialog does not intercept the click.
+  await dismissResultDialogs(page);
+
   // Check that the settings controls remain operable.
   await page.locator("#tools-toggle-button").click();
   await page.locator("#settings-button").click();
   await page.locator("#settings-dialog").waitFor({ state: "visible" });
+  // A result dialog may have surfaced above Settings while the previous
+  // cascade was settling; close it before interacting with the Settings modal.
+  await dismissResultDialogs(page);
   await page.locator("#settings-close").click();
   await page.locator("#settings-dialog").waitFor({ state: "hidden" });
   await page.locator("#tools-toggle-button").click();
