@@ -198,9 +198,12 @@ async function getBoardState(page) {
 async function waitForBoardAnimations(page) {
   await page.waitForFunction(() => {
     const tiles = Array.from(document.querySelectorAll("#game-board .crop-tile"));
+    const restart = document.querySelector("#restart-button");
     return tiles.length === 64 &&
-      tiles.every(tile => tile.getAnimations().every(animation => animation.playState !== "running"));
-  }, null, { timeout: 8000 });
+      tiles.every(tile => tile.getAnimations().every(animation => animation.playState !== "running")) &&
+      !tiles.some(tile => tile.classList.contains("clearing")) &&
+      restart && !restart.disabled;
+  }, null, { timeout: 12000 });
 }
 
 function cropName(label) {
@@ -432,6 +435,10 @@ async function useFreshField(page) {
 }
 
 async function dismissResultDialogs(page) {
+  // A refilled 64-tile board can still be resolving a cascade. Wait for the
+  // game engine to re-enable Restart before deciding whether a result dialog
+  // is present, otherwise a completion modal can open just after this check.
+  await waitForBoardAnimations(page);
   for (const [dialog, closeButton] of [
     ["#level-complete-dialog", "#level-complete-close"],
     ["#level-failed-dialog", "#level-failed-close"]
@@ -799,6 +806,9 @@ async function runViewport(browser, profile, viewport) {
   await page.locator("#tools-toggle-button").click();
   await page.locator("#settings-button").click();
   await page.locator("#settings-dialog").waitFor({ state: "visible" });
+  // A result dialog may have surfaced above Settings while the previous
+  // cascade was settling; close it before interacting with the Settings modal.
+  await dismissResultDialogs(page);
   await page.locator("#settings-close").click();
   await page.locator("#settings-dialog").waitFor({ state: "hidden" });
   await page.locator("#tools-toggle-button").click();
