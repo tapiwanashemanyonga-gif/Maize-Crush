@@ -194,31 +194,32 @@ for idx, (x, z, sx, sy, sz) in enumerate([
     for poly in obj.data.polygons:
         poly.use_smooth = True
 
-# Distant granite kopjes form a layered horizon across the road ahead.
-# Their cross-sections run across X, with shallow depth slopes along the road.
-# Both ridges reuse the existing lighter granite material and are batched together.
-ridge_depths = (0.0, 2.5, 5.0, 9.0)
+# Distant granite kopjes sit beyond the homesteads and the final gate, not directly
+# behind the village. Their lower, longer profiles read as a far horizon rather
+# than a foreground wall that hides the settlement on compact phone screens.
+# Both ridges reuse the existing lighter granite material and remain batched.
+ridge_depths = (0.0, 4.0, 8.0, 13.0)
 for ridge_index, (ridge_name, ridge_start) in enumerate((
-    ("Western distant Zimbabwe kopje ridgeline", 80.0),
-    ("Eastern distant Zimbabwe kopje ridgeline", 88.0),
+    ("Western distant Zimbabwe kopje ridgeline", 142.0),
+    ("Eastern distant Zimbabwe kopje ridgeline", 154.0),
 )):
     ridge_verts, ridge_faces = [], []
     ridge_steps = 33
     for step in range(ridge_steps):
         x = -32 + step * 2.0
-        broad_peak = 7.0 + 2.6 * math.sin(x * .13 + ridge_index * .8) + 1.4 * math.cos(x * .27 - ridge_index)
+        broad_peak = 4.8 + 1.3 * math.sin(x * .13 + ridge_index * .8) + .75 * math.cos(x * .27 - ridge_index)
         for section, depth in enumerate(ridge_depths):
             z = ridge_start + depth
             ground = terrain_height(x, z)
-            irregularity = 1.0 * math.sin(x * .31 + ridge_index * 1.7) + .4 * math.cos(x * .18 - ridge_index)
+            irregularity = .55 * math.sin(x * .31 + ridge_index * 1.7) + .25 * math.cos(x * .18 - ridge_index)
             if section == 0:
-                height = ground + .2
+                height = ground + .15
             elif section == 1:
-                height = ground + broad_peak * .45 + irregularity * .25
+                height = ground + broad_peak * .40 + irregularity * .20
             elif section == 2:
                 height = ground + broad_peak + irregularity
             else:
-                height = ground + 1.0 + irregularity * .15
+                height = ground + .7 + irregularity * .10
             ridge_verts.append((x, -z, height))
     for step in range(ridge_steps - 1):
         for section in range(len(ridge_depths) - 1):

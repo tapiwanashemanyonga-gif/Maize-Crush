@@ -135,6 +135,7 @@ async function enterGameFromJourney(page, verify = false) {
       const visibleSettlementCount = settlementScreenBounds.filter(bounds => bounds.visible).length;
       const kopjeScreenBounds = world.kopjeScreenBounds;
       const visibleKopjeCount = kopjeScreenBounds.filter(bounds => bounds.visible).length;
+      const maxKopjeAreaRatio = Math.max(0, ...kopjeScreenBounds.map(bounds => Number(bounds.areaRatio || 0)));
       const nearestSettlement = Math.min(...settlements.map(point => Math.hypot(point[0] - gate[0], point[2] - gate[2])));
       return {
         activeLevel: world.activeLevel,
@@ -146,6 +147,7 @@ async function enterGameFromJourney(page, verify = false) {
         visibleSettlementCount,
         kopjeScreenBounds,
         visibleKopjeCount,
+        maxKopjeAreaRatio,
         fogDensity: world.fogDensity,
         nearestSettlement,
         radius: Math.hypot(position[0] - target[0], position[1] - target[1], position[2] - target[2])
@@ -161,8 +163,9 @@ async function enterGameFromJourney(page, verify = false) {
         focusCheck.nearestSettlement > 18 ||
         focusCheck.visibleSettlementCount < 1 ||
         focusCheck.visibleKopjeCount < 1 ||
+        focusCheck.maxKopjeAreaRatio > 0.32 ||
         focusCheck.fogDensity > 0.0015) {
-      throw new Error("Harvest Trail camera did not follow level 3 and frame its settlement plus visible kopje horizon: " + JSON.stringify(focusCheck));
+      throw new Error("Harvest Trail camera must frame the settlement and a distant kopje horizon without a foreground mountain wall: " + JSON.stringify(focusCheck));
     }
     await page.screenshot({
       path: path.join(OUTPUT, "harvest-trail-3d-settlement-" + mapViewport + ".png"),

@@ -146,17 +146,17 @@ function getKopjeScreenBounds(){
  camera.computeWorldMatrix(true);
  const width=engine.getRenderWidth(),height=engine.getRenderHeight();
  const viewport=camera.viewport.toGlobal(width,height),transform=scene.getTransformMatrix();
- const depthOffsets=[0,2.5,5,9];
- const center=Math.round(roadX(82)/2)*2;
- const xSamples=[-12,-8,-4,0,4,8,12].map(offset=>center+offset);
- return[80,88].map((ridgeStart,ridgeIndex)=>{
+ const depthOffsets=[0,4,8,13];
+ const center=Math.round(roadX(148)/2)*2;
+ const xSamples=[-28,-20,-12,-4,4,12,20,28].map(offset=>center+offset);
+ return[142,154].map((ridgeStart,ridgeIndex)=>{
   const projected=[];
   for(const x of xSamples){
-   const broadPeak=7.0+2.6*Math.sin(x*.13+ridgeIndex*.8)+1.4*Math.cos(x*.27-ridgeIndex);
+   const broadPeak=4.8+1.3*Math.sin(x*.13+ridgeIndex*.8)+.75*Math.cos(x*.27-ridgeIndex);
    for(let section=0;section<depthOffsets.length;section++){
     const z=ridgeStart+depthOffsets[section],ground=terrainHeight(x,z);
-    const irregularity=1.0*Math.sin(x*.31+ridgeIndex*1.7)+.4*Math.cos(x*.18-ridgeIndex);
-    const y=section===0?ground+.2:section===1?ground+broadPeak*.45+irregularity*.25:section===2?ground+broadPeak+irregularity:ground+1.0+irregularity*.15;
+    const irregularity=.55*Math.sin(x*.31+ridgeIndex*1.7)+.25*Math.cos(x*.18-ridgeIndex);
+    const y=section===0?ground+.15:section===1?ground+broadPeak*.40+irregularity*.20:section===2?ground+broadPeak+irregularity:ground+.7+irregularity*.10;
     projected.push(BABYLON.Vector3.Project(new BABYLON.Vector3(x,y,z),BABYLON.Matrix.Identity(),transform,viewport));
    }
   }
@@ -165,7 +165,8 @@ function getKopjeScreenBounds(){
   const depthMin=Math.min(...projected.map(point=>point.z)),depthMax=Math.max(...projected.map(point=>point.z));
   const visibleWidth=Math.max(0,Math.min(right,width)-Math.max(left,0));
   const visibleHeight=Math.max(0,Math.min(bottom,height)-Math.max(top,0));
-  return{ridgeStart,left,top,right,bottom,depthMin,depthMax,visible:depthMax>=0&&depthMin<=1&&visibleWidth>=24&&visibleHeight>=24};
+  const areaRatio=visibleWidth*visibleHeight/(width*height);
+  return{ridgeStart,left,top,right,bottom,depthMin,depthMax,areaRatio,visible:depthMax>=0&&depthMin<=1&&visibleWidth>=24&&visibleHeight>=24};
  });
 }
 function getSettlementScreenBounds(){

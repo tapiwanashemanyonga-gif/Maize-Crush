@@ -51,10 +51,10 @@ test("3D Harvest World is a Babylon scene shared with Android", () => {
  assert.ok(terrainBuilder.includes("Zimbabwe roadside scrub cluster"), "roadside landscape must include indigenous scrub clusters");
  assert.ok(terrainBuilder.includes("Break the perfect sphere silhouette into weathered granite shoulders"), "granite kopjes must have weathered non-spherical forms");
  assert.ok(terrainBuilder.includes("Western distant Zimbabwe kopje ridgeline") && terrainBuilder.includes("Eastern distant Zimbabwe kopje ridgeline"), "Harvest World must include layered distant granite horizons");
- assert.ok(terrainBuilder.includes("ridge_depths = (0.0, 2.5, 5.0, 9.0)") && terrainBuilder.includes("x = -32 + step * 2.0"), "distant kopje ridges must cross the road ahead instead of running outside the camera frustum");
- assert.ok(terrainBuilder.includes("broad_peak = 7.0 + 2.6") && terrainBuilder.includes("broad_peak * .45"), "cross-road kopje crests must have gradual, irregular shoulders");
+ assert.ok(terrainBuilder.includes("ridge_depths = (0.0, 4.0, 8.0, 13.0)") && terrainBuilder.includes('("Western distant Zimbabwe kopje ridgeline", 142.0)') && terrainBuilder.includes('("Eastern distant Zimbabwe kopje ridgeline", 154.0)'), "distant kopje ridges must sit beyond the homesteads and final gate");
+ assert.ok(terrainBuilder.includes("broad_peak = 4.8 + 1.3") && terrainBuilder.includes("broad_peak * .40"), "distant kopje crests must remain low and irregular rather than forming a foreground wall");
  assert.ok(terrainBuilder.includes("ridge = mesh_object(ridge_name, ridge_verts, ridge_faces, rock_light)"), "distant kopjes must use the existing lighter granite material");
- assert.ok(web.includes("scene.fogDensity=.0011") && web.includes("getKopjeScreenBounds") && web.includes("get kopjeScreenBounds()") && web.includes("return[80,88].map"), "runtime must expose the projected cross-road kopje horizon and use readable atmospheric fog");
+ assert.ok(web.includes("scene.fogDensity=.0011") && web.includes("getKopjeScreenBounds") && web.includes("get kopjeScreenBounds()") && web.includes("return[142,154].map") && web.includes("areaRatio=visibleWidth*visibleHeight/(width*height)"), "runtime must expose distant, bounded kopje screen area and readable atmospheric fog");
  assert.ok(terrainBuilder.includes("Distant granite kopjes form a layered horizon across the road ahead"), "distant landscape must provide a cross-road Zimbabwean horizon");
  assert.ok(terrainBuilder.includes("nx, nz = 65, 95") && terrainBuilder.includes("x = -64 + i * 2.0"), "terrain footprint must extend beneath the distant kopje horizon");
  assert.ok(terrainBuilder.includes("MAX_TERRAIN_MESHES = 12"), "natural foliage must remain within the terrain draw-call budget");

@@ -389,3 +389,14 @@ Complete physical Android WebView validation on a modest/older phone and a curre
 - This is a browser-test synchronization correction only; gameplay and Android source files are unchanged. PR #142 remains draft and unmerged. The new browser run must pass and its compact-phone/tablet screenshots must be inspected before Stage 29 can be accepted.
 - Existing evidence on the prior exact head: Node regression workflow passed 141/141 on run 44540465707; the Android debug job in run 44540465796 passed; Android APK run 44540465798 and release-candidate run 44540465677 passed; browser visual QA run 44540465796 failed as described; optional emulator diagnostic was skipped. Main remains `bf8fc848e96c4dd4bfe113649ed9045ee9de780f`, with scheduled Android APK run 44742978822 successful on that exact SHA.
 - Next: verify the new browser QA run, inspect generated phone/tablet screenshots and the kopje-frustum evidence, then merge PR #142 only if all required checks pass. Physical Android, TalkBack, low-memory, save/restore, rotation and background-recovery release gates remain outstanding.
+
+
+## Stage 29 distant-horizon framing correction — 2026-11-21
+
+- Inspected the completed browser QA artifact `14634382417` from run [44744485533](https://github.com/tapiwanashemanyonga-gif/Maize-Crush/actions/runs/44744485533), including the actual 390×844 and 1024×768 level-three settlement screenshots.
+- The automated visibility gate passed, but the screenshots exposed a visual defect the gate did not measure: the ridges at Z=80/88 sat immediately behind the western settlement at Z=74 and filled much of the view like a foreground wall, obscuring the rural homestead. This is not an acceptable distant-horizon composition, so PR #142 remains draft and unmerged.
+- Move the two ridge starts to Z=142/154, beyond the final level gate at Z=112; lengthen their shallow depth profile to 13 m; reduce the peak envelope from roughly 11 m to below 7 m; and sample the complete ridge width in the projected bounds.
+- Add a projected screen-area ratio and require the kopje bounds to occupy no more than 32% of the viewport while remaining visible alongside at least one settlement. This checks visual balance, not merely whether a mesh intersects the frustum.
+- Keep the browser and Android WebView runtimes byte-for-byte identical. Rebuild the offline terrain GLB and inspect fresh compact-phone/tablet screenshots before marking Stage 29 complete.
+- Current base remains `main` at `bf8fc848e96c4dd4bfe113649ed9045ee9de780f`; current Stage 29 branch head before this correction is `c22801a832a1a6def9ecd30f507caf456cb05d5e`. Physical-device validation, TalkBack, low-memory profiling, backup/restore, rotation and background recovery remain release gates.
+- Next: run the terrain/GLB regression and browser visual QA on the new branch head; accept the horizon only if the new screen-area bound passes and the homestead remains unobscured on both viewports.
