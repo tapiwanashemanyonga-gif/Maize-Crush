@@ -55,7 +55,7 @@ test("3D Harvest World is a Babylon scene shared with Android", () => {
  assert.ok(terrainBuilder.includes("broad_peak = 4.8 + 1.3") && terrainBuilder.includes("broad_peak * .40"), "distant kopje crests must remain low and irregular rather than forming a foreground wall");
  assert.ok(terrainBuilder.includes("ridge = mesh_object(ridge_name, ridge_verts, ridge_faces, rock_light)"), "distant kopjes must use the existing lighter granite material");
  assert.ok(web.includes("scene.fogDensity=.0011") && web.includes("getKopjeScreenBounds") && web.includes("get kopjeScreenBounds()") && web.includes("return[142,154].map") && web.includes("areaRatio=visibleWidth*visibleHeight/(width*height)"), "runtime must expose distant, bounded kopje screen area and readable atmospheric fog");
- assert.ok(terrainBuilder.includes("Distant granite kopjes form a layered horizon across the road ahead"), "distant landscape must provide a cross-road Zimbabwean horizon");
+ assert.ok(terrainBuilder.includes("Distant granite kopjes sit beyond the homesteads and the final gate"), "distant landscape must sit beyond the homesteads as a far horizon");
  assert.ok(terrainBuilder.includes("nx, nz = 65, 95") && terrainBuilder.includes("x = -64 + i * 2.0"), "terrain footprint must extend beneath the distant kopje horizon");
  assert.ok(terrainBuilder.includes("MAX_TERRAIN_MESHES = 12"), "natural foliage must remain within the terrain draw-call budget");
  const textureBuilder = fs.readFileSync(path.join(root, "scripts/harvest_world_textures.py"), "utf8");

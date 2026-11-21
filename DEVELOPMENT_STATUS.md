@@ -400,3 +400,6 @@ Complete physical Android WebView validation on a modest/older phone and a curre
 - Keep the browser and Android WebView runtimes byte-for-byte identical. Rebuild the offline terrain GLB and inspect fresh compact-phone/tablet screenshots before marking Stage 29 complete.
 - Current base remains `main` at `bf8fc848e96c4dd4bfe113649ed9045ee9de780f`; current Stage 29 branch head before this correction is `c22801a832a1a6def9ecd30f507caf456cb05d5e`. Physical-device validation, TalkBack, low-memory profiling, backup/restore, rotation and background recovery remain release gates.
 - Next: run the terrain/GLB regression and browser visual QA on the new branch head; accept the horizon only if the new screen-area bound passes and the homestead remains unobscured on both viewports.
+
+
+- CI diagnosis on commit `a1d96f2d4adf1e2d724b7cb61a57f521e514628a`: the gameplay workflow reported 140/141. The only failure was a stale string assertion at test 130 that still expected the previous terrain-builder comment; the geometry and runtime assertions before it passed. Updated that assertion to the new beyond-the-homesteads wording. No gameplay or Android runtime code change is part of this test correction.
