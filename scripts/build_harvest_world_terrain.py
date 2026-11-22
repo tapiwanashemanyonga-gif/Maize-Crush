@@ -194,20 +194,19 @@ for idx, (x, z, sx, sy, sz) in enumerate([
     for poly in obj.data.polygons:
         poly.use_smooth = True
 
-# Distant granite kopjes sit beyond the homesteads and the final gate, not directly
-# behind the village. Their lower, longer profiles read as a far horizon rather
-# than a foreground wall that hides the settlement on compact phone screens.
+# Distant granite kopjes sit just beyond the final gate. Bring their low, broad
+# profiles into the camera's forward horizon while keeping the homestead clear.
 # Both ridges reuse the existing lighter granite material and remain batched.
 ridge_depths = (0.0, 4.0, 8.0, 13.0)
 for ridge_index, (ridge_name, ridge_start) in enumerate((
-    ("Western distant Zimbabwe kopje ridgeline", 142.0),
-    ("Eastern distant Zimbabwe kopje ridgeline", 154.0),
+    ("Western distant Zimbabwe kopje ridgeline", 122.0),
+    ("Eastern distant Zimbabwe kopje ridgeline", 134.0),
 )):
     ridge_verts, ridge_faces = [], []
-    ridge_steps = 33
+    ridge_steps = 41
     for step in range(ridge_steps):
-        x = -32 + step * 2.0
-        broad_peak = 4.8 + 1.3 * math.sin(x * .13 + ridge_index * .8) + .75 * math.cos(x * .27 - ridge_index)
+        x = -40 + step * 2.0
+        broad_peak = 6.2 + 1.4 * math.sin(x * .13 + ridge_index * .8) + .8 * math.cos(x * .27 - ridge_index)
         for section, depth in enumerate(ridge_depths):
             z = ridge_start + depth
             ground = terrain_height(x, z)
