@@ -403,3 +403,14 @@ Complete physical Android WebView validation on a modest/older phone and a curre
 
 
 - CI diagnosis on commit `a1d96f2d4adf1e2d724b7cb61a57f521e514628a`: the gameplay workflow reported 140/141. The only failure was a stale string assertion at test 130 that still expected the previous terrain-builder comment; the geometry and runtime assertions before it passed. Updated that assertion to the new beyond-the-homesteads wording. No gameplay or Android runtime code change is part of this test correction.
+
+
+## Stage 29 — unoccluded kopje horizon refinement (in progress, 2026-11-22)
+
+- The final Stage 29 PR-head workflows on `49f2396286b74b1a2b9f511edfee0bb9a137884e` completed successfully: 141/141 regression tests, Android debug build, unsigned release candidate and browser visual QA. Browser artifact `14710901847` includes compact-phone and tablet screenshots and a passing results file.
+- Manual inspection of the actual level-3 focus captures found that the settlement is clear, but the new kopje ridge is still mostly clipped/hidden behind the map title on the 390×844 phone. The previous automated guard only required a 24px projected ridge sliver, so its green result did not prove a visibly readable horizon.
+- Refinement moves the two ridges closer to the far side of the final gate (Z=122 and Z=134), broadens their cross-road profile to 82m, and raises their irregular crests modestly while keeping them behind the settlement. The shared granite material and 12-mesh terrain budget remain unchanged.
+- Browser QA now measures the projected ridge area below the fixed map header and requires at least 2% of the viewport to remain visibly occupied by a ridge on both the 390×844 phone and 1024×768 tablet. The actual projection metrics are included in `results.json` for visual audit.
+- Keep browser and Android 3D runtime copies byte-identical. This refinement is not complete until fresh phone/tablet screenshots, the new below-header horizon guard, all 141 regression tests, Android debug and release-candidate builds pass on the same branch head.
+- Remaining release gates: physical Android validation on a modest phone and current phone/tablet, TalkBack and external keyboard, low-memory/sustained play, save/restore, rotation, background recovery and backup/device transfer. No production signing or publishing is authorized.
+- Next step: run the updated Blender terrain/GLB pipeline and browser visual QA, inspect the new level-3 screenshots and reported ridge-area ratios, then merge Stage 29 only if the horizon is genuinely visible without obscuring the homestead.
