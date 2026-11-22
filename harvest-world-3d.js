@@ -147,12 +147,12 @@ function getKopjeScreenBounds(){
  const width=engine.getRenderWidth(),height=engine.getRenderHeight();
  const viewport=camera.viewport.toGlobal(width,height),transform=scene.getTransformMatrix();
  const depthOffsets=[0,4,8,13];
- const center=Math.round(roadX(148)/2)*2;
- const xSamples=[-28,-20,-12,-4,4,12,20,28].map(offset=>center+offset);
- return[142,154].map((ridgeStart,ridgeIndex)=>{
+ const center=Math.round(roadX(128)/2)*2;
+ const xSamples=[-36,-27,-18,-9,0,9,18,27,36].map(offset=>center+offset);
+ return[122,134].map((ridgeStart,ridgeIndex)=>{
   const projected=[];
   for(const x of xSamples){
-   const broadPeak=4.8+1.3*Math.sin(x*.13+ridgeIndex*.8)+.75*Math.cos(x*.27-ridgeIndex);
+   const broadPeak=6.2+1.4*Math.sin(x*.13+ridgeIndex*.8)+.8*Math.cos(x*.27-ridgeIndex);
    for(let section=0;section<depthOffsets.length;section++){
     const z=ridgeStart+depthOffsets[section],ground=terrainHeight(x,z);
     const irregularity=.55*Math.sin(x*.31+ridgeIndex*1.7)+.25*Math.cos(x*.18-ridgeIndex);
