@@ -137,6 +137,7 @@ async function enterGameFromJourney(page, verify = false) {
       const kopjeScreenBounds = world.kopjeScreenBounds;
       const visibleKopjeCount = kopjeScreenBounds.filter(bounds => bounds.visible).length;
       const maxKopjeAreaRatio = Math.max(0, ...kopjeScreenBounds.map(bounds => Number(bounds.areaRatio || 0)));
+      const visibleKopjeCrestSamplesBelowHeader = Math.max(0, ...kopjeScreenBounds.map(bounds => Number(bounds.visibleCrestSamplesBelowHeader || 0)));
       const visibleKopjeAreaBelowHeader = Math.max(0, ...kopjeScreenBounds.map(bounds => {
         const visibleWidth = Math.max(0, Math.min(bounds.right, innerWidth) - Math.max(bounds.left, 0));
         const visibleHeight = Math.max(0, Math.min(bounds.bottom, innerHeight) - Math.max(bounds.top, 76));
@@ -155,6 +156,7 @@ async function enterGameFromJourney(page, verify = false) {
         visibleKopjeCount,
         maxKopjeAreaRatio,
         visibleKopjeAreaBelowHeader,
+        visibleKopjeCrestSamplesBelowHeader,
         fogDensity: world.fogDensity,
         nearestSettlement,
         radius: Math.hypot(position[0] - target[0], position[1] - target[1], position[2] - target[2])
@@ -167,17 +169,18 @@ async function enterGameFromJourney(page, verify = false) {
         Math.abs(focusCheck.cameraTarget[2] - focusCheck.gate[2]) > 0.5 ||
         Math.abs(targetShift) < 50 ||
         Math.abs(positionShift - targetShift) > 1 ||
-        Math.abs(focusCheck.radius - 39) > 1 ||
+        Math.abs(focusCheck.radius - 42) > 1 ||
         focusCheck.nearestSettlement > 18 ||
         focusCheck.visibleSettlementCount < 1 ||
         focusCheck.visibleKopjeCount < 1 ||
         focusCheck.maxKopjeAreaRatio > 0.32 ||
         focusCheck.visibleKopjeAreaBelowHeader < 0.02 ||
+        focusCheck.visibleKopjeCrestSamplesBelowHeader < 3 ||
         focusCheck.fogDensity > 0.0015) {
       throw new Error("Harvest Trail camera must frame the settlement and a distant kopje horizon without a foreground mountain wall: " + JSON.stringify(focusCheck));
     }
     await page.screenshot({
-      path: path.join(OUTPUT, "harvest-trail-3d-settlement-" + mapViewport + ".png"),
+      path: path.join(OUTPUT, "harvest-trail-3d-level-3-focus-" + mapViewport + ".png"),
       fullPage: false,
       animations: "disabled"
     });
