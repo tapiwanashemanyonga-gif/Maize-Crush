@@ -69,11 +69,11 @@ def mesh_object(name, verts, faces, mat):
 
 # Sculpted rolling ground: a real triangulated terrain mesh with broad low hills.
 verts, faces = [], []
-nx, nz = 49, 95
+nx, nz = 65, 95
 for j in range(nz):
     z = -18 + j * 2.0
     for i in range(nx):
-        x = -48 + i * 2.0
+        x = -64 + i * 2.0
         broad = 1.1 * math.sin(z * .035 + x * .018) + .65 * math.cos(x * .055 - z * .021)
         undulation = .22 * math.sin(x * .19 + z * .11) * math.cos(z * .16)
         verts.append((x, -z, broad + undulation - .5))
@@ -194,33 +194,37 @@ for idx, (x, z, sx, sy, sz) in enumerate([
     for poly in obj.data.polygons:
         poly.use_smooth = True
 
-# Distant granite ridgelines create a layered Zimbabwean horizon beyond the nearer fields.
-# Both sides share the existing granite material so the terrain draw-call budget is unchanged.
-for side, ridge_name in ((-1, "Western distant Zimbabwe kopje ridgeline"), (1, "Eastern distant Zimbabwe kopje ridgeline")):
+# Distant granite kopjes sit just beyond the final gate. Bring their low, broad
+# profiles into the camera's forward horizon while keeping the homestead clear.
+# Both ridges reuse the existing lighter granite material and remain batched.
+ridge_depths = (0.0, 4.0, 8.0, 13.0)
+for ridge_index, (ridge_name, ridge_start) in enumerate((
+    ("Western distant Zimbabwe kopje ridgeline", 122.0),
+    ("Eastern distant Zimbabwe kopje ridgeline", 134.0),
+)):
     ridge_verts, ridge_faces = [], []
-    ridge_steps = 25
-    ridge_offsets = (47.5, 55.0, 67.0, 81.0)
+    ridge_steps = 41
     for step in range(ridge_steps):
-        z = -18 + step * 7.5
-        for section, offset in enumerate(ridge_offsets):
-            x = side * offset
+        x = -40 + step * 2.0
+        broad_peak = 6.2 + 1.4 * math.sin(x * .13 + ridge_index * .8) + .8 * math.cos(x * .27 - ridge_index)
+        for section, depth in enumerate(ridge_depths):
+            z = ridge_start + depth
             ground = terrain_height(x, z)
-            broad_peak = 8.5 + 3.0 * math.sin(z * .043 + side * .8) + 1.8 * math.cos(z * .091 - side)
-            irregularity = 1.4 * math.sin(z * .17 + section * 1.7) + .65 * math.cos(z * .29 - section)
+            irregularity = .55 * math.sin(x * .31 + ridge_index * 1.7) + .25 * math.cos(x * .18 - ridge_index)
             if section == 0:
-                height = ground + .2
+                height = ground + .15
             elif section == 1:
-                height = ground + broad_peak * .34 + irregularity * .25
+                height = ground + broad_peak * .40 + irregularity * .20
             elif section == 2:
                 height = ground + broad_peak + irregularity
             else:
-                height = ground + 1.0 + irregularity * .15
+                height = ground + .7 + irregularity * .10
             ridge_verts.append((x, -z, height))
     for step in range(ridge_steps - 1):
-        for section in range(len(ridge_offsets) - 1):
-            a = step * len(ridge_offsets) + section
-            ridge_faces.append((a, a + 1, a + len(ridge_offsets) + 1, a + len(ridge_offsets)))
-    ridge = mesh_object(ridge_name, ridge_verts, ridge_faces, rock)
+        for section in range(len(ridge_depths) - 1):
+            a = step * len(ridge_depths) + section
+            ridge_faces.append((a, a + 1, a + len(ridge_depths) + 1, a + len(ridge_depths)))
+    ridge = mesh_object(ridge_name, ridge_verts, ridge_faces, rock_light)
     for polygon in ridge.data.polygons:
         polygon.use_smooth = True
 

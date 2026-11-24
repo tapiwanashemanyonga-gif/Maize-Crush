@@ -42,6 +42,7 @@ function startServer() {
 
 // Treat the journey map as the launch surface; wait for its generated chapter and path nodes.
 async function enterGameFromJourney(page, verify = false) {
+  let focusCheckSummary = null;
   let journeyOpen = await page.waitForFunction(() => { const map=document.querySelector("#level-map"); return !!map && map.open && map.querySelectorAll(".map-world-group").length > 0; }, null, {timeout:15000}).then(() => true).catch(() => false);
   if (!journeyOpen) {
     const initial = await page.evaluate(() => ({open:!!document.querySelector("#level-map")?.open,chapters:document.querySelectorAll("#level-map .map-world-group").length}));
@@ -133,6 +134,15 @@ async function enterGameFromJourney(page, verify = false) {
       const settlements = world.settlementPositions;
       const settlementScreenBounds = world.settlementScreenBounds;
       const visibleSettlementCount = settlementScreenBounds.filter(bounds => bounds.visible).length;
+      const kopjeScreenBounds = world.kopjeScreenBounds;
+      const visibleKopjeCount = kopjeScreenBounds.filter(bounds => bounds.visible).length;
+      const maxKopjeAreaRatio = Math.max(0, ...kopjeScreenBounds.map(bounds => Number(bounds.areaRatio || 0)));
+      const visibleKopjeCrestSamplesBelowHeader = Math.max(0, ...kopjeScreenBounds.map(bounds => Number(bounds.visibleCrestSamplesBelowHeader || 0)));
+      const visibleKopjeAreaBelowHeader = Math.max(0, ...kopjeScreenBounds.map(bounds => {
+        const visibleWidth = Math.max(0, Math.min(bounds.right, innerWidth) - Math.max(bounds.left, 0));
+        const visibleHeight = Math.max(0, Math.min(bounds.bottom, innerHeight) - Math.max(bounds.top, 76));
+        return visibleWidth * visibleHeight / (innerWidth * innerHeight);
+      }));
       const nearestSettlement = Math.min(...settlements.map(point => Math.hypot(point[0] - gate[0], point[2] - gate[2])));
       return {
         activeLevel: world.activeLevel,
@@ -142,23 +152,35 @@ async function enterGameFromJourney(page, verify = false) {
         settlements,
         settlementScreenBounds,
         visibleSettlementCount,
+        kopjeScreenBounds,
+        visibleKopjeCount,
+        maxKopjeAreaRatio,
+        visibleKopjeAreaBelowHeader,
+        visibleKopjeCrestSamplesBelowHeader,
+        fogDensity: world.fogDensity,
         nearestSettlement,
         radius: Math.hypot(position[0] - target[0], position[1] - target[1], position[2] - target[2])
       };
     });
+    focusCheckSummary = focusCheck;
     const targetShift = focusCheck.cameraTarget[2] - beforeFocus.cameraTarget[2];
     const positionShift = focusCheck.cameraPosition[2] - beforeFocus.cameraPosition[2];
     if (focusCheck.activeLevel !== 3 ||
         Math.abs(focusCheck.cameraTarget[2] - focusCheck.gate[2]) > 0.5 ||
         Math.abs(targetShift) < 50 ||
         Math.abs(positionShift - targetShift) > 1 ||
-        Math.abs(focusCheck.radius - 39) > 1 ||
+        Math.abs(focusCheck.radius - 42) > 1 ||
         focusCheck.nearestSettlement > 18 ||
-        focusCheck.visibleSettlementCount < 1) {
-      throw new Error("Harvest Trail camera did not follow the current road level and frame its settlement: " + JSON.stringify(focusCheck));
+        focusCheck.visibleSettlementCount < 1 ||
+        focusCheck.visibleKopjeCount < 1 ||
+        focusCheck.maxKopjeAreaRatio > 0.32 ||
+        focusCheck.visibleKopjeAreaBelowHeader < 0.02 ||
+        focusCheck.visibleKopjeCrestSamplesBelowHeader < 3 ||
+        focusCheck.fogDensity > 0.0015) {
+      throw new Error("Harvest Trail camera must frame the settlement and a distant kopje horizon without a foreground mountain wall: " + JSON.stringify(focusCheck));
     }
     await page.screenshot({
-      path: path.join(OUTPUT, "harvest-trail-3d-settlement-" + mapViewport + ".png"),
+      path: path.join(OUTPUT, "harvest-trail-3d-level-3-focus-" + mapViewport + ".png"),
       fullPage: false,
       animations: "disabled"
     });
@@ -166,6 +188,7 @@ async function enterGameFromJourney(page, verify = false) {
   }
   await page.locator("#map-play-current").click();
   await page.waitForFunction(() => { const map=document.querySelector("#level-map"); return !!map && !map.open; }, null, {timeout:3000});
+  return focusCheckSummary;
 }
 
 async function getBoardState(page) {
@@ -191,9 +214,12 @@ async function getBoardState(page) {
 async function waitForBoardAnimations(page) {
   await page.waitForFunction(() => {
     const tiles = Array.from(document.querySelectorAll("#game-board .crop-tile"));
+    const restart = document.querySelector("#restart-button");
     return tiles.length === 64 &&
-      tiles.every(tile => tile.getAnimations().every(animation => animation.playState !== "running"));
-  }, null, { timeout: 8000 });
+      tiles.every(tile => tile.getAnimations().every(animation => animation.playState !== "running")) &&
+      !tiles.some(tile => tile.classList.contains("clearing")) &&
+      restart && !restart.disabled;
+  }, null, { timeout: 12000 });
 }
 
 function cropName(label) {
@@ -425,6 +451,10 @@ async function useFreshField(page) {
 }
 
 async function dismissResultDialogs(page) {
+  // A refilled 64-tile board can still be resolving a cascade. Wait for the
+  // game engine to re-enable Restart before deciding whether a result dialog
+  // is present, otherwise a completion modal can open just after this check.
+  await waitForBoardAnimations(page);
   for (const [dialog, closeButton] of [
     ["#level-complete-dialog", "#level-complete-close"],
     ["#level-failed-dialog", "#level-failed-close"]
@@ -676,7 +706,7 @@ async function runViewport(browser, profile, viewport) {
     localStorage.setItem("maize-crush-tutorial-seen", "true");
   });
   await page.goto(BASE_URL, { waitUntil: "networkidle", timeout: 30000 });
-  await enterGameFromJourney(page, true);
+  const journeyVisual = await enterGameFromJourney(page, true);
   await page.locator("#game-board .crop-tile").first().waitFor({ state: "visible", timeout: 15000 });
   await page.waitForFunction(() => document.querySelectorAll("#game-board .crop-tile").length === 64);
 
@@ -784,10 +814,17 @@ async function runViewport(browser, profile, viewport) {
   const scoreAfter = Number((await page.locator("#score-value").innerText()).replace(/,/g, ""));
   if (scoreAfter <= scoreBefore) throw new Error(profile + " valid diagonal connection did not increase the score.");
 
+  // A successful harvest may open its result dialog; dismiss it before testing
+  // controls underneath the modal so the dialog does not intercept the click.
+  await dismissResultDialogs(page);
+
   // Check that the settings controls remain operable.
   await page.locator("#tools-toggle-button").click();
   await page.locator("#settings-button").click();
   await page.locator("#settings-dialog").waitFor({ state: "visible" });
+  // A result dialog may have surfaced above Settings while the previous
+  // cascade was settling; close it before interacting with the Settings modal.
+  await dismissResultDialogs(page);
   await page.locator("#settings-close").click();
   await page.locator("#settings-dialog").waitFor({ state: "hidden" });
   await page.locator("#tools-toggle-button").click();
@@ -808,7 +845,7 @@ async function runViewport(browser, profile, viewport) {
   });
 
   await context.close();
-  return { profile, ...dimensions, mismatchRejected: true, diagonalConnection: true, keyboardConnection, scoreBefore, scoreAfter, layoutWork, longSession };
+  return { profile, journeyVisual, ...dimensions, mismatchRejected: true, diagonalConnection: true, keyboardConnection, scoreBefore, scoreAfter, layoutWork, longSession };
 }
 
 
