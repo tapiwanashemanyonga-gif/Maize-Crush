@@ -325,7 +325,7 @@ test("irregular checkpoints preserve inactive cells and reject invalid values",(
 
 
 test("keyboard navigation skips inactive cells without wrapping or allowing a path to bridge holes",()=>{
-  const board=[[0,null,1,null,2],[null,1,null,2,null],[0,1,2,0,1]];
+  const board=[[0,null,0,null,0],[null,1,null,2,null],[0,1,2,0,1]];
   assert.deepEqual(game.nextPlayableCell(board,{r:0,c:0},{r:0,c:1}),{r:0,c:2},"right skips the inactive cell");
   assert.deepEqual(game.nextPlayableCell(board,{r:0,c:2},{r:0,c:1}),{r:0,c:4},"right skips a longer gap");
   assert.deepEqual(game.nextPlayableCell(board,{r:0,c:0},{r:1,c:0}),{r:2,c:0},"down skips an inactive row cell");
