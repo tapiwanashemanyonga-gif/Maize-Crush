@@ -322,3 +322,23 @@ test("matches stop at inactive cells and never include holes",()=>{const board=[
 test("irregular gravity refills each playable vertical segment without crossing holes",()=>{const board=[[0,null,1,2],[2,null,3,4],[null,null,null,null],[4,null,5,0]];game.refillBoard(board,[{r:0,c:0},{r:3,c:2}],()=>0.2);assert.equal(board[0][1],null);assert.equal(board[1][1],null);assert.equal(board[2][0],null);assert.equal(board[2][2],null);assert.ok(board[0][0]>=0&&board[0][0]<game.CROPS.length);assert.ok(board[3][2]>=0&&board[3][2]<game.CROPS.length);assert.equal(game.validateBoard(board),true);});
 test("irregular boosters and hints only return active cells",()=>{const board=[[0,null,0,1],[1,1,1,1],[2,null,2,2],[3,3,3,3]];for(const cells of [game.specialClearCells(board,[{r:1,c:0},{r:1,c:1},{r:1,c:2},{r:1,c:3}]),game.fertilizerCells(board),game.rainShowerCells(board),game.marketCartCells(board),game.findHintChain(board)])assert.ok(cells.every(cell=>game.isPlayableCell(board,cell.r,cell.c)));});
 test("irregular checkpoints preserve inactive cells and reject invalid values",()=>{const board=game.makeSeededBoard(710,game.boardShapeForLevel(10));const saved=game.normalizeRoundCheckpoint({board,level:10,score:100,moves:8});assert.ok(saved);assert.deepEqual(saved.board,board);const broken=board.map(row=>row.slice());const hole=broken.flatMap((row,r)=>row.map((v,c)=>v===null?{r,c}:null).filter(Boolean))[0];broken[hole.r][hole.c]=99;assert.equal(game.normalizeRoundCheckpoint({board:broken,level:10,score:100,moves:8}),null);});
+
+
+test("keyboard navigation skips inactive cells without wrapping or allowing a path to bridge holes",()=>{
+  const board=[[0,null,1,null,2],[null,1,null,2,null],[0,1,2,0,1]];
+  assert.deepEqual(game.nextPlayableCell(board,{r:0,c:0},{r:0,c:1}),{r:0,c:2},"right skips the inactive cell");
+  assert.deepEqual(game.nextPlayableCell(board,{r:0,c:2},{r:0,c:1}),{r:0,c:4},"right skips a longer gap");
+  assert.deepEqual(game.nextPlayableCell(board,{r:0,c:0},{r:1,c:0}),{r:2,c:0},"down skips an inactive row cell");
+  assert.deepEqual(game.nextPlayableCell(board,{r:2,c:0},{r:-1,c:0}),{r:0,c:0},"up skips an inactive row cell");
+  assert.equal(game.nextPlayableCell(board,{r:0,c:4},{r:0,c:1}),null,"navigation does not wrap past the board edge");
+  assert.equal(game.nextPlayableCell(board,{r:0,c:1},{r:0,c:1}),null,"an inactive cell cannot be a navigation origin");
+  assert.equal(game.nextPlayableCell(board,{r:0,c:0},{r:1,c:1}),null,"arrow navigation accepts cardinal directions only");
+  assert.equal(game.isValidChain(board,[{r:0,c:0},{r:0,c:2},{r:0,c:4}]),false,"skipping a hole for focus must not allow a crop connection to bridge it");
+  const root=path.join(__dirname,".."),source=fs.readFileSync(path.join(root,"game.js"),"utf8"),android=fs.readFileSync(path.join(root,"android/app/src/main/assets/game.js"),"utf8"),html=fs.readFileSync(path.join(root,"index.html"),"utf8"),androidHtml=fs.readFileSync(path.join(root,"android/app/src/main/assets/index.html"),"utf8");
+  assert.match(source,/G\.nextPlayableCell\(board,cell,\{r:delta\[0\],c:delta\[1\]\}\)/);
+  assert.match(html,/aria-describedby="board-help"/);
+  assert.match(html,/id="board-help"/);
+  assert.match(html,/empty spaces are skipped/);
+  assert.equal(source,android,"browser and Android keyboard navigation must match");
+  assert.equal(html,androidHtml,"browser and Android board instructions must match");
+});
