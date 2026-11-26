@@ -324,13 +324,17 @@ test("irregular boosters and hints only return active cells",()=>{const board=[[
 test("irregular checkpoints preserve inactive cells and reject invalid values",()=>{const board=game.makeSeededBoard(710,game.boardShapeForLevel(10));const saved=game.normalizeRoundCheckpoint({board,level:10,score:100,moves:8});assert.ok(saved);assert.deepEqual(saved.board,board);const broken=board.map(row=>row.slice());const hole=broken.flatMap((row,r)=>row.map((v,c)=>v===null?{r,c}:null).filter(Boolean))[0];broken[hole.r][hole.c]=99;assert.equal(game.normalizeRoundCheckpoint({board:broken,level:10,score:100,moves:8}),null);});
 
 
-test("keyboard navigation skips inactive cells without wrapping or allowing a path to bridge holes",()=>{
+test("keyboard navigation skips inactive cells without wrapping or allowing a path to bridge holes",{timeout:1500},()=>{
   const board=[[0,null,0,null,0],[null,1,null,2,null],[0,1,2,0,1]];
   assert.deepEqual(game.nextPlayableCell(board,{r:0,c:0},{r:0,c:1}),{r:0,c:2},"right skips the inactive cell");
   assert.deepEqual(game.nextPlayableCell(board,{r:0,c:2},{r:0,c:1}),{r:0,c:4},"right skips a longer gap");
   assert.deepEqual(game.nextPlayableCell(board,{r:0,c:0},{r:1,c:0}),{r:2,c:0},"down skips an inactive row cell");
   assert.deepEqual(game.nextPlayableCell(board,{r:2,c:0},{r:-1,c:0}),{r:0,c:0},"up skips an inactive row cell");
-  assert.equal(game.nextPlayableCell(board,{r:0,c:4},{r:0,c:1}),null,"navigation does not wrap past the board edge");
+  assert.deepEqual(game.nextPlayableCell(board,{r:0,c:4},{r:0,c:-1}),{r:0,c:2},"left skips inactive cells");
+  assert.equal(game.nextPlayableCell(board,{r:0,c:0},{r:0,c:-1}),null,"left navigation stops at the first column");
+  assert.equal(game.nextPlayableCell(board,{r:0,c:4},{r:0,c:1}),null,"right navigation stops at the last column");
+  assert.equal(game.nextPlayableCell(board,{r:0,c:0},{r:-1,c:0}),null,"up navigation stops at the first row");
+  assert.equal(game.nextPlayableCell([[0,1,2],[0]],{r:0,c:2},{r:1,c:0}),null,"vertical navigation respects a shorter row");
   assert.equal(game.nextPlayableCell(board,{r:0,c:1},{r:0,c:1}),null,"an inactive cell cannot be a navigation origin");
   assert.equal(game.nextPlayableCell(board,{r:0,c:0},{r:1,c:1}),null,"arrow navigation accepts cardinal directions only");
   assert.equal(game.isValidChain(board,[{r:0,c:0},{r:0,c:2},{r:0,c:4}]),false,"skipping a hole for focus must not allow a crop connection to bridge it");
