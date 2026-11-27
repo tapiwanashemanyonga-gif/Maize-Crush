@@ -136,7 +136,7 @@ test("first-run tutorial explains the connect mechanic, booster objective, and a
 test("default crop field scales up on tablets and desktop while staying responsive on phones",()=>{const root=path.join(__dirname,".."),css=fs.readFileSync(path.join(root,"styles.css"),"utf8"),androidCss=fs.readFileSync(path.join(root,"android/app/src/main/assets/styles.css"),"utf8");assert.equal(css,androidCss,"browser and Android board layout must stay identical");assert.ok(css.includes("@media(min-width:760px){.game-panel{max-width:1040px}.game-board{width:min(100%,92vw,900px);max-width:900px}"),"large-screen game panel and crop board should use more available space");assert.ok(css.includes("@media(max-width:759px){.game-board{width:min(100%,92vw,900px);max-width:900px}"),"phone board must remain fluid");assert.match(css,/@media\(prefers-reduced-motion:reduce\)/)});
 
 
-test("crop board supports arrow-key focus navigation without changing the connect mechanic",()=>{const root=path.join(__dirname,".."),source=fs.readFileSync(path.join(root,"game.js"),"utf8"),html=fs.readFileSync(path.join(root,"index.html"),"utf8"),androidSource=fs.readFileSync(path.join(root,"android/app/src/main/assets/game.js"),"utf8"),androidHtml=fs.readFileSync(path.join(root,"android/app/src/main/assets/index.html"),"utf8");assert.ok(source.includes('boardEl.addEventListener("keydown",e=>{')&&source.includes('if(e.key==="Enter"||e.key===" ")'),"keyboard activation and navigation handler missing");for(const key of ["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"])assert.ok(source.includes(key),"missing "+key+" keyboard navigation");assert.match(source,/const directions=\{ArrowUp:\[-1,0\],ArrowDown:\[1,0\],ArrowLeft:\[0,-1\],ArrowRight:\[0,1\]\}/);assert.match(source,/next\.focus\(\)/);assert.match(html,/Keyboard: use arrow keys to move, then Enter to connect crops/);assert.equal(source,androidSource,"browser and Android game controls must match");assert.equal(html,androidHtml,"browser and Android instructions must match")});
+test("crop board supports arrow-key focus navigation without changing the connect mechanic",()=>{const root=path.join(__dirname,".."),source=fs.readFileSync(path.join(root,"game.js"),"utf8"),html=fs.readFileSync(path.join(root,"index.html"),"utf8"),androidSource=fs.readFileSync(path.join(root,"android/app/src/main/assets/game.js"),"utf8"),androidHtml=fs.readFileSync(path.join(root,"android/app/src/main/assets/index.html"),"utf8");assert.ok(source.includes('boardEl.addEventListener("keydown",e=>{')&&source.includes('if(e.key==="Enter"||e.key===" ")'),"keyboard activation and navigation handler missing");for(const key of ["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"])assert.ok(source.includes(key),"missing "+key+" keyboard navigation");assert.match(source,/const directions=\{ArrowUp:\[-1,0\],ArrowDown:\[1,0\],ArrowLeft:\[0,-1\],ArrowRight:\[0,1\]\}/);assert.match(source,/next\.focus\(\)/);assert.match(html,/Keyboard: use arrow keys to move between crops \(empty spaces are skipped\), then Enter to connect/);assert.equal(source,androidSource,"browser and Android game controls must match");assert.equal(html,androidHtml,"browser and Android instructions must match")});
 
 
 test("keyboard activation can extend a connect path while pointer drags remain isolated",()=>{
@@ -322,3 +322,27 @@ test("matches stop at inactive cells and never include holes",()=>{const board=[
 test("irregular gravity refills each playable vertical segment without crossing holes",()=>{const board=[[0,null,1,2],[2,null,3,4],[null,null,null,null],[4,null,5,0]];game.refillBoard(board,[{r:0,c:0},{r:3,c:2}],()=>0.2);assert.equal(board[0][1],null);assert.equal(board[1][1],null);assert.equal(board[2][0],null);assert.equal(board[2][2],null);assert.ok(board[0][0]>=0&&board[0][0]<game.CROPS.length);assert.ok(board[3][2]>=0&&board[3][2]<game.CROPS.length);assert.equal(game.validateBoard(board),true);});
 test("irregular boosters and hints only return active cells",()=>{const board=[[0,null,0,1],[1,1,1,1],[2,null,2,2],[3,3,3,3]];for(const cells of [game.specialClearCells(board,[{r:1,c:0},{r:1,c:1},{r:1,c:2},{r:1,c:3}]),game.fertilizerCells(board),game.rainShowerCells(board),game.marketCartCells(board),game.findHintChain(board)])assert.ok(cells.every(cell=>game.isPlayableCell(board,cell.r,cell.c)));});
 test("irregular checkpoints preserve inactive cells and reject invalid values",()=>{const board=game.makeSeededBoard(710,game.boardShapeForLevel(10));const saved=game.normalizeRoundCheckpoint({board,level:10,score:100,moves:8});assert.ok(saved);assert.deepEqual(saved.board,board);const broken=board.map(row=>row.slice());const hole=broken.flatMap((row,r)=>row.map((v,c)=>v===null?{r,c}:null).filter(Boolean))[0];broken[hole.r][hole.c]=99;assert.equal(game.normalizeRoundCheckpoint({board:broken,level:10,score:100,moves:8}),null);});
+
+
+test("keyboard navigation skips inactive cells without wrapping or allowing a path to bridge holes",{timeout:1500},()=>{
+  const board=[[0,null,0,null,0],[null,1,null,2,null],[0,1,2,0,1]];
+  assert.deepEqual(game.nextPlayableCell(board,{r:0,c:0},{r:0,c:1}),{r:0,c:2},"right skips the inactive cell");
+  assert.deepEqual(game.nextPlayableCell(board,{r:0,c:2},{r:0,c:1}),{r:0,c:4},"right skips a longer gap");
+  assert.deepEqual(game.nextPlayableCell(board,{r:0,c:0},{r:1,c:0}),{r:2,c:0},"down skips an inactive row cell");
+  assert.deepEqual(game.nextPlayableCell(board,{r:2,c:0},{r:-1,c:0}),{r:0,c:0},"up skips an inactive row cell");
+  assert.deepEqual(game.nextPlayableCell(board,{r:0,c:4},{r:0,c:-1}),{r:0,c:2},"left skips inactive cells");
+  assert.equal(game.nextPlayableCell(board,{r:0,c:0},{r:0,c:-1}),null,"left navigation stops at the first column");
+  assert.equal(game.nextPlayableCell(board,{r:0,c:4},{r:0,c:1}),null,"right navigation stops at the last column");
+  assert.equal(game.nextPlayableCell(board,{r:0,c:0},{r:-1,c:0}),null,"up navigation stops at the first row");
+  assert.equal(game.nextPlayableCell([[0,1,2],[0]],{r:0,c:2},{r:1,c:0}),null,"vertical navigation respects a shorter row");
+  assert.equal(game.nextPlayableCell(board,{r:0,c:1},{r:0,c:1}),null,"an inactive cell cannot be a navigation origin");
+  assert.equal(game.nextPlayableCell(board,{r:0,c:0},{r:1,c:1}),null,"arrow navigation accepts cardinal directions only");
+  assert.equal(game.isValidChain(board,[{r:0,c:0},{r:0,c:2},{r:0,c:4}]),false,"skipping a hole for focus must not allow a crop connection to bridge it");
+  const root=path.join(__dirname,".."),source=fs.readFileSync(path.join(root,"game.js"),"utf8"),android=fs.readFileSync(path.join(root,"android/app/src/main/assets/game.js"),"utf8"),html=fs.readFileSync(path.join(root,"index.html"),"utf8"),androidHtml=fs.readFileSync(path.join(root,"android/app/src/main/assets/index.html"),"utf8");
+  assert.match(source,/G\.nextPlayableCell\(board,cell,\{r:delta\[0\],c:delta\[1\]\}\)/);
+  assert.match(html,/aria-describedby="board-help"/);
+  assert.match(html,/id="board-help"/);
+  assert.match(html,/empty spaces are skipped/);
+  assert.equal(source,android,"browser and Android keyboard navigation must match");
+  assert.equal(html,androidHtml,"browser and Android board instructions must match");
+});
