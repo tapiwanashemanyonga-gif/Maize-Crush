@@ -1,8 +1,9 @@
 (function(root){
 "use strict";
 const LEVEL_GAP=18;
-let engine=null,scene=null,camera=null,shadowGenerator=null,renderPixelRatio=1,gateMeshes=[],settlementAnchors=[],terrainAnchor=null,tractor=null,tractorWheels=[],activeLevel=1,pageStart=1,resizeBound=false,visibilityBound=false,assetsReady=false,farmsteadLoaded=false,terrainLoaded=false,settlementLoaded=false,farmsteadMeshCount=0,terrainMeshCount=0,settlementMeshCount=0;
+let engine=null,scene=null,camera=null,shadowGenerator=null,renderPixelRatio=1,gateMeshes=[],settlementAnchors=[],terrainAnchor=null,tractor=null,tractorWheels=[],activeLevel=1,pageStart=1,resizeBound=false,visibilityBound=false,assetsReady=false,farmsteadLoaded=false,terrainLoaded=false,settlementLoaded=false,farmsteadMeshCount=0,terrainMeshCount=0,settlementMeshCount=0,loadStatus="Preparing Harvest Trail…",onLoadProgress=null;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function setLoadStatus(message){loadStatus=message;if(typeof onLoadProgress==="function")onLoadProgress(message);}
 const roadX=z=>9.5*Math.sin((z+8)*.043)+2.2*Math.sin(z*.095);
 const terrainHeight=(x,z)=>1.1*Math.sin(z*.035+x*.018)+.65*Math.cos(x*.055-z*.021)+.22*Math.sin(x*.19+z*.11)*Math.cos(z*.16)-.5;
 function mat(name,color,roughness){
@@ -88,17 +89,26 @@ function buildWorld(startLevel){
    return true;
   }).catch(error=>{console.warn("Authored world asset unavailable:",filename,error);return false});
  };
- // Keep the authored homes close enough to the road to read clearly on narrow phones.
- // Their yards sit outside the asphalt; the main house and grain store face the journey.
- const terrainPromise=loadAuthoredAsset("harvest-world-terrain.glb","blender-authored-zimbabwe-terrain",new BABYLON.Vector3(0,0,0),1).then(ok=>{terrainLoaded=ok;return ok});
- const farmsteadZ=14,farmsteadX=roadX(farmsteadZ)+11.5;
- const farmsteadPromise=loadAuthoredAsset("harvest-world-farmstead.glb","blender-authored-zimbabwe-farmstead",new BABYLON.Vector3(farmsteadX,terrainHeight(farmsteadX,farmsteadZ),farmsteadZ),.72).then(ok=>{farmsteadLoaded=ok;return ok});
- const settlementEastZ=38,settlementEastX=roadX(settlementEastZ)+12.5;
- const settlementWestZ=74,settlementWestX=roadX(settlementWestZ)-4.5;
- const settlementEast=loadAuthoredAsset("harvest-world-settlement.glb","blender-authored-rural-settlement-east",new BABYLON.Vector3(settlementEastX,terrainHeight(settlementEastX,settlementEastZ),settlementEastZ),.72);
- const settlementWest=loadAuthoredAsset("harvest-world-settlement.glb","blender-authored-rural-settlement-west",new BABYLON.Vector3(settlementWestX,terrainHeight(settlementWestX,settlementWestZ),settlementWestZ),.72,Math.PI);
- const settlementPromise=Promise.all([settlementEast,settlementWest]).then(results=>{settlementLoaded=results.every(Boolean);return settlementLoaded});
- Promise.all([terrainPromise,farmsteadPromise,settlementPromise]).then(()=>{assetsReady=true});
+ // Load the road-bearing terrain first so the journey becomes visible before optional homestead detail.
+ // The settlement yards are 22m wide at 0.72 scale. Keeping their anchors 16.2m from the road centreline
+ // leaves their nearest yard edge 8.28m away: beyond the 6.15m shoulder and 8.15m drainage ditch.
+ setLoadStatus("Loading road and terrain…");
+ const terrainPromise=loadAuthoredAsset("harvest-world-terrain.glb","blender-authored-zimbabwe-terrain",new BABYLON.Vector3(0,0,0),1).then(ok=>{
+  terrainLoaded=ok;
+  setLoadStatus(ok?"Road and terrain ready · loading homesteads…":"Terrain unavailable · loading homesteads…");
+  return ok;
+ });
+ const optionalAssetsPromise=terrainPromise.then(()=>{
+  const farmsteadZ=14,farmsteadX=roadX(farmsteadZ)+17.5;
+  const farmsteadPromise=loadAuthoredAsset("harvest-world-farmstead.glb","blender-authored-zimbabwe-farmstead",new BABYLON.Vector3(farmsteadX,terrainHeight(farmsteadX,farmsteadZ),farmsteadZ),.72).then(ok=>{farmsteadLoaded=ok;return ok});
+  const settlementEastZ=38,settlementEastX=roadX(settlementEastZ)+16.2;
+  const settlementWestZ=74,settlementWestX=roadX(settlementWestZ)-16.2;
+  const settlementEast=loadAuthoredAsset("harvest-world-settlement.glb","blender-authored-rural-settlement-east",new BABYLON.Vector3(settlementEastX,terrainHeight(settlementEastX,settlementEastZ),settlementEastZ),.72);
+  const settlementWest=loadAuthoredAsset("harvest-world-settlement.glb","blender-authored-rural-settlement-west",new BABYLON.Vector3(settlementWestX,terrainHeight(settlementWestX,settlementWestZ),settlementWestZ),.72,Math.PI);
+  const settlementPromise=Promise.all([settlementEast,settlementWest]).then(results=>{settlementLoaded=results.every(Boolean);return settlementLoaded});
+  return Promise.all([farmsteadPromise,settlementPromise]);
+ });
+ optionalAssetsPromise.then(()=>{assetsReady=true;setLoadStatus("Harvest Trail ready");});
  // Place physical level gates directly beside the winding Blender road.
  const gatePoints=[2,36,73,112].map(z=>new BABYLON.Vector3(roadX(z)+4.8,terrainHeight(roadX(z)+4.8,z)+.28,z));
  gatePoints.forEach((p,i)=>createGate(pageStart+i,p));
@@ -208,5 +218,5 @@ function getSettlementScreenBounds(){
   return{index,left,top,right,bottom,depthMin,depthMax,visible:depthMax>=0&&depthMin<=1&&visibleWidth>=24&&visibleHeight>=24};
  });
 }
-root.HarvestWorld3D={start,focusLevel,get tractorPosition(){return tractor?tractor.position.asArray():null},get tractorVisible(){return!!tractor&&!tractor.isDisposed()},get ready(){return!!scene},get assetsReady(){return assetsReady},get activeLevel(){return activeLevel},get cameraPosition(){return camera?camera.position.asArray():null},get cameraTarget(){return camera?camera.target.asArray():null},get gatePositions(){return gateMeshes.map(item=>item.group.position.asArray())},get settlementPositions(){return settlementAnchors.map(item=>item.anchor.position.asArray())},get settlementScreenBounds(){return getSettlementScreenBounds()},get kopjeScreenBounds(){return getKopjeScreenBounds()},get fogDensity(){return scene?scene.fogDensity:0},get farmsteadLoaded(){return farmsteadLoaded},get terrainLoaded(){return terrainLoaded},get settlementLoaded(){return settlementLoaded},get settlementMeshCount(){return settlementMeshCount},get terrainMeshCount(){return terrainMeshCount},get farmsteadMeshCount(){return farmsteadMeshCount},get gateCount(){return gateMeshes.length},get shadowsEnabled(){return!!shadowGenerator&&scene&&scene.shadowsEnabled},get renderPixelRatio(){return renderPixelRatio},dispose(){if(scene&&camera)scene.stopAnimation(camera);if(camera)camera.overrideCloneAlphaBetaRadius=null;if(shadowGenerator){shadowGenerator.dispose();shadowGenerator=null}farmsteadMeshCount=0;terrainMeshCount=0;settlementMeshCount=0;settlementAnchors=[];terrainAnchor=null;tractor=null;tractorWheels=[];camera=null;if(engine){engine.stopRenderLoop();engine.dispose();engine=null;scene=null;gateMeshes=[]}}};
+root.HarvestWorld3D={start,focusLevel,get tractorPosition(){return tractor?tractor.position.asArray():null},get tractorVisible(){return!!tractor&&!tractor.isDisposed()},get ready(){return!!scene},get assetsReady(){return assetsReady},get loadingStatus(){return loadStatus},set onLoadProgress(callback){onLoadProgress=typeof callback==="function"?callback:null;if(onLoadProgress)onLoadProgress(loadStatus)},get activeLevel(){return activeLevel},get cameraPosition(){return camera?camera.position.asArray():null},get cameraTarget(){return camera?camera.target.asArray():null},get gatePositions(){return gateMeshes.map(item=>item.group.position.asArray())},get settlementPositions(){return settlementAnchors.map(item=>item.anchor.position.asArray())},get settlementScreenBounds(){return getSettlementScreenBounds()},get kopjeScreenBounds(){return getKopjeScreenBounds()},get fogDensity(){return scene?scene.fogDensity:0},get farmsteadLoaded(){return farmsteadLoaded},get terrainLoaded(){return terrainLoaded},get settlementLoaded(){return settlementLoaded},get settlementMeshCount(){return settlementMeshCount},get terrainMeshCount(){return terrainMeshCount},get farmsteadMeshCount(){return farmsteadMeshCount},get gateCount(){return gateMeshes.length},get shadowsEnabled(){return!!shadowGenerator&&scene&&scene.shadowsEnabled},get renderPixelRatio(){return renderPixelRatio},dispose(){if(scene&&camera)scene.stopAnimation(camera);if(camera)camera.overrideCloneAlphaBetaRadius=null;if(shadowGenerator){shadowGenerator.dispose();shadowGenerator=null}farmsteadMeshCount=0;terrainMeshCount=0;settlementMeshCount=0;settlementAnchors=[];terrainAnchor=null;tractor=null;tractorWheels=[];camera=null;if(engine){engine.stopRenderLoop();engine.dispose();engine=null;scene=null;gateMeshes=[]}}};
 })(window);

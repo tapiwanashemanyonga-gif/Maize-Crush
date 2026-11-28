@@ -170,7 +170,7 @@ async function enterGameFromJourney(page, verify = false) {
         Math.abs(targetShift) < 50 ||
         Math.abs(positionShift - targetShift) > 1 ||
         Math.abs(focusCheck.radius - 42) > 1 ||
-        focusCheck.nearestSettlement > 18 ||
+        focusCheck.nearestSettlement > 23 ||
         focusCheck.visibleSettlementCount < 1 ||
         focusCheck.visibleKopjeCount < 1 ||
         focusCheck.maxKopjeAreaRatio > 0.32 ||
