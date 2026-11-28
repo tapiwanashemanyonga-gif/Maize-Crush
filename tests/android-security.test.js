@@ -16,7 +16,7 @@ test("Android WebView blocks untrusted local and unsupported navigation", () => 
   assert.ok(activity.includes('new WebViewAssetLoader.AssetsPathHandler(this)'), "the secure origin must resolve Android app assets");
   assert.ok(activity.includes('assetLoader.shouldInterceptRequest(request.getUrl())'), "WebView requests must be intercepted by the local asset loader");
   assert.ok(activity.includes('"appassets.androidplatform.net".equalsIgnoreCase(uri.getHost())'), "only the trusted local HTTPS origin may navigate inside the WebView");
-  assert.ok(activity.includes('webView.loadUrl("https://appassets.androidplatform.net/assets/index.html")'), "the game must start on the secure local origin");
+  assert.ok(activity.includes('private static final String GAME_URL = "https://appassets.androidplatform.net/assets/index.html"') && activity.includes("webView.loadUrl(GAME_URL)"), "the game must start on the secure local origin");
   assert.ok(activity.includes('"https".equalsIgnoreCase(scheme) || "http".equalsIgnoreCase(scheme)'), "web links must be handled externally");
   assert.ok(activity.includes("// Block unsupported schemes"), "unsupported URL schemes must be blocked");
 });
