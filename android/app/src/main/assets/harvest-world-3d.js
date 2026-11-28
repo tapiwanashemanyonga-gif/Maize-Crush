@@ -90,8 +90,8 @@ function buildWorld(startLevel){
   }).catch(error=>{console.warn("Authored world asset unavailable:",filename,error);return false});
  };
  // Load the road-bearing terrain first so the journey becomes visible before optional homestead detail.
- // The settlement yards are 22m wide. Keeping their anchors 20m from the road centreline
- // leaves their nearest yard edge 9m away: beyond the 6.15m shoulder and 8.15m drainage ditch.
+ // The settlement yards are 22m wide at 0.72 scale. Keeping their anchors 16.2m from the road centreline
+ // leaves their nearest yard edge 8.28m away: beyond the 6.15m shoulder and 8.15m drainage ditch.
  setLoadStatus("Loading road and terrain…");
  const terrainPromise=loadAuthoredAsset("harvest-world-terrain.glb","blender-authored-zimbabwe-terrain",new BABYLON.Vector3(0,0,0),1).then(ok=>{
   terrainLoaded=ok;
