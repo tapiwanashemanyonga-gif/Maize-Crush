@@ -8,15 +8,19 @@ import android.graphics.Insets;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowInsets;
 import android.webkit.WebChromeClient;
 import android.webkit.JavascriptInterface;
+import android.webkit.RenderProcessGoneDetail;
 import android.webkit.ValueCallback;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.TextView;
 import androidx.webkit.WebViewAssetLoader;
 
 import java.io.IOException;
@@ -27,6 +31,8 @@ public class MainActivity extends Activity {
     private static final int FILE_CHOOSER_REQUEST_CODE = 1001;
     private static final int CREATE_BACKUP_REQUEST_CODE = 1002;
     private static final int MAX_BACKUP_BYTES = 1024 * 1024;
+    private static final int MAX_AUTOMATIC_RENDERER_RECOVERIES = 2;
+    private static final String GAME_URL = "https://appassets.androidplatform.net/assets/index.html";
 
     private WebView webView;
     private ValueCallback<Uri[]> filePathCallback;
@@ -34,6 +40,7 @@ public class MainActivity extends Activity {
     private Object backCallback;
     private boolean handlingBack;
     private boolean activityResumed;
+    private int rendererRecoveryAttempts;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,10 +49,35 @@ public class MainActivity extends Activity {
         getWindow().setNavigationBarColor(Color.rgb(11, 33, 24));
         getWindow().getDecorView().setSystemUiVisibility(0);
 
-        webView = new WebView(this);
-        webView.setBackgroundColor(Color.rgb(11, 33, 24));
-        webView.setOverScrollMode(View.OVER_SCROLL_NEVER);
-        WebSettings settings = webView.getSettings();
+        webView = createGameWebView();
+        setContentView(webView);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            webView.requestApplyInsets();
+        }
+
+        // Android 13+ predictive back no longer dispatches onBackPressed by default.
+        // Register the supported callback while retaining the legacy fallback.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            android.window.OnBackInvokedCallback callback = this::handleBackNavigation;
+            getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
+                android.window.OnBackInvokedDispatcher.PRIORITY_DEFAULT,
+                callback
+            );
+            backCallback = callback;
+        }
+
+        if (savedInstanceState == null) {
+            webView.loadUrl(GAME_URL);
+        } else {
+            webView.restoreState(savedInstanceState);
+        }
+    }
+
+    private WebView createGameWebView() {
+        WebView view = new WebView(this);
+        view.setBackgroundColor(Color.rgb(11, 33, 24));
+        view.setOverScrollMode(View.OVER_SCROLL_NEVER);
+        WebSettings settings = view.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
         settings.setAllowFileAccess(false);
@@ -61,19 +93,19 @@ public class MainActivity extends Activity {
             .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
             .build();
 
-        webView.setWebViewClient(new WebViewClient() {
+        view.setWebViewClient(new WebViewClient() {
             @Override
-            public android.webkit.WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+            public android.webkit.WebResourceResponse shouldInterceptRequest(WebView requestView, WebResourceRequest request) {
                 return assetLoader.shouldInterceptRequest(request.getUrl());
             }
 
             @Override
-            public android.webkit.WebResourceResponse shouldInterceptRequest(WebView view, String url) {
+            public android.webkit.WebResourceResponse shouldInterceptRequest(WebView requestView, String url) {
                 return assetLoader.shouldInterceptRequest(Uri.parse(url));
             }
 
             @Override
-            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+            public boolean shouldOverrideUrlLoading(WebView requestView, WebResourceRequest request) {
                 Uri uri = request.getUrl();
                 String scheme = uri.getScheme();
                 String url = uri.toString();
@@ -101,11 +133,25 @@ public class MainActivity extends Activity {
                 // Block unsupported schemes (intent:, content:, javascript:, etc.).
                 return true;
             }
+
+            @Override
+            public void onPageCommitVisible(WebView committedView, String url) {
+                if (committedView == webView) {
+                    // A fresh page commit proves that the replacement renderer recovered.
+                    rendererRecoveryAttempts = 0;
+                }
+            }
+
+            @Override
+            public boolean onRenderProcessGone(WebView crashedView, RenderProcessGoneDetail detail) {
+                return recoverFromRendererLoss(crashedView);
+            }
         });
-        webView.setWebChromeClient(new WebChromeClient() {
+
+        view.setWebChromeClient(new WebChromeClient() {
             @Override
             public boolean onShowFileChooser(
-                WebView view,
+                WebView requestView,
                 ValueCallback<Uri[]> callback,
                 FileChooserParams params
             ) {
@@ -122,42 +168,126 @@ public class MainActivity extends Activity {
                 }
             }
         });
-        webView.addJavascriptInterface(new BackupBridge(), "MaizeCrushNative");
+        view.addJavascriptInterface(new BackupBridge(), "MaizeCrushNative");
 
         // Android 15+ enforces edge-to-edge for modern target SDKs. Apply system-bar
-        // and display-cutout insets to the WebView so controls remain reachable.
+        // and display-cutout insets to every replacement WebView as well.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             getWindow().setDecorFitsSystemWindows(false);
-            webView.setOnApplyWindowInsetsListener((view, windowInsets) -> {
+            view.setOnApplyWindowInsetsListener((target, windowInsets) -> {
                 Insets safeInsets = windowInsets.getInsets(
                     WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout()
                 );
-                view.setPadding(safeInsets.left, safeInsets.top, safeInsets.right, safeInsets.bottom);
+                target.setPadding(safeInsets.left, safeInsets.top, safeInsets.right, safeInsets.bottom);
                 return windowInsets;
             });
         }
+        return view;
+    }
 
-        setContentView(webView);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            webView.requestApplyInsets();
+    private boolean recoverFromRendererLoss(WebView crashedView) {
+        // A stale callback must never replace or destroy the currently active WebView.
+        if (crashedView != webView) {
+            destroyWebView(crashedView);
+            return true;
         }
 
-        // Android 13+ predictive back no longer dispatches onBackPressed by default.
-        // Register the supported callback while retaining the legacy fallback.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            android.window.OnBackInvokedCallback callback = this::handleBackNavigation;
-            getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
-                android.window.OnBackInvokedDispatcher.PRIORITY_DEFAULT,
-                callback
-            );
-            backCallback = callback;
+        webView = null;
+        if (filePathCallback != null) {
+            try {
+                filePathCallback.onReceiveValue(null);
+            } catch (RuntimeException ignored) {
+                // The callback may already belong to the dead renderer.
+            }
+            filePathCallback = null;
         }
+        pendingBackupJson = null;
+        handlingBack = false;
+        destroyWebView(crashedView);
 
-        if (savedInstanceState == null) {
-            webView.loadUrl("https://appassets.androidplatform.net/assets/index.html");
-        } else {
-            webView.restoreState(savedInstanceState);
+        if (isFinishing() || isDestroyed()) return true;
+
+        // Retry automatically, but stop after repeated crashes before a page commits.
+        // The retry screen remains available without discarding the localStorage checkpoint.
+        if (rendererRecoveryAttempts >= MAX_AUTOMATIC_RENDERER_RECOVERIES) {
+            showRendererRecoveryFallback();
+            return true;
         }
+        rendererRecoveryAttempts++;
+        attachFreshGameWebView();
+        return true;
+    }
+
+    private void destroyWebView(WebView target) {
+        if (target == null) return;
+        try {
+            if (target.getParent() instanceof ViewGroup) {
+                ((ViewGroup) target.getParent()).removeView(target);
+            }
+        } catch (RuntimeException ignored) {
+            // Continue releasing the renderer even if the view was already detached.
+        }
+        try {
+            target.stopLoading();
+        } catch (RuntimeException ignored) {
+            // A terminated renderer may reject further WebView calls.
+        }
+        try {
+            target.removeJavascriptInterface("MaizeCrushNative");
+        } catch (RuntimeException ignored) {
+            // The interface is discarded with the WebView if removal is unavailable.
+        }
+        try {
+            target.destroy();
+        } catch (RuntimeException ignored) {
+            // The renderer has already been terminated by Android.
+        }
+    }
+
+    private void attachFreshGameWebView() {
+        try {
+            WebView replacement = createGameWebView();
+            webView = replacement;
+            setContentView(replacement);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                replacement.requestApplyInsets();
+            }
+            if (!activityResumed) {
+                replacement.onPause();
+                replacement.pauseTimers();
+            }
+            // Reload only the bundled HTTPS origin. DOM storage is origin-scoped and
+            // the game restores its last validated stable-round checkpoint on startup.
+            replacement.loadUrl(GAME_URL);
+        } catch (RuntimeException error) {
+            if (webView != null) {
+                WebView failed = webView;
+                webView = null;
+                destroyWebView(failed);
+            }
+            showRendererRecoveryFallback();
+        }
+    }
+
+    private void showRendererRecoveryFallback() {
+        TextView fallback = new TextView(this);
+        fallback.setText(
+            "Maize Crush needs to restart its game view.\n\n" +
+            "Your last stable harvest is saved on this device. Tap to try again."
+        );
+        fallback.setTextSize(18f);
+        fallback.setTextColor(Color.WHITE);
+        fallback.setGravity(Gravity.CENTER);
+        fallback.setPadding(40, 40, 40, 40);
+        fallback.setBackgroundColor(Color.rgb(11, 33, 24));
+        fallback.setFocusable(true);
+        fallback.setClickable(true);
+        fallback.setContentDescription("Retry Maize Crush after a rendering problem");
+        fallback.setOnClickListener(view -> {
+            rendererRecoveryAttempts = 0;
+            attachFreshGameWebView();
+        });
+        setContentView(fallback);
     }
 
     private final class BackupBridge {
@@ -310,9 +440,9 @@ public class MainActivity extends Activity {
             backCallback = null;
         }
         if (webView != null) {
-            webView.stopLoading();
-            webView.destroy();
+            WebView current = webView;
             webView = null;
+            destroyWebView(current);
         }
         super.onDestroy();
     }
