@@ -101,8 +101,8 @@ function buildWorld(startLevel){
  const optionalAssetsPromise=terrainPromise.then(()=>{
   const farmsteadZ=14,farmsteadX=roadX(farmsteadZ)+17.5;
   const farmsteadPromise=loadAuthoredAsset("harvest-world-farmstead.glb","blender-authored-zimbabwe-farmstead",new BABYLON.Vector3(farmsteadX,terrainHeight(farmsteadX,farmsteadZ),farmsteadZ),.72).then(ok=>{farmsteadLoaded=ok;return ok});
-  const settlementEastZ=38,settlementEastX=roadX(settlementEastZ)+20;
-  const settlementWestZ=74,settlementWestX=roadX(settlementWestZ)-20;
+  const settlementEastZ=38,settlementEastX=roadX(settlementEastZ)+16.2;
+  const settlementWestZ=74,settlementWestX=roadX(settlementWestZ)-16.2;
   const settlementEast=loadAuthoredAsset("harvest-world-settlement.glb","blender-authored-rural-settlement-east",new BABYLON.Vector3(settlementEastX,terrainHeight(settlementEastX,settlementEastZ),settlementEastZ),.72);
   const settlementWest=loadAuthoredAsset("harvest-world-settlement.glb","blender-authored-rural-settlement-west",new BABYLON.Vector3(settlementWestX,terrainHeight(settlementWestX,settlementWestZ),settlementWestZ),.72,Math.PI);
   const settlementPromise=Promise.all([settlementEast,settlementWest]).then(results=>{settlementLoaded=results.every(Boolean);return settlementLoaded});
