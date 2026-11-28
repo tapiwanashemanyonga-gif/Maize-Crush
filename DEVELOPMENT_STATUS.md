@@ -1,6 +1,6 @@
 # Maize Crush development status
 
-Last reviewed: 2026-11-18
+Last reviewed: 2026-11-28
 
 ## Current verified baseline
 
@@ -469,3 +469,14 @@ Complete physical Android WebView validation on a modest/older phone and a curre
 - First PR CI attempt on head c7cfbb3a4f52a784846f7ef453659e0e61983f82: the three new renderer-recovery tests passed, but the existing Android security test failed because it expected a literal webView.loadUrl URL. The refactor intentionally centralizes that same trusted URL in GAME_URL. Updated the stale assertion to verify the constant and its use; no runtime behavior change was needed. The Android APK workflow was still generating the Blender-authored world models at this check. The corrected PR-head workflows must be verified before merge.
 - Remaining release gates: physical Android renderer-kill and memory-pressure testing on a modest device; TalkBack and external-keyboard hands-on validation; sustained-play profiling; backup/device-transfer, rotation and background recovery; final package identity, permissions and store review. Automated CI cannot replace physical device validation. No production signing credentials or ads were added.
 - Next step: run the new focused regression tests, full Node suite, Android debug and unsigned release builds, then inspect browser/phone/tablet QA on the exact PR head. Do not merge until all required checks pass and a renderer-loss test limitation is clearly documented if physical process-kill testing cannot be run.
+
+
+## Stage 32 — Harvest Trail loading priority and road-clear homesteads (2026-11-28, CI pending)
+
+- Re-checked main after Stage 31 merge 0b157106eefe4efdf40992b566d80a98b11e8e7c. Stage 31 PR #144 passed all four required workflows on exact head 9a07e1be5d69a6e457775f34a1445e784350f412: gameplay/security 145/145, Android debug APK, unsigned release candidate, and browser visual QA. The QA artifact was downloaded and inspected at 390×844 and 1024×768; the optional emulator diagnostic was skipped. Physical Android renderer-kill and memory-pressure validation remain release gates.
+- Screenshot and source review found a real placement defect: the western settlement anchor was only 4.5m from the road centreline. Because the authored main house is offset within its model and rotated 180 degrees, the house was effectively placed over the road. The eastern settlement's 22m yard also reached into the road corridor.
+- Move the two settlement anchors to 20m from the road centreline (east +20m, west −20m). Their 22m yards now begin 9m from the centreline, beyond the 6.15m road shoulder and 8.15m outer drainage ditch. Move the first farmstead anchor to +17.5m; its nearest authored tree canopy is then outside the road shoulder.
+- Change world loading from four competing GLB imports to a staged sequence: load the terrain/continuous road first, then load the farmstead and two settlement instances. The road can become visible before optional buildings finish decoding. Expose live loading status to the Harvest Trail dialog (Loading road and terrain…, then Road and terrain ready · loading homesteads…, then Harvest Trail ready).
+- Keep all 3D models bundled/offline and keep the browser and Android WebView runtimes byte-for-byte identical. Add regression assertions for loading order, progress reporting, and homestead/road clearance. No puzzle rules, scores, progression or permissions change in this stage.
+- Validation must complete on the exact Stage 32 PR head: focused and full Node tests, generated GLB geometry/size checks, Android debug APK and unsigned release candidate, and browser screenshots/results on compact phone and tablet. Inspect the new settlement screenshots manually; do not merge if any house or yard overlaps the asphalt. No production signing or publishing is authorized.
+- Next: use the corrected, faster-loading Harvest Trail as the base for Stage 33 gameplay improvements—more varied early-level objectives, better difficulty ramp, clearer special-crop effects and more satisfying harvest feedback—without changing the original connect-not-swap rules.
